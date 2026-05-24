@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Docker / local data
+*.log
+.DS_Store
+
+# Build outputs
+dist/
+build/
+*/dist/
+*/build/
+
+# Database files / dumps
+*.dump
+*.sql.backup
+*.backup
+
+# IDE
+.vscode/
+.idea/
