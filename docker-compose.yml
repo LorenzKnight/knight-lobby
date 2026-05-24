@@ -1,0 +1,144 @@
+services:
+  hub:
+    container_name: knight_lobby_hub
+    build:
+      context: ./apps/hub
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - ./apps/hub:/app
+      - /app/node_modules
+    ports:
+      - "3010:5173"
+    environment:
+      - VITE_LEVELUP_LIFE_URL=http://localhost:5174
+      - VITE_API_URL=http://localhost:8003
+      - TZ=Europe/Stockholm
+    networks:
+      - network_knight_lobby
+
+  levelup-life:
+    container_name: levelup_life_frontend
+    build:
+      context: ./apps/levelup-life
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - ./apps/levelup-life:/app
+      - /app/node_modules
+    ports:
+      - "5174:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8002
+      - VITE_AUTH_API_URL=http://localhost:8001
+      - TZ=Europe/Stockholm
+    depends_on:
+      - levelup-life-api
+    networks:
+      - network_knight_lobby
+
+  auth-api:
+    container_name: knight_auth_api
+    build:
+      context: ./services/auth-api
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - ./services/auth-api:/app
+    ports:
+      - "8001:8000"
+    environment:
+      - APP_ENV=local
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME_LOCAL}
+      - DB_USER=${DB_USER_LOCAL}
+      - DB_PASSWORD=${DB_PASSWORD_LOCAL}
+      - JWT_SECRET=${JWT_SECRET}
+      - TZ=Europe/Stockholm
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - network_knight_lobby
+
+  hub-api:
+    container_name: knight_hub_api
+    build:
+      context: ./services/hub-api
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - ./services/hub-api:/app
+    ports:
+      - "8003:8000"
+    environment:
+      - APP_ENV=local
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME_LOCAL}
+      - DB_USER=${DB_USER_LOCAL}
+      - DB_PASSWORD=${DB_PASSWORD_LOCAL}
+      - TZ=Europe/Stockholm
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    networks:
+      - network_knight_lobby
+
+  levelup-life-api:
+    container_name: levelup_life_api
+    build:
+      context: ./services/levelup-life-api
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - ./services/levelup-life-api:/app
+    ports:
+      - "8002:8000"
+    environment:
+      - APP_ENV=local
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME_LOCAL}
+      - DB_USER=${DB_USER_LOCAL}
+      - DB_PASSWORD=${DB_PASSWORD_LOCAL}
+      - AUTH_API_URL=http://auth-api:8000
+      - TZ=Europe/Stockholm
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      auth-api:
+        condition: service_started
+    networks:
+      - network_knight_lobby
+
+  postgres-db:
+    container_name: knight_lobby_pgdb
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=${DB_USER_LOCAL}
+      - POSTGRES_PASSWORD=${DB_PASSWORD_LOCAL}
+      - POSTGRES_DB=${DB_NAME_LOCAL}
+      - TZ=Europe/Stockholm
+    volumes:
+      - db_levelup_life:/var/lib/postgresql/data
+      - ./databases/levelup_life/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5437:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER_LOCAL} -d ${DB_NAME_LOCAL}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - network_knight_lobby
+
+volumes:
+  db_levelup_life:
+    driver: local
+
+networks:
+  network_knight_lobby:
+    driver: bridge
