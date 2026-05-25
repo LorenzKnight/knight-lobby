@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.database.connection import get_db_connection
-from app.core.functions import success_response, error_response
+from app.core.functions import select_from
 
 
 router = APIRouter(
@@ -12,31 +11,33 @@ router = APIRouter(
 @router.get("/apps")
 def get_ecosystem_apps():
     try:
-        with get_db_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute("""
-                    SELECT
-                        app_id,
-                        name,
-                        slug,
-                        description,
-                        status,
-                        portal_color,
-                        icon,
-                        route_url,
-                        sort_order,
-                        is_locked,
-                        created_at
-                    FROM ecosystem_apps
-                    ORDER BY sort_order ASC, app_id ASC;
-                """)
-
-                apps = cursor.fetchall()
+        result = select_from(
+            table_name="ecosystem_apps",
+            columns=[
+                "app_id",
+                "name",
+                "slug",
+                "description",
+                "status",
+                "portal_color",
+                "icon",
+                "route_url",
+                "sort_order",
+                "is_locked",
+                "created_at",
+            ],
+            where_clause={},
+            options={
+                "order_by": "sort_order",
+                "order_direction": "ASC",
+            }
+        )
 
         return {
-            "success": True,
-            "message": "Ecosystem apps loaded successfully",
-            "data": apps
+            "success": result["success"],
+            "message": "Ecosystem apps loaded successfully" if result["success"] else result["message"],
+            "data": result["data"],
+            "count": result["count"],
         }
 
     except Exception as error:
