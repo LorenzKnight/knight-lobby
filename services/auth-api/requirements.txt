@@ -2,6 +2,7 @@ fastapi
 uvicorn[standard]
 psycopg[binary]
 python-dotenv
-pydantic
-python-jose[cryptography]
 passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
+pydantic[email]
