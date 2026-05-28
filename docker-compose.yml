@@ -45,6 +45,7 @@ services:
     restart: always
     volumes:
       - ./services/auth-api:/app
+      - ./packages/knight-core/knight_core:/opt/knight_core
     ports:
       - "8001:8000"
     environment:
@@ -55,6 +56,7 @@ services:
       - DB_USER=${DB_USER_LOCAL}
       - DB_PASSWORD=${DB_PASSWORD_LOCAL}
       - JWT_SECRET=${JWT_SECRET}
+      - PYTHONPATH=/opt
       - TZ=Europe/Stockholm
     depends_on:
       postgres-db:
@@ -70,6 +72,7 @@ services:
     restart: always
     volumes:
       - ./services/hub-api:/app
+      - ./packages/knight-core/knight_core:/opt/knight_core
     ports:
       - "8003:8000"
     environment:
@@ -79,6 +82,7 @@ services:
       - DB_NAME=${DB_NAME_LOCAL}
       - DB_USER=${DB_USER_LOCAL}
       - DB_PASSWORD=${DB_PASSWORD_LOCAL}
+      - PYTHONPATH=/opt
       - TZ=Europe/Stockholm
     depends_on:
       postgres-db:
@@ -94,6 +98,7 @@ services:
     restart: always
     volumes:
       - ./services/levelup-life-api:/app
+      - ./packages/knight-core/knight_core:/opt/knight_core
     ports:
       - "8002:8000"
     environment:
@@ -104,6 +109,7 @@ services:
       - DB_USER=${DB_USER_LOCAL}
       - DB_PASSWORD=${DB_PASSWORD_LOCAL}
       - AUTH_API_URL=http://auth-api:8000
+      - PYTHONPATH=/opt
       - TZ=Europe/Stockholm
     depends_on:
       postgres-db:

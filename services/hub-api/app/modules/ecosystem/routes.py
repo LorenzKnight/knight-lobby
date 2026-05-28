@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from app.core.functions import select_from
+from knight_core.functions import select_from
 
 
 router = APIRouter(
