@@ -1,7 +1,7 @@
 import re
 from typing import Any
 
-from app.database.connection import get_db_connection
+from knight_core.database.connection import get_db_connection
 
 
 ########################## Helper functions / Utility functions ##########################

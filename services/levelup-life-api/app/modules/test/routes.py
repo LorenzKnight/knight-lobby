@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from app.database.connection import get_db_connection
+from knight_core.database.connection import get_db_connection
 
 
 router = APIRouter(

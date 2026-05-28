@@ -1,4 +1,4 @@
-from app.core.functions import insert_into, select_from
+from knight_core.functions import insert_into, select_from
 from app.core.security import hash_password, verify_password, create_access_token
 
 
