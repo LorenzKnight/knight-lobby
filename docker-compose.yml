@@ -13,6 +13,7 @@ services:
     environment:
       - VITE_LEVELUP_LIFE_URL=http://localhost:5174
       - VITE_API_URL=http://localhost:8003
+      - VITE_AUTH_API_URL=http://localhost:8001
       - TZ=Europe/Stockholm
     networks:
       - network_knight_lobby
