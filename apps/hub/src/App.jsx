@@ -6,6 +6,10 @@ import {
 	Plus,
 	FlaskConical,
 	UserRound,
+	LogIn,
+	UserPlus,
+	LogOut,
+	Settings,
 } from "lucide-react";
 import { getEcosystemApps } from "./services/api";
 import { getMe, getMyApps, loginUser } from "./api/authApi";
@@ -21,6 +25,8 @@ function App() {
 	const [myApps, setMyApps] = useState([]);
 
 	const [showLoginModal, setShowLoginModal] = useState(false);
+    const [showAuthMenu, setShowAuthMenu] = useState(false);
+	const [showProfileMenu, setShowProfileMenu] = useState(false);
 	const [loginEmail, setLoginEmail] = useState("");
 	const [loginPassword, setLoginPassword] = useState("");
 	const [loginError, setLoginError] = useState("");
@@ -118,7 +124,11 @@ function App() {
 	}
 
 	function getButtonLabel(app) {
-		if (app.is_locked || app.status === "coming_soon") {
+		if (app.status === "coming_soon") {
+			return "Próximamente";
+		}
+
+		if (app.is_locked) {
 			return "Bloqueado";
 		}
 
@@ -156,11 +166,47 @@ function App() {
 
 	function handleCenterAction() {
 		if (!isLoggedIn) {
+			setShowProfileMenu(false);
+			setShowAuthMenu((currentValue) => !currentValue);
+			return;
+		}
+
+		setShowAuthMenu(false);
+		setShowProfileMenu(false);
+
+		console.log("Abrir formulario para agregar nuevo proyecto");
+	}
+
+    function handleOpenLogin() {
+		setShowAuthMenu(false);
+		setShowProfileMenu(false);
+		setLoginError("");
+		setShowLoginModal(true);
+	}
+
+    function handleOpenRegister() {
+        setShowAuthMenu(false);
+
+        // Por ahora lo dejamos preparado.
+        // Luego aquí abrimos el modal de registro real.
+        console.log("Abrir formulario de registro");
+    }
+
+	function handleProfileAction() {
+		if (!isLoggedIn) {
+			setShowAuthMenu(false);
+			setShowProfileMenu(false);
 			setShowLoginModal(true);
 			return;
 		}
 
-		console.log("Abrir formulario para agregar nuevo proyecto");
+		setShowAuthMenu(false);
+		setShowProfileMenu((currentValue) => !currentValue);
+	}
+
+	function handleOpenProfile() {
+		setShowProfileMenu(false);
+		console.log("Abrir perfil del usuario");
 	}
 
 	async function handleLoginSubmit(event) {
@@ -179,6 +225,7 @@ function App() {
 			setLoginEmail("");
 			setLoginPassword("");
 			setShowLoginModal(false);
+            setShowAuthMenu(false);
 		} catch (error) {
 			setLoginError(error.message);
 		} finally {
@@ -192,6 +239,8 @@ function App() {
 		setAuthToken(null);
 		setAuthUser(null);
 		setMyApps([]);
+		setShowProfileMenu(false);
+		setShowAuthMenu(false);
 	}
 
 	const ecosystemProgress = useMemo(() => {
@@ -245,6 +294,49 @@ function App() {
 			</section>
 
 			<section className="app-bottom-nav">
+                {showAuthMenu && !isLoggedIn && (
+                    <div className="floating-action-menu auth-action-menu">
+                        <button type="button" onClick={handleOpenLogin}>
+                            <span className="floating-action-icon">
+                                <LogIn size={18} strokeWidth={1.9} />
+                            </span>
+                            <span>Iniciar sesión</span>
+                        </button>
+
+                        <button type="button" onClick={handleOpenRegister}>
+                            <span className="floating-action-icon">
+                                <UserPlus size={18} strokeWidth={1.9} />
+                            </span>
+                            <span>Registrarse</span>
+                        </button>
+                    </div>
+                )}
+
+				{showProfileMenu && isLoggedIn && (
+					<div className="floating-action-menu profile-action-menu">
+						<button type="button" onClick={handleOpenProfile}>
+							<span className="floating-action-icon">
+								<UserRound size={18} strokeWidth={1.9} />
+							</span>
+							<span>Mi perfil</span>
+						</button>
+
+						<button type="button" onClick={() => console.log("Abrir configuración")}>
+							<span className="floating-action-icon">
+								<Settings size={18} strokeWidth={1.9} />
+							</span>
+							<span>Configuración</span>
+						</button>
+
+						<button type="button" onClick={handleLogout}>
+							<span className="floating-action-icon danger">
+								<LogOut size={18} strokeWidth={1.9} />
+							</span>
+							<span>Cerrar sesión</span>
+						</button>
+					</div>
+				)}
+
 				<button type="button" className="bottom-item">
 					<span className="bottom-icon">
 						<Home size={22} strokeWidth={1.8} />
@@ -280,13 +372,10 @@ function App() {
 					</span>
 					<span>Lab</span>
 				</button>
-
 				<button
 					type="button"
-					className="bottom-item"
-					onClick={() => {
-						if (!isLoggedIn) setShowLoginModal(true);
-					}}
+					className={`bottom-item ${showProfileMenu ? "active" : ""}`}
+					onClick={handleProfileAction}
 				>
 					<span className="bottom-icon">
 						<UserRound size={22} strokeWidth={1.8} />

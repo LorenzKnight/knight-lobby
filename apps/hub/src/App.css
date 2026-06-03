@@ -534,7 +534,6 @@ button {
 }
 
 /* Bottom nav */
-
 .app-bottom-nav {
 	width: 60%;
     margin-top: 32px;
@@ -717,7 +716,6 @@ button {
 }
 
 /* Responsive */
-
 @media (max-width: 760px) {
     .hub-shell {
         max-width: 520px;
@@ -795,7 +793,7 @@ button {
     .app-bottom-nav {
       	width: 90%;
         min-height: 112px;
-        gap: 26px;
+        gap: 40px;
 		margin: 0 5%;
         padding: 14px 10px;
 		display: flex;
@@ -842,4 +840,135 @@ button {
 	border-radius: 0.8rem;
 	padding: 0.65rem 0.8rem;
 	font-size: 0.88rem;
+}
+
+
+
+/* Floating bottom menus */
+.app-bottom-nav {
+	overflow: visible;
+}
+
+.floating-action-menu {
+	position: absolute;
+	bottom: calc(100% + 14px);
+	display: grid;
+	gap: 0.45rem;
+	min-width: 280px;
+	padding: 0.55rem;
+	border-radius: 1.1rem;
+	background: rgba(10, 15, 30, 0.92);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+	backdrop-filter: blur(14px);
+	z-index: 20;
+	animation: floatingMenuBounceUp 0.34s cubic-bezier(0.2, 1.35, 0.45, 1);
+}
+
+.floating-action-menu::after {
+	content: "";
+	position: absolute;
+	bottom: -7px;
+	width: 14px;
+	height: 14px;
+	background: rgba(10, 15, 30, 0.92);
+	border-right: 1px solid rgba(255, 255, 255, 0.12);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+	transform: rotate(45deg);
+}
+
+.floating-action-menu button {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	width: 100%;
+	border: none;
+	border-radius: 0.85rem;
+	padding: 1.2rem 1.4rem;
+	background: rgba(255, 255, 255, 0.06);
+	color: rgba(255, 255, 255, 0.9);
+	cursor: pointer;
+	font-size: 0.98rem;
+	text-align: left;
+	transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.floating-action-menu button:hover {
+	background: rgba(255, 255, 255, 0.11);
+	transform: translateY(-1px);
+}
+
+.floating-action-icon {
+	display: grid;
+	place-items: center;
+	width: 30px;
+	height: 30px;
+	border-radius: 0.75rem;
+	color: #c4b5fd;
+	background: rgba(139, 92, 246, 0.16);
+}
+
+.floating-action-icon.danger {
+	color: #fca5a5;
+	background: rgba(239, 68, 68, 0.14);
+}
+
+/* Auth menu: aparece encima del botón central */
+.auth-action-menu {
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+.auth-action-menu::after {
+	left: 50%;
+	transform: translateX(-50%) rotate(45deg);
+}
+
+/* Profile menu: aparece encima del botón Perfil */
+.profile-action-menu {
+	right: 0.75rem;
+}
+
+.profile-action-menu::after {
+	right: 1.7rem;
+}
+
+@keyframes floatingMenuBounceUp {
+	0% {
+		opacity: 0;
+		transform: translateY(16px) scale(0.96);
+	}
+
+	65% {
+		opacity: 1;
+		transform: translateY(-4px) scale(1.02);
+	}
+
+	100% {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+.auth-action-menu {
+	animation-name: authFloatingMenuBounceUp;
+}
+
+@keyframes authFloatingMenuBounceUp {
+	0% {
+		opacity: 0;
+		transform: translate(-50%, 16px) scale(0.96);
+	}
+
+	65% {
+		opacity: 1;
+		transform: translate(-50%, -4px) scale(1.02);
+	}
+
+	100% {
+		opacity: 1;
+		transform: translate(-50%, 0) scale(1);
+	}
 }
