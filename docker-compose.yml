@@ -31,6 +31,7 @@ services:
       - "5174:5173"
     environment:
       - VITE_API_URL=http://localhost:8002
+      - VITE_LEVELUP_API_URL=http://localhost:8002
       - VITE_AUTH_API_URL=http://localhost:8001
       - TZ=Europe/Stockholm
     depends_on:
