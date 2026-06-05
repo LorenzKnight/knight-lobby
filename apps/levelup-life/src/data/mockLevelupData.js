@@ -7,7 +7,7 @@ export const player = {
 	nextLevelExp: 3765,
 	coins: 0,
 	gems: 0,
-	dayProgress: 62,
+	dayProgress: 100,
 };
 
 export const progressStats = [

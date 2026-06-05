@@ -20,11 +20,11 @@ import {
 } from "lucide-react";
 import { getMe, loginUser } from "./api/authApi";
 import {
-	lifeAreas,
 	player,
 	priorities,
 	progressStats,
 } from "./data/mockLevelupData";
+import { getLifeAreas } from "./services/api";
 import "./App.css";
 
 function App() {
@@ -36,6 +36,10 @@ function App() {
 	const [loginPassword, setLoginPassword] = useState("");
 	const [loginError, setLoginError] = useState("");
 	const [loginLoading, setLoginLoading] = useState(false);
+
+	const [showAreasMenu, setShowAreasMenu] = useState(false);
+	const [lifeAreas, setLifeAreas] = useState([]);
+	const [lifeAreasLoading, setLifeAreasLoading] = useState(false);
 
 	const isLoggedIn = Boolean(authToken && authUser);
 
@@ -60,6 +64,29 @@ function App() {
 
 		loadSession();
 	}, [authToken]);
+
+	useEffect(() => {
+		async function loadLifeAreas() {
+			if (!authUser?.user_id) return;
+
+			setLifeAreasLoading(true);
+
+			try {
+				const result = await getLifeAreas(authUser.user_id);
+
+				if (result.success) {
+					setLifeAreas(result.data || []);
+				}
+			} catch (error) {
+				console.error("Could not load life areas:", error);
+				setLifeAreas([]);
+			} finally {
+				setLifeAreasLoading(false);
+			}
+		}
+
+		loadLifeAreas();
+	}, [authUser]);
 
 	async function handleLoginSubmit(event) {
 		event.preventDefault();
@@ -87,6 +114,15 @@ function App() {
 		localStorage.removeItem("knight_token");
 		setAuthToken(null);
 		setAuthUser(null);
+	}
+
+	function handleToggleAreasMenu() {
+		setShowAreasMenu((currentValue) => !currentValue);
+	}
+
+	function handleSelectArea(area) {
+		console.log("Área seleccionada:", area);
+		setShowAreasMenu(false);
 	}
 
 	if (checkingSession) {
@@ -264,7 +300,7 @@ function App() {
 				</div>
 			</section>
 
-			<section className="life-areas-card">
+			{/* <section className="life-areas-card">
 				<div className="section-title-row">
 					<h2>Áreas de Vida</h2>
 					<button type="button">
@@ -281,7 +317,7 @@ function App() {
 						</button>
 					))}
 				</div>
-			</section>
+			</section> */}
 
 			<section className="dashboard-grid">
 				<article className="priorities-card">
@@ -357,13 +393,55 @@ function App() {
 				</button>
 			</section>
 
+			{showAreasMenu && (
+				<div className="areas-floating-menu">
+					<div className="areas-floating-header">
+						<strong>Áreas de Vida</strong>
+						<button type="button" onClick={() => setShowAreasMenu(false)}>
+							×
+						</button>
+					</div>
+
+					<div className="areas-floating-list">
+						{lifeAreasLoading && (
+							<p className="areas-floating-message">Cargando áreas...</p>
+						)}
+
+						{!lifeAreasLoading && lifeAreas.length === 0 && (
+							<p className="areas-floating-message">
+								Todavía no tienes áreas creadas.
+							</p>
+						)}
+
+						{!lifeAreasLoading &&
+							lifeAreas.map((area) => (
+								<button
+									type="button"
+									className="areas-floating-item"
+									key={area.life_area_id}
+									onClick={() => handleSelectArea(area)}
+								>
+									<span className="areas-floating-icon">{area.icon}</span>
+									<span>{area.name}</span>
+									<ChevronRight size={20} strokeWidth={1.8} />
+								</button>
+							))
+						}
+					</div>
+				</div>
+			)}
+
 			<nav className="levelup-bottom-nav">
 				<button type="button" className="active">
 					<HomeIcon />
 					<span>Inicio</span>
 				</button>
 
-				<button type="button">
+				<button
+					type="button"
+					className={showAreasMenu ? "active" : ""}
+					onClick={handleToggleAreasMenu}
+				>
 					<BarChart3 size={24} strokeWidth={1.8} />
 					<span>Áreas</span>
 				</button>

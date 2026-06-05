@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.modules.test.routes import router as test_router
+from app.modules.life_areas.routes import router as life_areas_router
 
 
 app = FastAPI(
@@ -24,6 +25,7 @@ app.add_middleware(
 
 
 app.include_router(test_router)
+app.include_router(life_areas_router)
 
 
 @app.get("/")
