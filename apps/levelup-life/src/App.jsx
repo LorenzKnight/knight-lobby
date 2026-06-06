@@ -5,7 +5,7 @@ import {
 	BriefcaseBusiness,
 	CalendarCheck,
 	ChevronRight,
-	Clock3,
+	// Clock3,
 	Heart,
 	Home,
 	Lock,
@@ -38,6 +38,7 @@ function App() {
 	const [loginLoading, setLoginLoading] = useState(false);
 
 	const [showAreasMenu, setShowAreasMenu] = useState(false);
+	const [showQuickAddMenu, setShowQuickAddMenu] = useState(false);
 	const [lifeAreas, setLifeAreas] = useState([]);
 	const [lifeAreasLoading, setLifeAreasLoading] = useState(false);
 
@@ -114,10 +115,23 @@ function App() {
 		localStorage.removeItem("knight_token");
 		setAuthToken(null);
 		setAuthUser(null);
+		setShowAreasMenu(false);
+		setShowQuickAddMenu(false);
 	}
 
 	function handleToggleAreasMenu() {
+		setShowQuickAddMenu(false);
 		setShowAreasMenu((currentValue) => !currentValue);
+	}
+
+	function handleToggleQuickAddMenu() {
+		setShowAreasMenu(false);
+		setShowQuickAddMenu((currentValue) => !currentValue);
+	}
+
+	function handleQuickAddAction(action) {
+		console.log("Acción rápida:", action);
+		setShowQuickAddMenu(false);
 	}
 
 	function handleSelectArea(area) {
@@ -199,7 +213,7 @@ function App() {
 					<Menu size={27} strokeWidth={1.8} />
 				</button>
 
-				<h1>Videojuego de La Vida</h1>
+				<h1>LevelUp Life</h1>
 
 				<button type="button" className="icon-button notification-button">
 					<Bell size={24} strokeWidth={1.8} />
@@ -272,9 +286,8 @@ function App() {
 
 			<section className="time-progress-card">
 				<div className="clock-card">
-					<Clock3 size={24} strokeWidth={1.8} />
 					<strong>14:55</strong>
-					<span>CST</span>
+					{/* <span>CST</span> */}
 				</div>
 
 				<div className="progress-list">
@@ -431,6 +444,72 @@ function App() {
 				</div>
 			)}
 
+			{showQuickAddMenu && (
+				<div className="quick-add-menu">
+					<div className="quick-add-header">
+						<strong>Crear nuevo</strong>
+
+						<button
+							type="button"
+							onClick={() => setShowQuickAddMenu(false)}
+							aria-label="Cerrar menú"
+						>
+							×
+						</button>
+					</div>
+
+					<div className="quick-add-list">
+						<button
+							type="button"
+							className="quick-add-item"
+							onClick={() => handleQuickAddAction("area")}
+						>
+							<span className="quick-add-icon">🌍</span>
+							<span>
+								<strong>Nueva área</strong>
+								<small>Crea un reino de tu vida</small>
+							</span>
+						</button>
+
+						<button
+							type="button"
+							className="quick-add-item"
+							onClick={() => handleQuickAddAction("goal")}
+						>
+							<span className="quick-add-icon">🏆</span>
+							<span>
+								<strong>Nuevo objetivo</strong>
+								<small>Meta grande con progreso</small>
+							</span>
+						</button>
+
+						<button
+							type="button"
+							className="quick-add-item"
+							onClick={() => handleQuickAddAction("habit")}
+						>
+							<span className="quick-add-icon">🔥</span>
+							<span>
+								<strong>Nuevo hábito</strong>
+								<small>Acción repetible para subir nivel</small>
+							</span>
+						</button>
+
+						<button
+							type="button"
+							className="quick-add-item"
+							onClick={() => handleQuickAddAction("mission")}
+						>
+							<span className="quick-add-icon">⚔️</span>
+							<span>
+								<strong>Nueva misión</strong>
+								<small>Tarea o pendiente importante</small>
+							</span>
+						</button>
+					</div>
+				</div>
+			)}
+
 			<nav className="levelup-bottom-nav">
 				<button type="button" className="active">
 					<HomeIcon />
@@ -446,7 +525,11 @@ function App() {
 					<span>Áreas</span>
 				</button>
 
-				<button type="button" className="nav-plus">
+				<button
+					type="button"
+					className={`nav-plus ${showQuickAddMenu ? "active" : ""}`}
+					onClick={handleToggleQuickAddMenu}
+				>
 					<Plus size={33} strokeWidth={1.8} />
 				</button>
 
