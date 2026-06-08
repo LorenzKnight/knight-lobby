@@ -37,38 +37,38 @@ export const progressStats = [
 	},
 ];
 
-export const lifeAreas = [
-	{
-		key: "spiritual",
-		name: "Vida Espiritual",
-		icon: "💎",
-	},
-	{
-		key: "creativity",
-		name: "Creatividad",
-		icon: "🚩",
-	},
-	{
-		key: "career",
-		name: "Carrera Profesional",
-		icon: "💼",
-	},
-	{
-		key: "finances",
-		name: "Finanzas",
-		icon: "🐷",
-	},
-	{
-		key: "social_action",
-		name: "Acción Social",
-		icon: "❤️",
-	},
-	{
-		key: "social",
-		name: "Social",
-		icon: "👥",
-	},
-];
+// export const lifeAreas = [
+// 	{
+// 		key: "spiritual",
+// 		name: "Vida Espiritual",
+// 		icon: "💎",
+// 	},
+// 	{
+// 		key: "creativity",
+// 		name: "Creatividad",
+// 		icon: "🚩",
+// 	},
+// 	{
+// 		key: "career",
+// 		name: "Carrera Profesional",
+// 		icon: "💼",
+// 	},
+// 	{
+// 		key: "finances",
+// 		name: "Finanzas",
+// 		icon: "🐷",
+// 	},
+// 	{
+// 		key: "social_action",
+// 		name: "Acción Social",
+// 		icon: "❤️",
+// 	},
+// 	{
+// 		key: "social",
+// 		name: "Social",
+// 		icon: "👥",
+// 	},
+// ];
 
 export const priorities = [
 	"Familia cercana",

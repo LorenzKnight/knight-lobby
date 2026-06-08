@@ -24,7 +24,8 @@ import {
 	priorities,
 	progressStats,
 } from "./data/mockLevelupData";
-import { getLifeAreas } from "./services/api";
+import { createLifeArea, getLifeAreas } from "./services/api";
+import Toast from "./components/Toast";
 import "./App.css";
 
 function App() {
@@ -39,6 +40,17 @@ function App() {
 
 	const [showAreasMenu, setShowAreasMenu] = useState(false);
 	const [showQuickAddMenu, setShowQuickAddMenu] = useState(false);
+
+	const [showAreaForm, setShowAreaForm] = useState(false);
+	const [areaName, setAreaName] = useState("");
+	const [areaIcon, setAreaIcon] = useState("✨");
+	const [areaColor, setAreaColor] = useState("#7a58b4");
+	const [areaDescription, setAreaDescription] = useState("");
+	const [areaError, setAreaError] = useState("");
+	const [areaSaving, setAreaSaving] = useState(false);
+
+	const [toast, setToast] = useState(null);
+
 	const [lifeAreas, setLifeAreas] = useState([]);
 	const [lifeAreasLoading, setLifeAreasLoading] = useState(false);
 
@@ -117,6 +129,18 @@ function App() {
 		setAuthUser(null);
 		setShowAreasMenu(false);
 		setShowQuickAddMenu(false);
+		setShowAreaForm(false);
+		setToast(null);
+	}
+
+	function createSlug(text) {
+		return text
+			.toLowerCase()
+			.trim()
+			.normalize("NFD")
+			.replace(/[\u0300-\u036f]/g, "")
+			.replace(/[^a-z0-9]+/g, "-")
+			.replace(/^-+|-+$/g, "");
 	}
 
 	function handleToggleAreasMenu() {
@@ -130,13 +154,119 @@ function App() {
 	}
 
 	function handleQuickAddAction(action) {
-		console.log("Acción rápida:", action);
 		setShowQuickAddMenu(false);
+
+		if (action === "area") {
+			setAreaError("");
+			setAreaName("");
+			setAreaIcon("✨");
+			setAreaColor("#7a58b4");
+			setAreaDescription("");
+			setShowAreaForm(true);
+			return;
+		}
+
+		console.log("Acción rápida:", action);
 	}
 
 	function handleSelectArea(area) {
 		console.log("Área seleccionada:", area);
 		setShowAreasMenu(false);
+	}
+
+	async function handleCreateAreaSubmit(event) {
+		event.preventDefault();
+
+		if (!authUser?.user_id) {
+			setAreaError("No se pudo identificar el usuario.");
+			return;
+		}
+
+		if (!areaName.trim()) {
+			setAreaError("El nombre del área es obligatorio.");
+			return;
+		}
+
+		setAreaError("");
+		setAreaSaving(true);
+
+		try {
+			const slug = createSlug(areaName);
+
+			const areaAlreadyExists = lifeAreas.some(
+				(area) => area.slug === slug
+			);
+
+			if (areaAlreadyExists) {
+				setAreaError("Ya tienes un área con ese nombre. Usa un nombre diferente.");
+				setAreaSaving(false);
+				return;
+			}
+
+			const newArea = {
+				user_id: authUser.user_id,
+				name: areaName.trim(),
+				slug: slug,
+				icon: areaIcon.trim() || "✨",
+				description: areaDescription.trim() || null,
+				color: areaColor || "#7a58b4",
+				sort_order: lifeAreas.length + 1,
+			};
+
+			await createLifeArea(newArea);
+
+			const result = await getLifeAreas(authUser.user_id);
+
+			if (result.success) {
+				setLifeAreas(result.data || []);
+			}
+
+			setShowAreaForm(false);
+			setAreaName("");
+			setAreaIcon("✨");
+			setAreaColor("#7a58b4");
+			setAreaDescription("");
+
+			showToast(
+				"Área creada",
+				"Tu nueva área de vida fue agregada correctamente.",
+				"success"
+			);
+		} catch (error) {
+			const message = error.message || "";
+
+			if (
+				message.includes("duplicate key") ||
+				message.includes("life_areas_user_id_slug_key") ||
+				message.includes("already exists")
+			) {
+				setAreaError("Ya existe un área con ese nombre. Prueba con otro nombre.");
+				
+				showToast(
+					"Área duplicada",
+					"Ya existe un área con ese nombre.",
+					"error"
+				);
+
+				return;
+			}
+
+			setAreaError("No pudimos guardar el área. Revisa los datos e inténtalo otra vez.");
+		} finally {
+			setAreaSaving(false);
+		}
+	}
+
+	function showToast(title, message = "", type = "success") {
+		setToast({
+			title,
+			message,
+			type,
+		});
+
+		setTimeout(() => {
+			setToast(null);
+		}, 3200);
 	}
 
 	if (checkingSession) {
@@ -509,6 +639,87 @@ function App() {
 					</div>
 				</div>
 			)}
+
+			{showAreaForm && (
+				<div className="area-form-backdrop">
+					<section className="area-form-modal">
+						<div className="area-form-header">
+							<div>
+								<span>Nueva área</span>
+								<h2>Crear Área de Vida</h2>
+							</div>
+
+							<button
+								type="button"
+								onClick={() => {
+									setShowAreaForm(false);
+									setAreaError("");
+								}}
+								aria-label="Cerrar formulario"
+							>
+								×
+							</button>
+						</div>
+
+						<form className="area-form" onSubmit={handleCreateAreaSubmit}>
+							<label>
+								Nombre del área
+								<input
+									type="text"
+									placeholder="Ej: Salud Física"
+									value={areaName}
+									onChange={(event) => setAreaName(event.target.value)}
+									required
+								/>
+							</label>
+
+							<div className="area-form-row">
+								<label>
+									Icono
+									<input
+										type="text"
+										placeholder="💪"
+										value={areaIcon}
+										onChange={(event) => setAreaIcon(event.target.value)}
+										maxLength={4}
+									/>
+								</label>
+
+								<label>
+									Color
+									<input
+										type="color"
+										value={areaColor}
+										onChange={(event) => setAreaColor(event.target.value)}
+									/>
+								</label>
+							</div>
+
+							<label>
+								Descripción
+								<textarea
+									placeholder="Describe qué representa esta área en tu vida..."
+									value={areaDescription}
+									onChange={(event) => setAreaDescription(event.target.value)}
+									rows={4}
+								/>
+							</label>
+
+							{areaError && (
+								<p className="area-form-error">
+									{areaError}
+								</p>
+							)}
+
+							<button type="submit" disabled={areaSaving}>
+								{areaSaving ? "Guardando..." : "Guardar área"}
+							</button>
+						</form>
+					</section>
+				</div>
+			)}
+
+			<Toast toast={toast} onClose={() => setToast(null)} />
 
 			<nav className="levelup-bottom-nav">
 				<button type="button" className="active">
