@@ -5,7 +5,6 @@ import {
 	BriefcaseBusiness,
 	CalendarCheck,
 	ChevronRight,
-	// Clock3,
 	Heart,
 	Home,
 	Lock,
@@ -15,7 +14,6 @@ import {
 	Plus,
 	Sparkles,
 	Swords,
-	// UserRound,
 	WalletCards,
 } from "lucide-react";
 import { getMe, loginUser } from "./api/authApi";
@@ -26,6 +24,7 @@ import {
 } from "./data/mockLevelupData";
 import { createLifeArea, getLifeAreas } from "./services/api";
 import Toast from "./components/Toast";
+import LifeAreaDetailView from "./components/LifeAreaDetailView";
 import "./App.css";
 
 function App() {
@@ -53,6 +52,9 @@ function App() {
 
 	const [lifeAreas, setLifeAreas] = useState([]);
 	const [lifeAreasLoading, setLifeAreasLoading] = useState(false);
+
+	const [currentView, setCurrentView] = useState("dashboard");
+	const [selectedLifeArea, setSelectedLifeArea] = useState(null);
 
 	const isLoggedIn = Boolean(authToken && authUser);
 
@@ -170,8 +172,10 @@ function App() {
 	}
 
 	function handleSelectArea(area) {
-		console.log("Área seleccionada:", area);
+		setSelectedLifeArea(area);
+		setCurrentView("life-area-detail");
 		setShowAreasMenu(false);
+		setShowQuickAddMenu(false);
 	}
 
 	async function handleCreateAreaSubmit(event) {
@@ -267,6 +271,13 @@ function App() {
 		setTimeout(() => {
 			setToast(null);
 		}, 3200);
+	}
+
+	function handleBackToDashboard() {
+		setCurrentView("dashboard");
+		setSelectedLifeArea(null);
+		setShowAreasMenu(false);
+		setShowQuickAddMenu(false);
 	}
 
 	if (checkingSession) {
