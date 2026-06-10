@@ -347,6 +347,8 @@ function App() {
 		authUser?.first_name ||
 		player.username;
 
+	const isAreasActive = showAreasMenu || currentView === "life-area-detail";
+
 	return (
 		<main className="levelup-shell">
 			<header className="levelup-topbar">
@@ -362,190 +364,182 @@ function App() {
 				</button>
 			</header>
 
-			<section className="player-card">
-				<div className="avatar-zone">
-					<div className="level-badge">
-						<span>NIVEL</span>
-						<strong>{player.level}</strong>
-					</div>
+			{currentView === "dashboard" && (
+				<>
+					<section className="player-card">
+						<div className="avatar-zone">
+							<div className="level-badge">
+								<span>NIVEL</span>
+								<strong>{player.level}</strong>
+							</div>
 
-					<div className="lowpoly-avatar">
-						<div className="avatar-head" />
-						<div className="avatar-body" />
-						<div className="avatar-arm" />
-						<div className="avatar-sword" />
-						<div className="avatar-ground" />
-					</div>
-				</div>
+							<div className="lowpoly-avatar">
+								<div className="avatar-head" />
+								<div className="avatar-body" />
+								<div className="avatar-arm" />
+								<div className="avatar-sword" />
+								<div className="avatar-ground" />
+							</div>
+						</div>
 
-				<div className="player-info">
-					<h2>{displayName}</h2>
+						<div className="player-info">
+							<h2>{displayName}</h2>
 
-					<div className="life-row">
-						<strong>Vida:</strong>
-						<div className="heart-row">
-							{Array.from({ length: 8 }).map((_, index) => (
-								<Heart
-									key={index}
-									size={21}
-									fill="currentColor"
-									strokeWidth={1.8}
-								/>
+							<div className="life-row">
+								<strong>Vida:</strong>
+								<div className="heart-row">
+									{Array.from({ length: 8 }).map((_, index) => (
+										<Heart
+											key={index}
+											size={21}
+											fill="currentColor"
+											strokeWidth={1.8}
+										/>
+									))}
+								</div>
+							</div>
+
+							<p className="life-value">
+								{player.life} / {player.maxLife}
+							</p>
+
+							<div className="next-level">
+								<span>Nivel siguiente:</span>
+								<div className="exp-line">
+									<div style={{ width: "0%" }} />
+								</div>
+								<small>
+									{player.nextLevelExp} EXP ({player.exp}%)
+								</small>
+							</div>
+
+							<div className="wallet-row">
+								<span>🪙 {player.coins} Monedas</span>
+								<span>💎 {player.gems}</span>
+							</div>
+						</div>
+
+						<div className="day-progress-card">
+							<p>☀ Progreso del día</p>
+							<div className="progress-circle">
+								<span>{player.dayProgress}</span>
+								<small>%</small>
+							</div>
+							<p className="progress-note">¡Sigue así!</p>
+						</div>
+					</section>
+
+					<section className="time-progress-card">
+						<div className="clock-card">
+							<strong>14:55</strong>
+							{/* <span>CST</span> */}
+						</div>
+
+						<div className="progress-list">
+							{progressStats.map((item) => (
+								<div className="progress-item" key={item.key}>
+									<div className="progress-label">
+										<CalendarCheck size={21} strokeWidth={1.8} />
+										<span>
+											{item.label}: {item.value}%
+										</span>
+									</div>
+
+									<div className="progress-bar">
+										<div
+											style={{
+												width: `${item.value}%`,
+												background: item.color,
+											}}
+										/>
+									</div>
+								</div>
 							))}
 						</div>
-					</div>
+					</section>
 
-					<p className="life-value">
-						{player.life} / {player.maxLife}
-					</p>
-
-					<div className="next-level">
-						<span>Nivel siguiente:</span>
-						<div className="exp-line">
-							<div style={{ width: "0%" }} />
-						</div>
-						<small>
-							{player.nextLevelExp} EXP ({player.exp}%)
-						</small>
-					</div>
-
-					<div className="wallet-row">
-						<span>🪙 {player.coins} Monedas</span>
-						<span>💎 {player.gems}</span>
-					</div>
-				</div>
-
-				<div className="day-progress-card">
-					<p>☀ Progreso del día</p>
-					<div className="progress-circle">
-						<span>{player.dayProgress}</span>
-						<small>%</small>
-					</div>
-					<p className="progress-note">¡Sigue así!</p>
-				</div>
-			</section>
-
-			<section className="time-progress-card">
-				<div className="clock-card">
-					<strong>14:55</strong>
-					{/* <span>CST</span> */}
-				</div>
-
-				<div className="progress-list">
-					{progressStats.map((item) => (
-						<div className="progress-item" key={item.key}>
-							<div className="progress-label">
-								<CalendarCheck size={21} strokeWidth={1.8} />
-								<span>
-									{item.label}: {item.value}%
-								</span>
+					<section className="dashboard-grid">
+						<article className="priorities-card">
+							<div className="card-title">
+								<span>🏆</span>
+								<h2>Prioridades</h2>
 							</div>
 
-							<div className="progress-bar">
-								<div
-									style={{
-										width: `${item.value}%`,
-										background: item.color,
-									}}
-								/>
+							<ol>
+								{priorities.map((priority) => (
+									<li key={priority}>{priority}</li>
+								))}
+							</ol>
+
+							<button type="button" className="text-link">
+								Ver todas <ChevronRight size={17} />
+							</button>
+						</article>
+
+						<article className="ai-card">
+							<div className="card-title spaced">
+								<div>
+									<span>🤖</span>
+									<h2>Asistente IA</h2>
+								</div>
+								<strong>BETA</strong>
 							</div>
-						</div>
-					))}
-				</div>
-			</section>
 
-			{/* <section className="life-areas-card">
-				<div className="section-title-row">
-					<h2>Áreas de Vida</h2>
-					<button type="button">
-						Ver todas <ChevronRight size={18} />
-					</button>
-				</div>
+							<p>Tu copiloto para tomar mejores decisiones.</p>
 
-				<div className="life-areas-grid">
-					{lifeAreas.map((area) => (
-						<button type="button" className="life-area-item" key={area.key}>
-							<span className="life-area-icon">{area.icon}</span>
-							<strong>{area.name}</strong>
-							<ChevronRight size={24} strokeWidth={1.8} />
+							<div className="assistant-actions">
+								<button type="button">
+									<CalendarCheck size={22} />
+									Crear rutina
+								</button>
+								<button type="button">
+									<BarChart3 size={22} />
+									Plan financiero
+								</button>
+								<button type="button">
+									<WalletCards size={22} />
+									Presupuesto
+								</button>
+								<button type="button">
+									<BriefcaseBusiness size={22} />
+									Manejo de deudas
+								</button>
+							</div>
+
+							<button type="button" className="text-link">
+								Chatear con IA <ChevronRight size={17} />
+							</button>
+						</article>
+					</section>
+
+					<section className="quick-actions-row">
+						<button type="button" className="battle-card">
+							<Swords size={38} strokeWidth={1.8} />
+							<span>
+								<strong>Modo batalla</strong>
+								<small>Enfrenta desafíos y mejora tu vida</small>
+							</span>
+							<ChevronRight />
 						</button>
-					))}
-				</div>
-			</section> */}
 
-			<section className="dashboard-grid">
-				<article className="priorities-card">
-					<div className="card-title">
-						<span>🏆</span>
-						<h2>Prioridades</h2>
-					</div>
-
-					<ol>
-						{priorities.map((priority) => (
-							<li key={priority}>{priority}</li>
-						))}
-					</ol>
-
-					<button type="button" className="text-link">
-						Ver todas <ChevronRight size={17} />
-					</button>
-				</article>
-
-				<article className="ai-card">
-					<div className="card-title spaced">
-						<div>
-							<span>🤖</span>
-							<h2>Asistente IA</h2>
-						</div>
-						<strong>BETA</strong>
-					</div>
-
-					<p>Tu copiloto para tomar mejores decisiones.</p>
-
-					<div className="assistant-actions">
-						<button type="button">
-							<CalendarCheck size={22} />
-							Crear rutina
+						<button type="button" className="shop-card">
+							<PiggyBank size={38} strokeWidth={1.8} />
+							<span>
+								<strong>La Tiendita</strong>
+								<small>Mejora tu personaje y equipa tu camino</small>
+							</span>
+							<ChevronRight />
 						</button>
-						<button type="button">
-							<BarChart3 size={22} />
-							Plan financiero
-						</button>
-						<button type="button">
-							<WalletCards size={22} />
-							Presupuesto
-						</button>
-						<button type="button">
-							<BriefcaseBusiness size={22} />
-							Manejo de deudas
-						</button>
-					</div>
+					</section>
+				</>
+			)}
 
-					<button type="button" className="text-link">
-						Chatear con IA <ChevronRight size={17} />
-					</button>
-				</article>
-			</section>
-
-			<section className="quick-actions-row">
-				<button type="button" className="battle-card">
-					<Swords size={38} strokeWidth={1.8} />
-					<span>
-						<strong>Modo batalla</strong>
-						<small>Enfrenta desafíos y mejora tu vida</small>
-					</span>
-					<ChevronRight />
-				</button>
-
-				<button type="button" className="shop-card">
-					<PiggyBank size={38} strokeWidth={1.8} />
-					<span>
-						<strong>La Tiendita</strong>
-						<small>Mejora tu personaje y equipa tu camino</small>
-					</span>
-					<ChevronRight />
-				</button>
-			</section>
+			{currentView === "life-area-detail" && (
+				<LifeAreaDetailView
+					area={selectedLifeArea}
+					onBack={handleBackToDashboard}
+				/>
+			)}
 
 			{showAreasMenu && (
 				<div className="areas-floating-menu">
@@ -733,14 +727,18 @@ function App() {
 			<Toast toast={toast} onClose={() => setToast(null)} />
 
 			<nav className="levelup-bottom-nav">
-				<button type="button" className="active">
+				<button
+					type="button"
+					className={currentView === "dashboard" ? "active" : ""}
+					onClick={handleBackToDashboard}
+				>
 					<HomeIcon />
 					<span>Inicio</span>
 				</button>
 
 				<button
 					type="button"
-					className={showAreasMenu ? "active" : ""}
+					className={isAreasActive ? "active" : ""}
 					onClick={handleToggleAreasMenu}
 				>
 					<BarChart3 size={24} strokeWidth={1.8} />
