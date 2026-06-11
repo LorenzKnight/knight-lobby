@@ -49,6 +49,7 @@ function App() {
 	const [areaSaving, setAreaSaving] = useState(false);
 
 	const [toast, setToast] = useState(null);
+	const [currentTime, setCurrentTime] = useState("");
 
 	const [lifeAreas, setLifeAreas] = useState([]);
 	const [lifeAreasLoading, setLifeAreasLoading] = useState(false);
@@ -102,6 +103,25 @@ function App() {
 
 		loadLifeAreas();
 	}, [authUser]);
+
+	useEffect(() => {
+		function updateClock() {
+			const now = new Date();
+
+			const formattedTime = now.toLocaleTimeString("sv-SE", {
+				hour: "2-digit",
+				minute: "2-digit",
+			});
+
+			setCurrentTime(formattedTime);
+		}
+
+		updateClock();
+
+		const clockInterval = setInterval(updateClock, 1000);
+
+		return () => clearInterval(clockInterval);
+	}, []);
 
 	async function handleLoginSubmit(event) {
 		event.preventDefault();
@@ -431,7 +451,7 @@ function App() {
 
 					<section className="time-progress-card">
 						<div className="clock-card">
-							<strong>14:55</strong>
+							<strong>{currentTime}</strong>
 							{/* <span>CST</span> */}
 						</div>
 

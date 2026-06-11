@@ -1820,3 +1820,162 @@ button {
 		transform: translate(-50%, 0) scale(1);
 	}
 }
+
+
+/* Life Area Detail View */
+.life-area-detail-view {
+	display: grid;
+	gap: 18px;
+	padding-bottom: 110px;
+	animation: viewFadeUp 0.24s ease;
+}
+
+.life-area-detail-header {
+	display: grid;
+	grid-template-columns: 42px 1fr 42px;
+	align-items: center;
+	gap: 10px;
+	text-align: center;
+}
+
+.life-area-detail-header button {
+	width: 42px;
+	height: 42px;
+	border: 0;
+	border-radius: 15px;
+	background: rgba(122, 88, 180, 0.1);
+	color: var(--purple);
+	font-size: 22px;
+	font-weight: 900;
+	display: grid;
+	place-items: center;
+}
+
+.life-area-detail-header div {
+	grid-column: 2;
+}
+
+.life-area-detail-header span {
+	display: block;
+	margin-bottom: 3px;
+	color: var(--purple);
+	font-size: 11px;
+	font-weight: 950;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+}
+
+.life-area-detail-header h1 {
+	margin: 0;
+	color: var(--text);
+	font-size: 26px;
+	font-weight: 950;
+	letter-spacing: -0.05em;
+}
+
+.life-area-hero-card {
+	border: 1px solid var(--border);
+	border-radius: 28px;
+	background:
+		linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.86));
+	box-shadow:
+		0 22px 60px rgba(58, 50, 72, 0.12),
+		inset 0 1px 0 rgba(255, 255, 255, 0.92);
+	padding: 18px;
+	display: grid;
+	grid-template-columns: 74px 1fr;
+	align-items: center;
+	gap: 16px;
+}
+
+.life-area-hero-icon {
+	width: 74px;
+	height: 74px;
+	border-radius: 24px;
+	display: grid;
+	place-items: center;
+	font-size: 36px;
+	color: #fff;
+	box-shadow: 0 16px 30px rgba(58, 50, 72, 0.16);
+}
+
+.life-area-hero-card h2 {
+	margin: 0 0 6px;
+	color: var(--text);
+	font-size: 22px;
+	font-weight: 950;
+	letter-spacing: -0.04em;
+}
+
+.life-area-hero-card p {
+	margin: 0;
+	color: var(--muted);
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1.45;
+}
+
+.life-area-detail-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+}
+
+.life-area-detail-card {
+	min-height: 134px;
+	padding: 15px;
+	border-radius: 22px;
+	border: 1px solid var(--border);
+	background: rgba(255, 255, 255, 0.82);
+	box-shadow:
+		0 14px 34px rgba(58, 50, 72, 0.08),
+		inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.life-area-detail-card span {
+	display: block;
+	margin-bottom: 8px;
+	color: var(--muted);
+	font-size: 12px;
+	font-weight: 900;
+}
+
+.life-area-detail-card strong {
+	display: block;
+	margin-bottom: 8px;
+	color: var(--text);
+	font-size: 30px;
+	font-weight: 950;
+	letter-spacing: -0.05em;
+}
+
+.life-area-detail-card p {
+	margin: 0;
+	color: var(--muted);
+	font-size: 12px;
+	font-weight: 650;
+	line-height: 1.35;
+}
+
+@keyframes viewFadeUp {
+	0% {
+		opacity: 0;
+		transform: translateY(12px);
+	}
+
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (min-width: 768px) {
+	.life-area-detail-view {
+		max-width: 760px;
+		margin: 0 auto;
+	}
+
+	.life-area-detail-grid {
+		grid-template-columns: repeat(4, 1fr);
+	}
+}
