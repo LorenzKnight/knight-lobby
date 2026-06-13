@@ -12,6 +12,7 @@ import {
 	Menu,
 	PiggyBank,
 	Plus,
+	Shirt,
 	Sparkles,
 	Swords,
 	WalletCards,
@@ -22,6 +23,7 @@ import {
 	priorities,
 	progressStats,
 } from "./data/mockLevelupData";
+import PlayerAvatar from "./components/PlayerAvatar";
 import { createLifeArea, getLifeAreas } from "./services/api";
 import Toast from "./components/Toast";
 import LifeAreaDetailView from "./components/LifeAreaDetailView";
@@ -36,6 +38,14 @@ function App() {
 	const [loginPassword, setLoginPassword] = useState("");
 	const [loginError, setLoginError] = useState("");
 	const [loginLoading, setLoginLoading] = useState(false);
+
+	const [showAvatarMenu, setShowAvatarMenu] = useState(false);
+	const [avatarConfig, setAvatarConfig] = useState({
+		head: "head_01",
+		torso: "torso_01",
+		legs: "legs_01",
+		base: "base_01",
+	});
 
 	const [showAreasMenu, setShowAreasMenu] = useState(false);
 	const [showQuickAddMenu, setShowQuickAddMenu] = useState(false);
@@ -152,6 +162,7 @@ function App() {
 		setShowAreasMenu(false);
 		setShowQuickAddMenu(false);
 		setShowAreaForm(false);
+		setShowAvatarMenu(false);
 		setToast(null);
 	}
 
@@ -167,11 +178,13 @@ function App() {
 
 	function handleToggleAreasMenu() {
 		setShowQuickAddMenu(false);
+		setShowAvatarMenu(false);
 		setShowAreasMenu((currentValue) => !currentValue);
 	}
 
 	function handleToggleQuickAddMenu() {
 		setShowAreasMenu(false);
+		setShowAvatarMenu(false);
 		setShowQuickAddMenu((currentValue) => !currentValue);
 	}
 
@@ -196,6 +209,7 @@ function App() {
 		setCurrentView("life-area-detail");
 		setShowAreasMenu(false);
 		setShowQuickAddMenu(false);
+		setShowAvatarMenu(false);
 	}
 
 	async function handleCreateAreaSubmit(event) {
@@ -279,6 +293,19 @@ function App() {
 		} finally {
 			setAreaSaving(false);
 		}
+	}
+
+	function handleToggleAvatarMenu() {
+		setShowAreasMenu(false);
+		setShowQuickAddMenu(false);
+		setShowAvatarMenu((currentValue) => !currentValue);
+	}
+
+	function handleChangeAvatarPart(part, value) {
+		setAvatarConfig((currentConfig) => ({
+			...currentConfig,
+			[part]: value,
+		}));
 	}
 
 	function showToast(title, message = "", type = "success") {
@@ -385,43 +412,92 @@ function App() {
 			</header>
 
 			{currentView === "dashboard" && (
-				<>
+				<section className="dashboard-reposition">
 					<section className="player-card">
-						<div className="avatar-zone">
-							<div className="level-badge">
-								<span>NIVEL</span>
-								<strong>{player.level}</strong>
-							</div>
-
-							<div className="lowpoly-avatar">
-								<div className="avatar-head" />
-								<div className="avatar-body" />
-								<div className="avatar-arm" />
-								<div className="avatar-sword" />
-								<div className="avatar-ground" />
-							</div>
-						</div>
-
 						<div className="player-info">
-							<h2>{displayName}</h2>
+							<div className="clock-card">
+								<strong>{currentTime}</strong>
+							</div>
 
-							<div className="life-row">
-								<strong>Vida:</strong>
-								<div className="heart-row">
-									{Array.from({ length: 8 }).map((_, index) => (
-										<Heart
-											key={index}
-											size={21}
-											fill="currentColor"
-											strokeWidth={1.8}
-										/>
+							<div className="day-progress-widget">
+								<p>☀ Progreso del día</p>
+								<div className="progress-circle">
+									<span>{player.dayProgress}</span>
+									<small>%</small>
+								</div>
+								<p className="progress-note">¡Sigue así!</p>
+							</div>
+
+							<div className="time-progress-inline">
+								<div className="progress-list">
+									{progressStats.map((item) => (
+										<div className="progress-item" key={item.key}>
+											<div className="progress-label">
+												<CalendarCheck size={21} strokeWidth={1.8} />
+												<span>
+													{item.label}: {item.value}%
+												</span>
+											</div>
+
+											<div className="progress-bar">
+												<div
+													style={{
+														width: `${item.value}%`,
+														background: item.color,
+													}}
+												/>
+											</div>
+										</div>
 									))}
 								</div>
 							</div>
+						</div>
 
-							<p className="life-value">
-								{player.life} / {player.maxLife}
-							</p>
+						<div className="avatar-zone">
+							<div className="life-status-card">
+								<div className="level-badge">
+									<span>NIVEL</span>
+									<strong>{player.level}</strong>
+								</div>
+
+								<div className="life-row">
+									<strong>Vida:</strong>
+									<div className="heart-row">
+										{Array.from({ length: 5 }).map((_, index) => (
+											<Heart
+												key={index}
+												size={21}
+												fill="currentColor"
+												strokeWidth={1.8}
+											/>
+										))}
+									</div>
+								</div>
+
+								<p className="life-value">
+									{player.life} / {player.maxLife}
+								</p>
+							</div>
+
+							<button
+								type="button"
+								className={`avatar-clothes-button ${showAvatarMenu ? "active" : ""}`}
+								onClick={handleToggleAvatarMenu}
+								aria-label="Personalizar avatar"
+							>
+								<Shirt size={21} strokeWidth={1.9} />
+							</button>
+
+							<div className="avatar-display">
+								<PlayerAvatar
+									head={avatarConfig.head}
+									torso={avatarConfig.torso}
+									legs={avatarConfig.legs}
+									base={avatarConfig.base}
+								/>
+							</div>
+
+							<h2>{displayName}</h2>
 
 							<div className="next-level">
 								<span>Nivel siguiente:</span>
@@ -440,96 +516,58 @@ function App() {
 						</div>
 
 						<div className="day-progress-card">
-							<p>☀ Progreso del día</p>
-							<div className="progress-circle">
-								<span>{player.dayProgress}</span>
-								<small>%</small>
-							</div>
-							<p className="progress-note">¡Sigue así!</p>
-						</div>
-					</section>
-
-					<section className="time-progress-card">
-						<div className="clock-card">
-							<strong>{currentTime}</strong>
-							{/* <span>CST</span> */}
-						</div>
-
-						<div className="progress-list">
-							{progressStats.map((item) => (
-								<div className="progress-item" key={item.key}>
-									<div className="progress-label">
-										<CalendarCheck size={21} strokeWidth={1.8} />
-										<span>
-											{item.label}: {item.value}%
-										</span>
-									</div>
-
-									<div className="progress-bar">
-										<div
-											style={{
-												width: `${item.value}%`,
-												background: item.color,
-											}}
-										/>
-									</div>
+							<article className="priorities-card">
+								<div className="card-title">
+									<span>🏆</span>
+									<h2>Prioridades</h2>
 								</div>
-							))}
-						</div>
-					</section>
 
-					<section className="dashboard-grid">
-						<article className="priorities-card">
-							<div className="card-title">
-								<span>🏆</span>
-								<h2>Prioridades</h2>
-							</div>
+								<ol>
+									{priorities.map((priority) => (
+										<li key={priority}>{priority}</li>
+									))}
+								</ol>
 
-							<ol>
-								{priorities.map((priority) => (
-									<li key={priority}>{priority}</li>
-								))}
-							</ol>
+								<button type="button" className="text-link">
+									Ver todas <ChevronRight size={17} />
+								</button>
+							</article>
 
-							<button type="button" className="text-link">
-								Ver todas <ChevronRight size={17} />
-							</button>
-						</article>
-
-						<article className="ai-card">
-							<div className="card-title spaced">
-								<div>
-									<span>🤖</span>
-									<h2>Asistente IA</h2>
+							<div className="ai-card">
+								<div className="card-title spaced">
+									<div>
+										<span>🤖</span>
+										<h2>Asistente IA</h2>
+									</div>
+									<strong>BETA</strong>
 								</div>
-								<strong>BETA</strong>
+
+								<p>Tu copiloto para tomar mejores decisiones.</p>
+
+								<div className="assistant-actions">
+									<button type="button">
+										<CalendarCheck size={22} />
+										Crear rutina
+									</button>
+									<button type="button">
+										<BarChart3 size={22} />
+										Plan financiero
+									</button>
+									<button type="button">
+										<WalletCards size={22} />
+										Presupuesto
+									</button>
+									<button type="button">
+										<BriefcaseBusiness size={22} />
+										Manejo de deudas
+									</button>
+								</div>
+
+								<button type="button" className="text-link">
+									Chatear con IA <ChevronRight size={17} />
+								</button>
 							</div>
-
-							<p>Tu copiloto para tomar mejores decisiones.</p>
-
-							<div className="assistant-actions">
-								<button type="button">
-									<CalendarCheck size={22} />
-									Crear rutina
-								</button>
-								<button type="button">
-									<BarChart3 size={22} />
-									Plan financiero
-								</button>
-								<button type="button">
-									<WalletCards size={22} />
-									Presupuesto
-								</button>
-								<button type="button">
-									<BriefcaseBusiness size={22} />
-									Manejo de deudas
-								</button>
-							</div>
-
-							<button type="button" className="text-link">
-								Chatear con IA <ChevronRight size={17} />
-							</button>
-						</article>
+						</div>
 					</section>
 
 					<section className="quick-actions-row">
@@ -551,7 +589,7 @@ function App() {
 							<ChevronRight />
 						</button>
 					</section>
-				</>
+				</section>
 			)}
 
 			{currentView === "life-area-detail" && (
@@ -741,6 +779,88 @@ function App() {
 							</button>
 						</form>
 					</section>
+				</div>
+			)}
+
+			{showAvatarMenu && (
+				<div className="avatar-custom-menu">
+					<div className="avatar-custom-header">
+						<strong>Personalizar avatar</strong>
+
+						<button
+							type="button"
+							onClick={() => setShowAvatarMenu(false)}
+							aria-label="Cerrar personalización"
+						>
+							×
+						</button>
+					</div>
+
+					<div className="avatar-custom-section">
+						<p>Cabeza</p>
+
+						<div className="avatar-custom-options">
+							<button
+								type="button"
+								className={avatarConfig.head === "head_01" ? "active" : ""}
+								onClick={() => handleChangeAvatarPart("head", "head_01")}
+							>
+								Cabeza 1
+							</button>
+
+							<button
+								type="button"
+								className={avatarConfig.head === "head_02" ? "active" : ""}
+								onClick={() => handleChangeAvatarPart("head", "head_02")}
+							>
+								Cabeza 2
+							</button>
+						</div>
+					</div>
+
+					<div className="avatar-custom-section">
+						<p>Torso</p>
+
+						<div className="avatar-custom-options">
+							<button
+								type="button"
+								className={avatarConfig.torso === "torso_01" ? "active" : ""}
+								onClick={() => handleChangeAvatarPart("torso", "torso_01")}
+							>
+								Torso 1
+							</button>
+
+							<button
+								type="button"
+								className={avatarConfig.torso === "torso_02" ? "active" : ""}
+								onClick={() => handleChangeAvatarPart("torso", "torso_02")}
+							>
+								Torso 2
+							</button>
+						</div>
+					</div>
+
+					<div className="avatar-custom-section">
+						<p>Piernas</p>
+
+						<div className="avatar-custom-options">
+							<button
+								type="button"
+								className={avatarConfig.legs === "legs_01" ? "active" : ""}
+								onClick={() => handleChangeAvatarPart("legs", "legs_01")}
+							>
+								Piernas 1
+							</button>
+
+							<button
+								type="button"
+								className={avatarConfig.legs === "legs_02" ? "active" : ""}
+								onClick={() => handleChangeAvatarPart("legs", "legs_02")}
+							>
+								Piernas 2
+							</button>
+						</div>
+					</div>
 				</div>
 			)}
 
