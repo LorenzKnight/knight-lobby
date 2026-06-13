@@ -23,10 +23,11 @@ import {
 	priorities,
 	progressStats,
 } from "./data/mockLevelupData";
-import PlayerAvatar from "./components/PlayerAvatar";
-import { createLifeArea, getLifeAreas } from "./services/api";
 import Toast from "./components/Toast";
 import LifeAreaDetailView from "./components/LifeAreaDetailView";
+import PlayerAvatar from "./components/PlayerAvatar";
+import AvatarCustomizationView from "./components/AvatarCustomizationView";
+import { createLifeArea, getLifeAreas } from "./services/api";
 import "./App.css";
 
 function App() {
@@ -40,6 +41,8 @@ function App() {
 	const [loginLoading, setLoginLoading] = useState(false);
 
 	const [showAvatarMenu, setShowAvatarMenu] = useState(false);
+	const [avatarCategory, setAvatarCategory] = useState("torsos");
+
 	const [avatarConfig, setAvatarConfig] = useState({
 		head: "head_01",
 		torso: "torso_01",
@@ -783,85 +786,14 @@ function App() {
 			)}
 
 			{showAvatarMenu && (
-				<div className="avatar-custom-menu">
-					<div className="avatar-custom-header">
-						<strong>Personalizar avatar</strong>
-
-						<button
-							type="button"
-							onClick={() => setShowAvatarMenu(false)}
-							aria-label="Cerrar personalización"
-						>
-							×
-						</button>
-					</div>
-
-					<div className="avatar-custom-section">
-						<p>Cabeza</p>
-
-						<div className="avatar-custom-options">
-							<button
-								type="button"
-								className={avatarConfig.head === "head_01" ? "active" : ""}
-								onClick={() => handleChangeAvatarPart("head", "head_01")}
-							>
-								Cabeza 1
-							</button>
-
-							<button
-								type="button"
-								className={avatarConfig.head === "head_02" ? "active" : ""}
-								onClick={() => handleChangeAvatarPart("head", "head_02")}
-							>
-								Cabeza 2
-							</button>
-						</div>
-					</div>
-
-					<div className="avatar-custom-section">
-						<p>Torso</p>
-
-						<div className="avatar-custom-options">
-							<button
-								type="button"
-								className={avatarConfig.torso === "torso_01" ? "active" : ""}
-								onClick={() => handleChangeAvatarPart("torso", "torso_01")}
-							>
-								Torso 1
-							</button>
-
-							<button
-								type="button"
-								className={avatarConfig.torso === "torso_02" ? "active" : ""}
-								onClick={() => handleChangeAvatarPart("torso", "torso_02")}
-							>
-								Torso 2
-							</button>
-						</div>
-					</div>
-
-					<div className="avatar-custom-section">
-						<p>Piernas</p>
-
-						<div className="avatar-custom-options">
-							<button
-								type="button"
-								className={avatarConfig.legs === "legs_01" ? "active" : ""}
-								onClick={() => handleChangeAvatarPart("legs", "legs_01")}
-							>
-								Piernas 1
-							</button>
-
-							<button
-								type="button"
-								className={avatarConfig.legs === "legs_02" ? "active" : ""}
-								onClick={() => handleChangeAvatarPart("legs", "legs_02")}
-							>
-								Piernas 2
-							</button>
-						</div>
-					</div>
-				</div>
+				<AvatarCustomizationView
+					player={player}
+					avatarConfig={avatarConfig}
+					avatarCategory={avatarCategory}
+					setAvatarCategory={setAvatarCategory}
+					handleChangeAvatarPart={handleChangeAvatarPart}
+					onClose={() => setShowAvatarMenu(false)}
+				/>
 			)}
 
 			<Toast toast={toast} onClose={() => setToast(null)} />

@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@lucide/lab": "^0.1.2",
     "lucide-react": "^1.16.0"
   }
 }
