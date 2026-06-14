@@ -6,9 +6,12 @@ import torso02 from "../assets/avatar/torsos/torso_02.png";
 
 import legs01 from "../assets/avatar/legs/legs_01.png";
 import legs02 from "../assets/avatar/legs/legs_02.png";
+import legs03 from "../assets/avatar/legs/legs_03.png";
+import legs04 from "../assets/avatar/legs/legs_04.png";
+import legs05 from "../assets/avatar/legs/legs_05.png";
 
-import base01 from "../assets/avatar/bases/base_01.png";
-import base02 from "../assets/avatar/bases/base_02.png";
+import feets01 from "../assets/avatar/feets/feets_01.png";
+import feets02 from "../assets/avatar/feets/feets_02.png";
 
 const avatarParts = {
 	heads: {
@@ -22,43 +25,38 @@ const avatarParts = {
 	legs: {
 		legs_01: legs01,
 		legs_02: legs02,
+        legs_03: legs03,
+		legs_04: legs04,
+		legs_05: legs05,
 	},
-	bases: {
-		base_01: base01,
-		base_02: base02,
-	},
+    feets: {
+        feets_01: feets01,
+        feets_02: feets02,
+    },
 };
 
 function PlayerAvatar({
 	head = "head_01",
 	torso = "torso_01",
 	legs = "legs_01",
-	base = "base_01",
+	feets = "feets_01",
 }) {
 	const headImage = avatarParts.heads[head];
 	const torsoImage = avatarParts.torsos[torso];
 	const legsImage = avatarParts.legs[legs];
-	const baseImage = avatarParts.bases[base];
+	const feetsImage = avatarParts.feets[feets];
 
 	return (
 		<div className="player-avatar">
-			{baseImage && (
+            {headImage && (
 				<img
-					src={baseImage}
-					alt="Base del personaje"
-					className="avatar-layer avatar-base"
+					src={headImage}
+					alt="Cabeza del personaje"
+					className="avatar-layer avatar-head"
 				/>
 			)}
 
-			{legsImage && (
-				<img
-					src={legsImage}
-					alt="Piernas del personaje"
-					className="avatar-layer avatar-legs"
-				/>
-			)}
-
-			{torsoImage && (
+            {torsoImage && (
 				<img
 					src={torsoImage}
 					alt="Torso del personaje"
@@ -66,11 +64,19 @@ function PlayerAvatar({
 				/>
 			)}
 
-			{headImage && (
+            {legsImage && (
 				<img
-					src={headImage}
-					alt="Cabeza del personaje"
-					className="avatar-layer avatar-head"
+					src={legsImage}
+					alt="Piernas del personaje"
+					className="avatar-layer avatar-legs"
+				/>
+			)}
+
+            {feetsImage && (
+				<img
+					src={feetsImage}
+					alt="Pies del personaje"
+					className="avatar-layer avatar-feets"
 				/>
 			)}
 		</div>

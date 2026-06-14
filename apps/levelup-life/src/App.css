@@ -328,11 +328,14 @@ button {
 	place-items: center;
 }
 
-
+.avatar-zone h2 {
+	font-size: 14px;
+	font-weight: 800;
+}
 
 .avatar-display {
 	width: 160px;
-	height: 300px;
+	height: 325px;
 	/* background-color: red; */
 }
 
@@ -372,188 +375,32 @@ button {
 
 /* Posiciones actuales de tus piezas */
 .avatar-head {
-	width: 214px;
-	top: -68px;
-	left: -13px;
-	z-index: 4;
+	width: 110px;
+	top: -142px;
+	left: 24px; /* aqui */
+	z-index: 5;
 }
 
 .avatar-torso {
-	width: 300px;
-	top: 15px;
-	left: -51px;
-	z-index: 3;
+	width: 160px;
+	top: -34px;
+	left: 0px;
+	z-index: 4;
 }
 
 .avatar-legs {
-	width: 230px;
-	top: 60px;
-	left: -30px;
+	width: 127px;
+	top: 74px;
+	left: 21px;
+	z-index: 3;
+}
+
+.avatar-feets {
+	width: 137px;
+	top: 144px;
+	left: 13px;
 	z-index: 2;
 }
-
-.avatar-base {
-	width: 300px;
-	top: 110px;
-	left: -70px;
-	z-index: 1;
-}
-
-
-
-
-
-/* Avatar customization */
-/* .avatar-clothes-button {
-	position: absolute;
-	top: 8px;
-	right: 8px;
-	z-index: 8;
-
-	width: 42px;
-	height: 42px;
-
-	border: 0;
-	border-radius: 15px;
-
-	display: grid;
-	place-items: center;
-
-	background: rgba(255, 255, 255, 0.78);
-	color: var(--purple);
-
-	box-shadow:
-		0 12px 28px rgba(58, 50, 72, 0.14),
-		inset 0 1px 0 rgba(255, 255, 255, 0.88);
-
-	backdrop-filter: blur(12px);
-}
-
-.avatar-clothes-button.active {
-	background: linear-gradient(145deg, #9b72d2, #6c4aa7);
-	color: #ffffff;
-	transform: scale(1.04);
-}
-
-.avatar-custom-menu {
-	position: fixed;
-	left: 50%;
-	bottom: 92px;
-	transform: translateX(-50%);
-	z-index: 31;
-
-	width: calc(100% - 20px);
-	max-width: 460px;
-	max-height: 62vh;
-
-	padding: 14px;
-	border-radius: 26px;
-
-	background:
-		linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.92));
-	border: 1px solid var(--border);
-
-	box-shadow:
-		0 24px 70px rgba(58, 50, 72, 0.18),
-		inset 0 1px 0 rgba(255, 255, 255, 0.95);
-
-	backdrop-filter: blur(18px);
-	overflow-y: auto;
-
-	animation: avatarMenuUp 0.28s cubic-bezier(0.2, 1.2, 0.35, 1);
-}
-
-.avatar-custom-header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-	margin-bottom: 14px;
-	padding: 0 4px;
-}
-
-.avatar-custom-header strong {
-	font-size: 19px;
-	font-weight: 950;
-	letter-spacing: -0.03em;
-	color: var(--text);
-}
-
-.avatar-custom-header strong::before {
-	content: "👕";
-	margin-right: 8px;
-}
-
-.avatar-custom-header button {
-	width: 32px;
-	height: 32px;
-	border: 0;
-	border-radius: 999px;
-	background: rgba(122, 88, 180, 0.1);
-	color: var(--purple);
-	font-size: 24px;
-	line-height: 1;
-	display: grid;
-	place-items: center;
-}
-
-.avatar-custom-section {
-	display: grid;
-	gap: 8px;
-	margin-bottom: 14px;
-}
-
-.avatar-custom-section p {
-	margin: 0;
-	color: var(--muted);
-	font-size: 12px;
-	font-weight: 950;
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
-}
-
-.avatar-custom-options {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 9px;
-}
-
-.avatar-custom-options button {
-	min-height: 48px;
-	border: 1px solid var(--border);
-	border-radius: 16px;
-
-	background: rgba(255, 255, 255, 0.76);
-	color: var(--text);
-
-	font-size: 13px;
-	font-weight: 900;
-
-	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88);
-}
-
-.avatar-custom-options button.active {
-	border-color: rgba(122, 88, 180, 0.45);
-	background: linear-gradient(145deg, rgba(155, 114, 210, 0.22), rgba(108, 74, 167, 0.16));
-	color: var(--purple);
-}
-
-@keyframes avatarMenuUp {
-	0% {
-		opacity: 0;
-		transform: translate(-50%, 18px) scale(0.96);
-	}
-
-	70% {
-		opacity: 1;
-		transform: translate(-50%, -4px) scale(1.02);
-	}
-
-	100% {
-		opacity: 1;
-		transform: translate(-50%, 0) scale(1);
-	}
-} */
 
 @media (min-width: 768px) {
 	.avatar-custom-menu {
@@ -597,12 +444,7 @@ button {
 	inset: 0;
 	z-index: 40;
 	background:
-		linear-gradient(180deg, #9ee7ed 0%, #d8ffd4 58%, #ffffff 100%);
-	/* background:
-        radial-gradient(circle at 50% -10%, rgba(161, 118, 255, 0.16), transparent 30%),
-        radial-gradient(circle at 0% 28%, rgba(139, 92, 246, 0.07), transparent 34%),
-        radial-gradient(circle at 100% 52%, rgba(97, 166, 255, 0.08), transparent 30%),
-        linear-gradient(180deg, #fbfaff 0%, #f4f1f9 100%); */
+		linear-gradient(180deg, #fccf93 0%, #fff3dc 68%);
 	overflow: hidden;
 }
 
@@ -612,12 +454,15 @@ button {
     max-width: 100%;
     margin: 0 auto;
     text-align: center;
-    border-inline: 1px solid var(--border);
     min-height: 100svh;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-	position: relative;
+	box-shadow:
+		0 12px 28px rgba(58, 50, 72, 0.14),
+		inset 0 1px 0 rgba(255, 255, 255, 0.88);
+
+	animation: viewFadeUp 0.28s ease-out both;
 }
 
 .avatar-custom-top {
@@ -670,15 +515,17 @@ button {
 	left: 50%;
 	transform: translateX(-50%);
 	height: 48vh;
+	padding-top: 30px;
 	display: flex;
 	place-items: center;
 	justify-content: center;
 	pointer-events: none;
+	/* background-color: red; */
 }
 
 .avatar-custom-preview .player-avatar {
-	width: 330px;
-	height: 440px;
+	width: 170px;
+	height: 300px;
 	filter: drop-shadow(0 22px 28px rgba(40, 70, 70, 0.18));
 }
 
@@ -688,9 +535,13 @@ button {
 	right: 0;
 	bottom: 0;
 	height: 55vh;
+	margin-inline: 5px;
 	padding: 12px 0 0;
 	border-radius: 22px 22px 0 0;
 	background: rgba(255, 255, 255, 0.98);
+	box-shadow:
+		0 12px 28px rgba(58, 50, 72, 0.14),
+		inset 0 1px 0 rgba(255, 255, 255, 0.88);
 }
 
 .avatar-shop-handle {
@@ -878,19 +729,9 @@ button {
 		inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
-.life-card-badge {
+.level-badge {
 	position: static;
 	margin: 0 auto 0px;
-	width: 78px;
-	height: 78px;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 2px;
-}
-
-.level-badge {
 	width: 72px;
 	height: 72px;
 	display: flex;
@@ -1118,14 +959,6 @@ button {
 	height: 100%;
 	border-radius: inherit;
 }
-
-/* Life areas */
-
-/* .life-areas-card {
-	border-radius: 24px;
-	padding: 20px 16px 16px;
-	margin-bottom: 16px;
-} */
 
 .section-title-row {
 	display: flex;
@@ -1649,6 +1482,43 @@ button {
 }
 
 
+
+@media (min-width: 768px) {
+	.quick-add-menu {
+		bottom: 114px;
+		max-width: 480px;
+	}
+
+	.quick-add-list {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.quick-add-item {
+		min-height: 82px;
+	}
+
+
+	.area-form-backdrop {
+		place-items: center;
+	}
+
+	.area-form-modal {
+		padding: 22px;
+	}
+
+
+	.life-area-detail-view {
+		max-width: 760px;
+		margin: 0 auto;
+	}
+
+	.life-area-detail-grid {
+		grid-template-columns: repeat(4, 1fr);
+	}
+}
+
+
+
 /* Responsive */
 @media (max-width: 980px) {
 	/* Player card */
@@ -2022,18 +1892,6 @@ button {
 		border: 0;
 		box-shadow: none;
 	}
-
-	/* .life-card-badge {
-		position: static;
-		margin: 0 auto 0px;
-		width: 80px;
-		height: 80px;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 5px;
-	} */
 
 	.level-badge {
 		position: static;
@@ -2536,21 +2394,6 @@ button {
 	}
 }
 
-@media (min-width: 768px) {
-	.quick-add-menu {
-		bottom: 114px;
-		max-width: 480px;
-	}
-
-	.quick-add-list {
-		grid-template-columns: 1fr 1fr;
-	}
-
-	.quick-add-item {
-		min-height: 82px;
-	}
-}
-
 @keyframes quickAddMenuUp {
 	0% {
 		opacity: 0;
@@ -2741,19 +2584,10 @@ button {
 	}
 }
 
-@media (min-width: 768px) {
-	.area-form-backdrop {
-		place-items: center;
-	}
 
-	.area-form-modal {
-		padding: 22px;
-	}
-}
-
-
-
-/* Reusable Toast Notification */
+/* ----------------------------------------------------------------- */
+/* ################## REUSABLE TOAST NOTIFICATION ################## */
+/* ----------------------------------------------------------------- */
 .toast-notification {
 	position: fixed;
 	left: 50%;
@@ -3009,16 +2843,5 @@ button {
 	100% {
 		opacity: 1;
 		transform: translateY(0);
-	}
-}
-
-@media (min-width: 768px) {
-	.life-area-detail-view {
-		max-width: 760px;
-		margin: 0 auto;
-	}
-
-	.life-area-detail-grid {
-		grid-template-columns: repeat(4, 1fr);
 	}
 }

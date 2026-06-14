@@ -47,7 +47,7 @@ function App() {
 		head: "head_01",
 		torso: "torso_01",
 		legs: "legs_01",
-		base: "base_01",
+		feets: "feets_01",
 	});
 
 	const [showAreasMenu, setShowAreasMenu] = useState(false);
@@ -496,7 +496,7 @@ function App() {
 									head={avatarConfig.head}
 									torso={avatarConfig.torso}
 									legs={avatarConfig.legs}
-									base={avatarConfig.base}
+									feets={avatarConfig.feets}
 								/>
 							</div>
 

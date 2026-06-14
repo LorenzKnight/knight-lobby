@@ -31,7 +31,7 @@ export default function AvatarCustomizationView({
                         head={avatarConfig.head}
                         torso={avatarConfig.torso}
                         legs={avatarConfig.legs}
-                        base={avatarConfig.base}
+                        feets={avatarConfig.feets}
                     />
                 </div>
 
@@ -45,7 +45,7 @@ export default function AvatarCustomizationView({
                             onClick={() => setAvatarCategory("heads")}
                         >
                             <span>🙂</span>
-                            Cabeza
+                            Head
                         </button>
 
                         <button
@@ -63,7 +63,7 @@ export default function AvatarCustomizationView({
                             onClick={() => setAvatarCategory("legs")}
                         >
                             <span>👖</span>
-                            Piernas
+                            Pants
                         </button>
 
                         <button
@@ -161,38 +161,69 @@ export default function AvatarCustomizationView({
 
                                     <button
                                         type="button"
-                                        className={`avatar-shop-item ${avatarConfig.legs === "legs_01" ? "active" : ""}`}
-                                        onClick={() => handleChangeAvatarPart("legs", "legs_01")}
+                                        className={`avatar-shop-item ${avatarConfig.legs === "legs_03" ? "active" : ""}`}
+                                        onClick={() => handleChangeAvatarPart("legs", "legs_03")}
                                     >
                                         <div className="avatar-shop-thumb">👖</div>
-                                        <span>Piernas 1</span>
+                                        <span>Piernas 3</span>
                                     </button>
 
                                     <button
                                         type="button"
-                                        className={`avatar-shop-item ${avatarConfig.legs === "legs_02" ? "active" : ""}`}
-                                        onClick={() => handleChangeAvatarPart("legs", "legs_02")}
+                                        className={`avatar-shop-item ${avatarConfig.legs === "legs_04" ? "active" : ""}`}
+                                        onClick={() => handleChangeAvatarPart("legs", "legs_04")}
                                     >
                                         <div className="avatar-shop-thumb">🩳</div>
-                                        <span>Piernas 2</span>
+                                        <span>Piernas 4</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        className={`avatar-shop-item ${avatarConfig.legs === "legs_05" ? "active" : ""}`}
+                                        onClick={() => handleChangeAvatarPart("legs", "legs_05")}
+                                    >
+                                        <div className="avatar-shop-thumb">🩳</div>
+                                        <span>Piernas 5</span>
                                     </button>
                                 </>
                             )}
 
                             {avatarCategory === "shoes" && (
-                                <button type="button" className="avatar-shop-item locked">
-                                    <div className="avatar-shop-thumb">👟</div>
-                                    <span>Shoes</span>
-                                    <small>Próximamente</small>
-                                </button>
+                                <>
+                                    <button 
+                                        type="button"
+                                        className={`avatar-shop-item ${avatarConfig.feets === "feets_01" ? "active" : ""}`}
+                                        onClick={() => handleChangeAvatarPart("feets", "feets_01")}
+                                    >
+                                        <div className="avatar-shop-thumb">👟</div>
+                                        <span>Shoes 1</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        className={`avatar-shop-item ${avatarConfig.feets === "feets_02" ? "active" : ""}`}
+                                        onClick={() => handleChangeAvatarPart("feets", "feets_02")}
+                                    >
+                                        <div className="avatar-shop-thumb">👟</div>
+                                        <span>Shoes 2</span>
+                                    </button>
+                                
+                                    <button type="button" className="avatar-shop-item locked">
+                                        <div className="avatar-shop-thumb">👟</div>
+                                        <span>Shoes</span>
+                                        <small>Próximamente</small>
+                                    </button>
+                                </>
                             )}
 
                             {avatarCategory === "bags" && (
-                                <button type="button" className="avatar-shop-item locked">
-                                    <div className="avatar-shop-thumb">🎒</div>
-                                    <span>Bag</span>
-                                    <small>Próximamente</small>
-                                </button>
+                                <>
+                                    <button type="button" className="avatar-shop-item locked">
+                                        <div className="avatar-shop-thumb">🎒</div>
+                                        <span>Bag</span>
+                                        <small>Próximamente</small>
+                                    </button>
+                                </>
                             )}
                         </div>
                     </div>
