@@ -27,7 +27,7 @@ import Toast from "./components/Toast";
 import LifeAreaDetailView from "./components/LifeAreaDetailView";
 import PlayerAvatar from "./components/PlayerAvatar";
 import AvatarCustomizationView from "./components/AvatarCustomizationView";
-import { createLifeArea, getLifeAreas } from "./services/api";
+import { createLifeArea, getAvatarItems, getLifeAreas } from "./services/api";
 import "./App.css";
 
 function App() {
@@ -42,6 +42,13 @@ function App() {
 
 	const [showAvatarMenu, setShowAvatarMenu] = useState(false);
 	const [avatarCategory, setAvatarCategory] = useState("torsos");
+
+	const [avatarItems, setAvatarItems] = useState({
+		heads: [],
+		torsos: [],
+		legs: [],
+		feets: [],
+	});
 
 	const [avatarConfig, setAvatarConfig] = useState({
 		head: "head_01",
@@ -134,6 +141,27 @@ function App() {
 		const clockInterval = setInterval(updateClock, 1000);
 
 		return () => clearInterval(clockInterval);
+	}, []);
+
+	useEffect(() => {
+		async function loadAvatarItems() {
+			try {
+				const result = await getAvatarItems();
+
+				if (result.success) {
+					setAvatarItems({
+						heads: result.data.heads || [],
+						torsos: result.data.torsos || [],
+						legs: result.data.legs || [],
+						feets: result.data.feets || [],
+					});
+				}
+			} catch (error) {
+				console.error("Could not load avatar items:", error);
+			}
+		}
+
+		loadAvatarItems();
 	}, []);
 
 	async function handleLoginSubmit(event) {
@@ -330,6 +358,31 @@ function App() {
 		setShowQuickAddMenu(false);
 	}
 
+	function getSelectedAvatarImages() {
+		const selectedHead = avatarItems.heads.find(
+			(item) => item.item_key === avatarConfig.head
+		);
+
+		const selectedTorso = avatarItems.torsos.find(
+			(item) => item.item_key === avatarConfig.torso
+		);
+
+		const selectedLegs = avatarItems.legs.find(
+			(item) => item.item_key === avatarConfig.legs
+		);
+
+		const selectedFeets = avatarItems.feets.find(
+			(item) => item.item_key === avatarConfig.feets
+		);
+
+		return {
+			head: selectedHead?.image_url,
+			torso: selectedTorso?.image_url,
+			legs: selectedLegs?.image_url,
+			feets: selectedFeets?.image_url,
+		};
+	}
+
 	if (checkingSession) {
 		return (
 			<main className="levelup-loading">
@@ -492,12 +545,7 @@ function App() {
 							</button>
 
 							<div className="avatar-display">
-								<PlayerAvatar
-									head={avatarConfig.head}
-									torso={avatarConfig.torso}
-									legs={avatarConfig.legs}
-									feets={avatarConfig.feets}
-								/>
+								<PlayerAvatar avatarImages={getSelectedAvatarImages()} />
 							</div>
 
 							<h2>{displayName}</h2>
@@ -789,6 +837,8 @@ function App() {
 				<AvatarCustomizationView
 					player={player}
 					avatarConfig={avatarConfig}
+					avatarItems={avatarItems}
+					avatarImages={getSelectedAvatarImages()}
 					avatarCategory={avatarCategory}
 					setAvatarCategory={setAvatarCategory}
 					handleChangeAvatarPart={handleChangeAvatarPart}

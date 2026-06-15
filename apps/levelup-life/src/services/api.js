@@ -2,7 +2,6 @@ const LEVELUP_API_URL = import.meta.env.VITE_LEVELUP_API_URL || import.meta.env.
 
 export async function testLevelupConnection() {
 	const response = await fetch(`${LEVELUP_API_URL}/api/test/connection`);
-
 	const data = await response.json();
 
 	if (!response.ok) {
@@ -14,7 +13,6 @@ export async function testLevelupConnection() {
 
 export async function getLifeAreas(userId) {
 	const response = await fetch(`${LEVELUP_API_URL}/api/life-areas?user_id=${userId}`);
-
 	const data = await response.json();
 
 	if (!response.ok) {
@@ -37,6 +35,17 @@ export async function createLifeArea(areaData) {
 
 	if (!response.ok) {
 		throw new Error(data.detail || data.message || "Could not create life area");
+	}
+
+	return data;
+}
+
+export async function getAvatarItems() {
+	const response = await fetch(`${LEVELUP_API_URL}/api/avatar/items`);
+	const data = await response.json();
+
+	if (!response.ok) {
+		throw new Error(data.detail || data.message || "Could not load avatar items");
 	}
 
 	return data;

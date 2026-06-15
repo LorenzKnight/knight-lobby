@@ -3,11 +3,25 @@ import PlayerAvatar from "./PlayerAvatar";
 export default function AvatarCustomizationView({
 	player,
 	avatarConfig,
+	avatarItems,
+	avatarImages,
 	avatarCategory,
 	setAvatarCategory,
 	handleChangeAvatarPart,
 	onClose,
 }) {
+    function getAvatarConfigKey(category) {
+        const map = {
+            heads: "head",
+            torsos: "torso",
+            legs: "legs",
+            feets: "feets",
+            shoes: "feets",
+        };
+
+        return map[category];
+    }
+
 	return (
         <div className="avatar-custom-overlay">
             <div className="avatar-custom-shell">
@@ -27,12 +41,7 @@ export default function AvatarCustomizationView({
                 </div>
 
                 <div className="avatar-custom-preview">
-                    <PlayerAvatar
-                        head={avatarConfig.head}
-                        torso={avatarConfig.torso}
-                        legs={avatarConfig.legs}
-                        feets={avatarConfig.feets}
-                    />
+                    <PlayerAvatar avatarImages={avatarImages} />
                 </div>
 
                 <div className="avatar-shop-panel">
@@ -68,8 +77,8 @@ export default function AvatarCustomizationView({
 
                         <button
                             type="button"
-                            className={avatarCategory === "shoes" ? "active" : ""}
-                            onClick={() => setAvatarCategory("shoes")}
+                            className={avatarCategory === "feets" ? "active" : ""}
+                            onClick={() => setAvatarCategory("feets")}
                         >
                             <span>👟</span>
                             Shoes
@@ -93,7 +102,38 @@ export default function AvatarCustomizationView({
 
                     <div className="avatar-shop-content">
                         <div className="avatar-shop-grid">
-                            {avatarCategory === "heads" && (
+                            {avatarItems[avatarCategory]?.map((item) => ( /* AQUI */
+                                <button
+                                    type="button"
+                                    key={item.item_key}
+                                    className={`avatar-shop-item ${
+                                        avatarConfig[getAvatarConfigKey(avatarCategory)] === item.item_key
+                                            ? "active"
+                                            : ""
+                                    }`}
+                                    onClick={() =>
+                                        handleChangeAvatarPart(
+                                            getAvatarConfigKey(avatarCategory),
+                                            item.item_key
+                                        )
+                                    }
+                                >
+                                    <div className="avatar-shop-thumb">
+                                        <img
+                                            src={item.thumbnail_url || item.image_url}
+                                            alt={item.name}
+                                        />
+                                    </div>
+
+                                    <span>{item.name}</span>
+
+                                    {item.price_coins > 0 && (
+                                        <small>🪙 {item.price_coins}</small>
+                                    )}
+                                </button>
+                            ))}
+
+                            {/* {avatarCategory === "heads" && (
                                 <>
                                     <button
                                         type="button"
@@ -224,7 +264,7 @@ export default function AvatarCustomizationView({
                                         <small>Próximamente</small>
                                     </button>
                                 </>
-                            )}
+                            )} */}
                         </div>
                     </div>
                 </div>
