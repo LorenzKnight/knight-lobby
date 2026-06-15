@@ -27,7 +27,13 @@ import Toast from "./components/Toast";
 import LifeAreaDetailView from "./components/LifeAreaDetailView";
 import PlayerAvatar from "./components/PlayerAvatar";
 import AvatarCustomizationView from "./components/AvatarCustomizationView";
-import { createLifeArea, getAvatarItems, getLifeAreas } from "./services/api";
+import {
+	createLifeArea,
+	getAvatarConfig,
+	getAvatarItems,
+	getLifeAreas,
+	saveAvatarConfig,
+} from "./services/api";
 import "./App.css";
 
 function App() {
@@ -145,6 +151,8 @@ function App() {
 
 	useEffect(() => {
 		async function loadAvatarItems() {
+			if (!authUser?.user_id) return;
+
 			try {
 				const result = await getAvatarItems();
 
@@ -156,13 +164,22 @@ function App() {
 						feets: result.data.feets || [],
 					});
 				}
+
+				const configResult = await getAvatarConfig(authUser.user_id);
+
+				if (configResult.success) {
+					setAvatarConfig((currentConfig) => ({
+						...currentConfig,
+						...configResult.data.avatar_config,
+					}));
+				}
 			} catch (error) {
 				console.error("Could not load avatar items:", error);
 			}
 		}
 
 		loadAvatarItems();
-	}, []);
+	}, [authUser]);
 
 	async function handleLoginSubmit(event) {
 		event.preventDefault();
@@ -332,11 +349,32 @@ function App() {
 		setShowAvatarMenu((currentValue) => !currentValue);
 	}
 
-	function handleChangeAvatarPart(part, value) {
+	async function handleChangeAvatarPart(part, value) {
+		if (!authUser?.user_id) return;
+
+		const previousValue = avatarConfig[part];
+
 		setAvatarConfig((currentConfig) => ({
 			...currentConfig,
 			[part]: value,
 		}));
+
+		try {
+			await saveAvatarConfig(authUser.user_id, value);
+		} catch (error) {
+			console.error("Could not save avatar config:", error);
+
+			setAvatarConfig((currentConfig) => ({
+				...currentConfig,
+				[part]: previousValue,
+			}));
+
+			showToast(
+				"No se pudo guardar",
+				"El cambio del avatar no se pudo guardar.",
+				"error"
+			);
+		}
 	}
 
 	function showToast(title, message = "", type = "success") {
@@ -403,8 +441,8 @@ function App() {
 							<Lock size={34} strokeWidth={1.8} />
 						</div>
 
-						<p className="login-kicker">Life as a video game</p>
 						<h1>LevelUp Life</h1>
+						<p className="login-kicker">Life as a video game</p>
 						<p>
 							Organiza tu vida como si fuera un videojuego: hábitos, áreas,
 							progreso y misiones diarias.

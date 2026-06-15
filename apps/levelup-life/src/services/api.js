@@ -50,3 +50,39 @@ export async function getAvatarItems() {
 
 	return data;
 }
+
+export async function getAvatarConfig(userId) {
+	const response = await fetch(
+		`${LEVELUP_API_URL}/api/avatar/config?user_id=${userId}`
+	);
+
+	const data = await response.json();
+
+	if (!response.ok) {
+		throw new Error(data.detail || "Could not load avatar config");
+	}
+
+	return data;
+}
+
+
+export async function saveAvatarConfig(userId, itemKey) {
+	const response = await fetch(`${LEVELUP_API_URL}/api/avatar/config`, {
+		method: "PUT",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			user_id: userId,
+			item_key: itemKey,
+		}),
+	});
+
+	const data = await response.json();
+
+	if (!response.ok) {
+		throw new Error(data.detail || "Could not save avatar config");
+	}
+
+	return data;
+}

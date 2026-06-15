@@ -31,3 +31,13 @@ VALUES
 ('feets_01', 'feets', 'AJ1 Chicago', '/avatar/feets/feets_01.png', '/avatar/feets/feets_01.png', 0, true, 1),
 ('feets_02', 'feets', 'AJ3 True Blue', '/avatar/feets/feets_02.png', '/avatar/feets/feets_02.png', 150, false, 2)
 ON CONFLICT (item_key) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS user_avatar_items (
+	user_id BIGINT NOT NULL,
+	category VARCHAR(50) NOT NULL,
+	avatar_item_id INT NOT NULL
+		REFERENCES avatar_items(avatar_item_id)
+		ON DELETE RESTRICT,
+	equipped_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (user_id, category)
+);

@@ -544,6 +544,28 @@ button {
 		inset 0 1px 0 rgba(255, 255, 255, 0.88);
 }
 
+.avatar-shop-panel ::-webkit-scrollbar {
+    background: rgba(122, 88, 180, 0.1); 
+    border-radius: 10px;
+}
+
+.avatar-shop-panel ::-webkit-scrollbar-track {
+    background: rgba(122, 88, 180, 0.1); 
+    border-radius: 10px;
+}
+
+.avatar-shop-panel ::-webkit-scrollbar-thumb {
+    background-color: #9b72d2; 
+    border-radius: 10px;
+    box-shadow: 0px 0px 8px var(--main-bg-pop-up);
+    transition: all 1.0s ease;
+}
+
+.avatar-shop-panel ::-webkit-scrollbar-thumb:hover {
+    background-color: #7858a2;
+    transition: all 1.0s ease;
+}
+
 .avatar-shop-handle {
 	width: 86px;
 	height: 8px;
@@ -639,7 +661,7 @@ button {
 	display: grid;
 	grid-template-columns: repeat(4, 1fr);
 	gap: 20px 50px;
-	padding: 10px 22px 20px;
+	padding: 10px 22px;
 	overflow-y: auto;
 }
 
