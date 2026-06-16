@@ -47,20 +47,22 @@ function App() {
 	const [loginLoading, setLoginLoading] = useState(false);
 
 	const [showAvatarMenu, setShowAvatarMenu] = useState(false);
-	const [avatarCategory, setAvatarCategory] = useState("torsos");
+	const [avatarCategory, setAvatarCategory] = useState("shirts");
 
 	const [avatarItems, setAvatarItems] = useState({
-		heads: [],
-		torsos: [],
+		caps: [],
+		shirts: [],
 		legs: [],
 		feets: [],
+		bags: [],
 	});
 
 	const [avatarConfig, setAvatarConfig] = useState({
-		head: "head_01",
-		torso: "torso_01",
+		cap: "cap_01",
+		shirt: "shirt_01",
 		legs: "legs_01",
 		feets: "feets_01",
+		bag: null,
 	});
 
 	const [showAreasMenu, setShowAreasMenu] = useState(false);
@@ -158,10 +160,11 @@ function App() {
 
 				if (result.success) {
 					setAvatarItems({
-						heads: result.data.heads || [],
-						torsos: result.data.torsos || [],
+						caps: result.data.caps || [],
+						shirts: result.data.shirts || [],
 						legs: result.data.legs || [],
 						feets: result.data.feets || [],
+						bags: result.data.bags || [],
 					});
 				}
 
@@ -397,12 +400,12 @@ function App() {
 	}
 
 	function getSelectedAvatarImages() {
-		const selectedHead = avatarItems.heads.find(
-			(item) => item.item_key === avatarConfig.head
+		const selectedCap = avatarItems.caps.find(
+			(item) => item.item_key === avatarConfig.cap
 		);
 
-		const selectedTorso = avatarItems.torsos.find(
-			(item) => item.item_key === avatarConfig.torso
+		const selectedShirt = avatarItems.shirts.find(
+			(item) => item.item_key === avatarConfig.shirt
 		);
 
 		const selectedLegs = avatarItems.legs.find(
@@ -413,11 +416,16 @@ function App() {
 			(item) => item.item_key === avatarConfig.feets
 		);
 
+		const selectedBag = avatarItems.bags.find(
+			(item) => item.item_key === avatarConfig.bag
+		);
+
 		return {
-			head: selectedHead?.image_url,
-			torso: selectedTorso?.image_url,
+			cap: selectedCap?.image_url,
+			shirt: selectedShirt?.image_url,
 			legs: selectedLegs?.image_url,
 			feets: selectedFeets?.image_url,
+			bag: selectedBag?.image_url,
 		};
 	}
 

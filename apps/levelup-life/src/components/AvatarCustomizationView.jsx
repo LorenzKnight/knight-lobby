@@ -12,8 +12,8 @@ export default function AvatarCustomizationView({
 }) {
     function getAvatarConfigKey(category) {
         const map = {
-            heads: "head",
-            torsos: "torso",
+            caps: "cap",
+            shirts: "shirt",
             legs: "legs",
             feets: "feets",
             shoes: "feets",
@@ -50,21 +50,21 @@ export default function AvatarCustomizationView({
                     <div className="avatar-shop-tabs">
                         <button
                             type="button"
-                            className={avatarCategory === "heads" ? "active" : ""}
-                            onClick={() => setAvatarCategory("heads")}
+                            className={avatarCategory === "caps" ? "active" : ""}
+                            onClick={() => setAvatarCategory("caps")}
                         >
-                            <span>🙂</span>
-                            Head
+                            <span>🧢</span>
+                            Caps
                         </button>
 
                         <button
-                            type="button"
-                            className={avatarCategory === "torsos" ? "active" : ""}
-                            onClick={() => setAvatarCategory("torsos")}
-                        >
-                            <span>👕</span>
-                            Tops
-                        </button>
+							type="button"
+							className={avatarCategory === "shirts" ? "active" : ""}
+							onClick={() => setAvatarCategory("shirts")}
+						>
+							<span>👕</span>
+							Shirts
+						</button>
 
                         <button
                             type="button"
@@ -102,7 +102,7 @@ export default function AvatarCustomizationView({
 
                     <div className="avatar-shop-content">
                         <div className="avatar-shop-grid">
-                            {avatarItems[avatarCategory]?.map((item) => ( /* AQUI */
+                            {avatarItems[avatarCategory]?.map((item) => (
                                 <button
                                     type="button"
                                     key={item.item_key}
@@ -132,139 +132,6 @@ export default function AvatarCustomizationView({
                                     )}
                                 </button>
                             ))}
-
-                            {/* {avatarCategory === "heads" && (
-                                <>
-                                    <button
-                                        type="button"
-                                        className={`avatar-shop-item ${avatarConfig.head === "head_01" ? "active" : ""}`}
-                                        onClick={() => handleChangeAvatarPart("head", "head_01")}
-                                    >
-                                        <div className="avatar-shop-thumb">🙂</div>
-                                        <span>Head 1</span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        className={`avatar-shop-item ${avatarConfig.head === "head_02" ? "active" : ""}`}
-                                        onClick={() => handleChangeAvatarPart("head", "head_02")}
-                                    >
-                                        <div className="avatar-shop-thumb">😎</div>
-                                        <span>Head 2</span>
-                                    </button>
-                                </>
-                            )}
-
-                            {avatarCategory === "torsos" && (
-                                <>
-                                    <button
-                                        type="button"
-                                        className={`avatar-shop-item ${avatarConfig.torso === "torso_01" ? "active" : ""}`}
-                                        onClick={() => handleChangeAvatarPart("torso", "torso_01")}
-                                    >
-                                        <div className="avatar-shop-thumb">👕</div>
-                                        <span>Torso 1</span>
-                                        <small>🪙 250</small>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        className={`avatar-shop-item ${avatarConfig.torso === "torso_02" ? "active" : ""}`}
-                                        onClick={() => handleChangeAvatarPart("torso", "torso_02")}
-                                    >
-                                        <div className="avatar-shop-thumb">🧥</div>
-                                        <span>Torso 2</span>
-                                        <small>🪙 400</small>
-                                    </button>
-                                </>
-                            )}
-
-                            {avatarCategory === "legs" && (
-                                <>
-                                    <button
-                                        type="button"
-                                        className={`avatar-shop-item ${avatarConfig.legs === "legs_01" ? "active" : ""}`}
-                                        onClick={() => handleChangeAvatarPart("legs", "legs_01")}
-                                    >
-                                        <div className="avatar-shop-thumb">👖</div>
-                                        <span>Piernas 1</span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        className={`avatar-shop-item ${avatarConfig.legs === "legs_02" ? "active" : ""}`}
-                                        onClick={() => handleChangeAvatarPart("legs", "legs_02")}
-                                    >
-                                        <div className="avatar-shop-thumb">🩳</div>
-                                        <span>Piernas 2</span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        className={`avatar-shop-item ${avatarConfig.legs === "legs_03" ? "active" : ""}`}
-                                        onClick={() => handleChangeAvatarPart("legs", "legs_03")}
-                                    >
-                                        <div className="avatar-shop-thumb">👖</div>
-                                        <span>Piernas 3</span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        className={`avatar-shop-item ${avatarConfig.legs === "legs_04" ? "active" : ""}`}
-                                        onClick={() => handleChangeAvatarPart("legs", "legs_04")}
-                                    >
-                                        <div className="avatar-shop-thumb">🩳</div>
-                                        <span>Piernas 4</span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        className={`avatar-shop-item ${avatarConfig.legs === "legs_05" ? "active" : ""}`}
-                                        onClick={() => handleChangeAvatarPart("legs", "legs_05")}
-                                    >
-                                        <div className="avatar-shop-thumb">🩳</div>
-                                        <span>Piernas 5</span>
-                                    </button>
-                                </>
-                            )}
-
-                            {avatarCategory === "shoes" && (
-                                <>
-                                    <button 
-                                        type="button"
-                                        className={`avatar-shop-item ${avatarConfig.feets === "feets_01" ? "active" : ""}`}
-                                        onClick={() => handleChangeAvatarPart("feets", "feets_01")}
-                                    >
-                                        <div className="avatar-shop-thumb">👟</div>
-                                        <span>Shoes 1</span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        className={`avatar-shop-item ${avatarConfig.feets === "feets_02" ? "active" : ""}`}
-                                        onClick={() => handleChangeAvatarPart("feets", "feets_02")}
-                                    >
-                                        <div className="avatar-shop-thumb">👟</div>
-                                        <span>Shoes 2</span>
-                                    </button>
-                                
-                                    <button type="button" className="avatar-shop-item locked">
-                                        <div className="avatar-shop-thumb">👟</div>
-                                        <span>Shoes</span>
-                                        <small>Próximamente</small>
-                                    </button>
-                                </>
-                            )}
-
-                            {avatarCategory === "bags" && (
-                                <>
-                                    <button type="button" className="avatar-shop-item locked">
-                                        <div className="avatar-shop-thumb">🎒</div>
-                                        <span>Bag</span>
-                                        <small>Próximamente</small>
-                                    </button>
-                                </>
-                            )} */}
                         </div>
                     </div>
                 </div>

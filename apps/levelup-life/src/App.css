@@ -374,17 +374,24 @@ button {
 }
 
 /* Posiciones actuales de tus piezas */
-.avatar-head {
+.avatar-hair {
 	width: 110px;
 	top: -142px;
 	left: 24px; /* aqui */
 	z-index: 5;
 }
 
-.avatar-torso {
+.avatar-shirt {
 	width: 160px;
-	top: -34px;
-	left: 0px;
+	top: -48px;
+	left: 3px;
+	z-index: 5;
+}
+
+.avatar-torso {
+	width: 184px;
+	top: -69px;
+	left: -9px;
 	z-index: 4;
 }
 
@@ -1660,7 +1667,7 @@ button {
 	}
 
 	.levelup-topbar {
-		grid-template-columns: 52px 1fr 52px;
+		grid-template-columns: 62px 1fr 62px;
 		gap: 10px;
 		margin-bottom: 14px;
 	}
@@ -2047,10 +2054,17 @@ button {
 		z-index: 4;
 	}
 
+	.avatar-shirt {
+		width: 196px;
+		top: -46px;
+		left: -17px;
+		z-index: 5;
+	}
+
 	.avatar-torso {
-		width: 197px;
-		top: -35px;
-		left: -21px;
+		width: 222px;
+		top: -75px;
+		left: -31px;
 		z-index: 3;
 	}
 

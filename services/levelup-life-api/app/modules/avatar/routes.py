@@ -13,10 +13,11 @@ class AvatarConfigRequest(BaseModel):
 
 def avatar_category_to_config_key(category: str) -> str:
     category_map = {
-        "heads": "head",
-        "torsos": "torso",
+        "caps": "cap",
+        "shirts": "shirt",
         "legs": "legs",
         "feets": "feets",
+        "bags": "bag",
     }
 
     return category_map.get(category, category)

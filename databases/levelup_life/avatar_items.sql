@@ -16,8 +16,7 @@ CREATE TABLE IF NOT EXISTS avatar_items (
 INSERT INTO avatar_items
 (item_key, category, name, image_url, thumbnail_url, price_coins, is_default, sort_order)
 VALUES
-('head_01', 'heads', 'Cabeza 1', '/avatar/heads/head_01.png', '/avatar/heads/head_01.png', 0, true, 1),
-('head_02', 'heads', 'Cabeza 2', '/avatar/heads/head_02.png', '/avatar/heads/head_02.png', 0, false, 2),
+('cap_01', 'caps', 'Cap 1', '/avatar/caps/cap_01.png', '/avatar/caps/cap_01.png', 0, true, 1),
 
 ('torso_01', 'torsos', 'Camiseta blanca', '/avatar/torsos/torso_01.png', '/avatar/torsos/torso_01.png', 0, true, 1),
 ('torso_02', 'torsos', 'Torso 2', '/avatar/torsos/torso_02.png', '/avatar/torsos/torso_02.png', 250, false, 2),
