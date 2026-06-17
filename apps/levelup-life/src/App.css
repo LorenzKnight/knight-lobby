@@ -3060,6 +3060,17 @@ button {
 	line-height: 1.35;
 }
 
+.test-reward-button {
+	font-size: 10px;
+	border: 0;
+	border-radius: 999px;
+	padding: 1px 14px;
+	background: #7a58b4;
+	color: white;
+	font-weight: 700;
+	cursor: pointer;
+}
+
 @keyframes viewFadeUp {
 	0% {
 		opacity: 0;

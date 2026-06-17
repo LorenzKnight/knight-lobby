@@ -28,6 +28,7 @@ import LifeAreaDetailView from "./components/LifeAreaDetailView";
 import PlayerAvatar from "./components/PlayerAvatar";
 import AvatarCustomizationView from "./components/AvatarCustomizationView";
 import {
+	addReward,
 	createLifeArea,
 	getAvatarConfig,
 	getAvatarItems,
@@ -420,6 +421,43 @@ function App() {
 		}, 3200);
 	}
 
+	async function handleTestReward() {
+		if (!authUser?.user_id) return;
+
+		try {
+			const result = await addReward({
+				user_id: authUser.user_id,
+				source_type: "manual_test",
+				source_id: null,
+				exp_earned: 25,
+				coins_earned: 10,
+				gems_earned: 0,
+				reason: "Recompensa de prueba desde el dashboard",
+			});
+
+			if (result.success) {
+				setGameProfile((currentProfile) => ({
+					...currentProfile,
+					...result.data,
+				}));
+
+				showToast(
+					result.data.leveled_up ? "¡Subiste de nivel!" : "Recompensa ganada",
+					"+25 EXP y +10 monedas",
+					"success"
+				);
+			}
+		} catch (error) {
+			console.error("Could not apply test reward:", error);
+
+			showToast(
+				"No se pudo aplicar",
+				"La recompensa no se pudo guardar.",
+				"error"
+			);
+		}
+	}
+
 	function handleBackToDashboard() {
 		setCurrentView("dashboard");
 		setSelectedLifeArea(null);
@@ -656,6 +694,14 @@ function App() {
 								<span>🪙 {displayPlayer.coins} Monedas</span>
 								<span>💎 {displayPlayer.gems}</span>
 							</div>
+
+							<button
+								type="button"
+								className="test-reward-button"
+								onClick={handleTestReward}
+							>
+								Ganar +25 EXP
+							</button>
 						</div>
 
 						<div className="day-progress-card">

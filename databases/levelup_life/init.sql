@@ -32,3 +32,41 @@ VALUES (
     5
 )
 ON CONFLICT (user_id) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS user_rewards_log (
+    reward_log_id SERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    source_type VARCHAR(50) NOT NULL,
+    source_id BIGINT,
+    exp_earned INT NOT NULL DEFAULT 0,
+    coins_earned INT NOT NULL DEFAULT 0,
+    gems_earned INT NOT NULL DEFAULT 0,
+    reason TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO user_rewards_log (
+    user_id,
+    source_type,
+    source_id,
+    exp_earned,
+    coins_earned,
+    gems_earned,
+    reason
+)
+SELECT
+    1,
+    'daily_goal',
+    1,
+    25,
+    10,
+    0,
+    'Completó una meta diaria'
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM user_rewards_log
+    WHERE user_id = 1
+      AND source_type = 'daily_goal'
+      AND source_id = 1
+      AND reason = 'Completó una meta diaria'
+);

@@ -65,7 +65,6 @@ export async function getAvatarConfig(userId) {
 	return data;
 }
 
-
 export async function saveAvatarConfig(userId, itemKey) {
 	const response = await fetch(`${LEVELUP_API_URL}/api/avatar/config`, {
 		method: "PUT",
@@ -96,6 +95,38 @@ export async function getGameProfile(userId) {
 
 	if (!response.ok) {
 		throw new Error(data.detail || data.message || "Could not load game profile");
+	}
+
+	return data;
+}
+
+export async function getUserRewards(userId) {
+	const response = await fetch(
+		`${LEVELUP_API_URL}/api/game-profile/rewards?user_id=${userId}`
+	);
+
+	const data = await response.json();
+
+	if (!response.ok) {
+		throw new Error(data.detail || data.message || "Could not load rewards");
+	}
+
+	return data;
+}
+
+export async function addReward(rewardData) {
+	const response = await fetch(`${LEVELUP_API_URL}/api/game-profile/reward`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(rewardData),
+	});
+
+	const data = await response.json();
+
+	if (!response.ok) {
+		throw new Error(data.detail || data.message || "Could not apply reward");
 	}
 
 	return data;
