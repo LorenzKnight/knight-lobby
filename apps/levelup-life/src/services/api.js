@@ -86,3 +86,17 @@ export async function saveAvatarConfig(userId, itemKey) {
 
 	return data;
 }
+
+export async function getGameProfile(userId) {
+	const response = await fetch(
+		`${LEVELUP_API_URL}/api/game-profile/profile?user_id=${userId}`
+	);
+
+	const data = await response.json();
+
+	if (!response.ok) {
+		throw new Error(data.detail || data.message || "Could not load game profile");
+	}
+
+	return data;
+}

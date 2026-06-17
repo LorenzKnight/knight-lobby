@@ -31,6 +31,7 @@ import {
 	createLifeArea,
 	getAvatarConfig,
 	getAvatarItems,
+	getGameProfile,
 	getLifeAreas,
 	saveAvatarConfig,
 } from "./services/api";
@@ -45,6 +46,9 @@ function App() {
 	const [loginPassword, setLoginPassword] = useState("");
 	const [loginError, setLoginError] = useState("");
 	const [loginLoading, setLoginLoading] = useState(false);
+
+	const [gameProfile, setGameProfile] = useState(null);
+	const [gameProfileLoading, setGameProfileLoading] = useState(false);
 
 	const [showAvatarMenu, setShowAvatarMenu] = useState(false);
 	const [avatarCategory, setAvatarCategory] = useState("shirts");
@@ -108,6 +112,29 @@ function App() {
 
 		loadSession();
 	}, [authToken]);
+
+	useEffect(() => {
+		async function loadGameProfile() {
+			if (!authUser?.user_id) return;
+
+			setGameProfileLoading(true);
+
+			try {
+				const result = await getGameProfile(authUser.user_id);
+
+				if (result.success) {
+					setGameProfile(result.data);
+				}
+			} catch (error) {
+				console.error("Could not load game profile:", error);
+				setGameProfile(null);
+			} finally {
+				setGameProfileLoading(false);
+			}
+		}
+
+		loadGameProfile();
+	}, [authUser]);
 
 	useEffect(() => {
 		async function loadLifeAreas() {
@@ -210,6 +237,7 @@ function App() {
 		localStorage.removeItem("knight_token");
 		setAuthToken(null);
 		setAuthUser(null);
+		setGameProfile(null);
 		setShowAreasMenu(false);
 		setShowQuickAddMenu(false);
 		setShowAreaForm(false);
@@ -496,6 +524,21 @@ function App() {
 		authUser?.first_name ||
 		player.username;
 
+	const displayPlayer = {
+		...player,
+		level: gameProfile?.level ?? player.level,
+		exp: gameProfile?.exp_percent ?? player.exp,
+		nextLevelExp: gameProfile
+			? `${gameProfile.current_exp} / ${gameProfile.required_exp}`
+			: player.nextLevelExp,
+		coins: gameProfile?.coins ?? player.coins,
+		gems: gameProfile?.gems ?? player.gems,
+		life: gameProfile?.current_life ?? player.life,
+		maxLife: gameProfile?.max_life ?? player.maxLife,
+	};
+
+	const expPercent = Math.min(Math.max(displayPlayer.exp, 0), 100);
+
 	const isAreasActive = showAreasMenu || currentView === "life-area-detail";
 
 	return (
@@ -559,17 +602,17 @@ function App() {
 							<div className="life-status-card">
 								<div className="level-badge">
 									<span>NIVEL</span>
-									<strong>{player.level}</strong>
+									<strong>{displayPlayer.level}</strong>
 								</div>
 
 								<div className="life-row">
 									<strong>Vida:</strong>
 									<div className="heart-row">
-										{Array.from({ length: 5 }).map((_, index) => (
+										{Array.from({ length: displayPlayer.maxLife }).map((_, index) => (
 											<Heart
 												key={index}
 												size={21}
-												fill="currentColor"
+												fill={index < displayPlayer.life ? "currentColor" : "none"}
 												strokeWidth={1.8}
 											/>
 										))}
@@ -577,7 +620,7 @@ function App() {
 								</div>
 
 								<p className="life-value">
-									{player.life} / {player.maxLife}
+									{displayPlayer.life} / {displayPlayer.maxLife}
 								</p>
 							</div>
 
@@ -599,16 +642,19 @@ function App() {
 							<div className="next-level">
 								<span>Nivel siguiente:</span>
 								<div className="exp-line">
-									<div style={{ width: "0%" }} />
+									<div style={{ width: `${expPercent}%` }} />
 								</div>
 								<small>
-									{player.nextLevelExp} EXP ({player.exp}%)
+									{gameProfileLoading
+										? "Cargando EXP..."
+										: `${displayPlayer.nextLevelExp} EXP (${displayPlayer.exp}%)`
+									}
 								</small>
 							</div>
 
 							<div className="wallet-row">
-								<span>🪙 {player.coins} Monedas</span>
-								<span>💎 {player.gems}</span>
+								<span>🪙 {displayPlayer.coins} Monedas</span>
+								<span>💎 {displayPlayer.gems}</span>
 							</div>
 						</div>
 
@@ -881,7 +927,7 @@ function App() {
 
 			{showAvatarMenu && (
 				<AvatarCustomizationView
-					player={player}
+					player={displayPlayer}
 					avatarConfig={avatarConfig}
 					avatarItems={avatarItems}
 					avatarImages={getSelectedAvatarImages()}

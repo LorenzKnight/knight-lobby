@@ -18,8 +18,7 @@ INSERT INTO avatar_items
 VALUES
 ('cap_01', 'caps', 'Cap 1', '/avatar/caps/cap_01.png', '/avatar/caps/cap_01.png', 0, true, 1),
 
-('torso_01', 'torsos', 'Camiseta blanca', '/avatar/torsos/torso_01.png', '/avatar/torsos/torso_01.png', 0, true, 1),
-('torso_02', 'torsos', 'Torso 2', '/avatar/torsos/torso_02.png', '/avatar/torsos/torso_02.png', 250, false, 2),
+('shirt_01', 'shirts', 'Camiseta blanca', '/avatar/shirts/shirt_01.png', '/avatar/shirts/shirt_01.png', 0, true, 1),
 
 ('legs_01', 'legs', 'Pantalón Kaqui', '/avatar/legs/legs_01.png', '/avatar/legs/legs_01.png', 0, true, 1),
 ('legs_02', 'legs', 'Pantalón Jeans', '/avatar/legs/legs_02.png', '/avatar/legs/legs_02.png', 0, false, 2),
