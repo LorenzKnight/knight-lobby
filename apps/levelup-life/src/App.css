@@ -910,11 +910,28 @@ button {
 	align-items: center;
 	justify-content: center;
 	gap: 1px;
+
 	background:
-		radial-gradient(circle, #fff 0 57%, transparent 58%),
-		conic-gradient(var(--orange) 0 62%, #ded8cf 62% 100%);
+		radial-gradient(
+			circle,
+			#fff 0 57%,
+			transparent 58%
+		),
+		conic-gradient(
+			var(--orange) 0deg var(--daily-progress, 0deg),
+			#ded8cf var(--daily-progress, 0deg) 360deg
+		);
+
 	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
 	color: var(--text);
+}
+
+.daily-progress-count {
+	display: block;
+	color: var(--muted);
+	font-size: 12px;
+	font-weight: 700;
+	text-align: center;
 }
 
 .progress-circle span {
@@ -926,15 +943,21 @@ button {
 }
 
 .progress-circle small {
-	font-size: 17px;
-	font-weight: 900;
+	font-size: 18px;
+	font-weight: 950;
 	line-height: 1;
-	margin: 13px 0 0 -2px;
+	margin: 10px 0 0;
 }
 
 .progress-note {
-	font-size: 13px !important;
-	color: var(--muted) !important;
+	grid-area: note;
+	justify-self: center;
+
+	margin: 4px 0 0;
+	color: #5f5a67;
+	font-size: 15px;
+	font-weight: 950;
+	text-align: center;
 }
 
 .dashboard-reposition .day-progress-card::after {
@@ -1480,27 +1503,7 @@ button {
 	z-index: 1;
 }
 
-.day-progress-widget .progress-circle {
-	grid-area: circle;
-	justify-self: center;
-	align-self: center;
-
-	width: 100px;
-	height: 100px;
-	margin: 0;
-
-	background:
-		radial-gradient(circle, #ffffff 0 56%, transparent 57%),
-		conic-gradient(var(--orange) 0 62%, #ded8cf 62% 100%);
-
-	display: flex;
-	align-items: center;
-	justify-content: center;
-
-	color: var(--text);
-}
-
-.day-progress-widget .progress-circle span {
+/* .day-progress-widget .progress-circle span {
 	font-size: 32px;
 	font-weight: 950;
 	line-height: 1;
@@ -1524,7 +1527,7 @@ button {
 	font-size: 15px;
 	font-weight: 950;
 	text-align: center;
-}
+} */
 
 
 

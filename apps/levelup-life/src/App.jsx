@@ -29,9 +29,11 @@ import PlayerAvatar from "./components/PlayerAvatar";
 import AvatarCustomizationView from "./components/AvatarCustomizationView";
 import {
 	addReward,
+	// completeDailyGoalTask,
 	createLifeArea,
 	getAvatarConfig,
 	getAvatarItems,
+	getDailyGoals,
 	getGameProfile,
 	getLifeAreas,
 	saveAvatarConfig,
@@ -53,6 +55,10 @@ function App() {
 
 	const [showAvatarMenu, setShowAvatarMenu] = useState(false);
 	const [avatarCategory, setAvatarCategory] = useState("shirts");
+
+	const [dailyGoals, setDailyGoals] = useState([]);
+	const [dailyGoalsLoading, setDailyGoalsLoading] = useState(false);
+	// const [completingTaskId, setCompletingTaskId] = useState(null);
 
 	const [avatarItems, setAvatarItems] = useState({
 		caps: [],
@@ -135,6 +141,29 @@ function App() {
 		}
 
 		loadGameProfile();
+	}, [authUser]);
+
+	useEffect(() => {
+		async function loadDailyGoals() {
+			if (!authUser?.user_id) return;
+
+			setDailyGoalsLoading(true);
+
+			try {
+				const result = await getDailyGoals(authUser.user_id);
+
+				if (result.success) {
+					setDailyGoals(result.data || []);
+				}
+			} catch (error) {
+				console.error("Could not load daily goals:", error);
+				setDailyGoals([]);
+			} finally {
+				setDailyGoalsLoading(false);
+			}
+		}
+
+		loadDailyGoals();
 	}, [authUser]);
 
 	useEffect(() => {
@@ -239,6 +268,7 @@ function App() {
 		setAuthToken(null);
 		setAuthUser(null);
 		setGameProfile(null);
+		setDailyGoals([]);
 		setShowAreasMenu(false);
 		setShowQuickAddMenu(false);
 		setShowAreaForm(false);
@@ -429,8 +459,8 @@ function App() {
 				user_id: authUser.user_id,
 				source_type: "manual_test",
 				source_id: null,
-				exp_earned: 25,
-				coins_earned: 10,
+				exp_earned: 10,
+				coins_earned: 2,
 				gems_earned: 0,
 				reason: "Recompensa de prueba desde el dashboard",
 			});
@@ -443,7 +473,7 @@ function App() {
 
 				showToast(
 					result.data.leveled_up ? "¡Subiste de nivel!" : "Recompensa ganada",
-					"+25 EXP y +10 monedas",
+					"+10 EXP y +2 monedas",
 					"success"
 				);
 			}
@@ -577,6 +607,23 @@ function App() {
 
 	const expPercent = Math.min(Math.max(displayPlayer.exp, 0), 100);
 
+	const totalDailyTasks = dailyGoals.reduce(
+		(total, goal) => total + (goal.total_tasks || 0),
+		0
+	);
+
+	const completedDailyTasks = dailyGoals.reduce(
+		(total, goal) => total + (goal.completed_tasks || 0),
+		0
+	);
+
+	const dailyProgressPercent =
+		totalDailyTasks > 0
+			? Math.round(
+				(completedDailyTasks / totalDailyTasks) * 100
+			)
+			: 0;
+
 	const isAreasActive = showAreasMenu || currentView === "life-area-detail";
 
 	return (
@@ -604,11 +651,29 @@ function App() {
 
 							<div className="day-progress-widget">
 								<p>☀ Progreso del día</p>
-								<div className="progress-circle">
-									<span>{player.dayProgress}</span>
-									<small>%</small>
+
+								<div
+									className="progress-circle"
+									style={{
+										"--daily-progress": `${dailyProgressPercent * 3.6}deg`,
+									}}
+								>
+									<span>
+										{dailyGoalsLoading ? "..." : dailyProgressPercent}
+									</span>
+
+									{!dailyGoalsLoading && <small>%</small>}
 								</div>
-								<p className="progress-note">¡Sigue así!</p>
+
+								<p className="progress-note">
+									{dailyProgressPercent === 100
+										? "¡Día completado!"
+										: "¡Sigue así!"}
+								</p>
+
+								<small className="daily-progress-count">
+									Progreso: {completedDailyTasks}/{totalDailyTasks}
+								</small>
 							</div>
 
 							<div className="time-progress-inline">

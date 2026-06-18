@@ -1,8 +1,8 @@
 export const player = {
 	username: "angel.santanaro",
 	level: 11,
-	life: 1000,
-	maxLife: 1000,
+	life: 0,
+	maxLife: 5,
 	exp: 0,
 	nextLevelExp: 3765,
 	coins: 0,

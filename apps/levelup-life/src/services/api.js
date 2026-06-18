@@ -131,3 +131,43 @@ export async function addReward(rewardData) {
 
 	return data;
 }
+
+// Loads the user's daily goals and today's progress.
+export async function getDailyGoals(userId) {
+	const response = await fetch(
+		`${LEVELUP_API_URL}/api/daily-goals?user_id=${userId}`
+	);
+
+	const result = await response.json();
+
+	if (!response.ok) {
+		throw new Error(result.detail || "Could not load daily goals");
+	}
+
+	return result;
+}
+
+
+// Completes one task belonging to a daily goal.
+export async function completeDailyGoalTask(data) {
+	const response = await fetch(
+		`${LEVELUP_API_URL}/api/daily-goals/tasks/complete`,
+		{
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(data),
+		}
+	);
+
+	const result = await response.json();
+
+	if (!response.ok) {
+		throw new Error(
+			result.detail || "Could not complete daily goal task"
+		);
+	}
+
+	return result;
+}
