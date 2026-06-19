@@ -2634,6 +2634,7 @@ button {
 .areas-floating-header button {
 	width: 32px;
 	height: 32px;
+	padding-bottom: 5px;
 	border: 0;
 	border-radius: 999px;
 	background: rgba(122, 88, 180, 0.1);
@@ -2789,6 +2790,7 @@ button {
 .quick-add-header button {
 	width: 32px;
 	height: 32px;
+	padding-bottom: 5px;
 	border: 0;
 	border-radius: 999px;
 	background: rgba(122, 88, 180, 0.1);
