@@ -226,7 +226,7 @@ button {
 .levelup-shell {
 	width: min(100%, 1120px);
 	margin: 0 auto;
-	padding: 22px 24px 124px;
+	padding: 10px 24px 118px;
 }
 
 /* Header */
@@ -237,7 +237,7 @@ button {
 	grid-template-columns: 62px 1fr 62px;
 	align-items: center;
 	gap: 18px;
-	margin-bottom: 16px;
+	margin-bottom: 10px;
 }
 
 .levelup-topbar::before {
@@ -743,12 +743,12 @@ button {
 
 
 /* Player info */
-.player-info {
+.day-progress-card {
 	padding-right: 15px;
 	border-right: 1px solid rgba(216, 210, 202, 0.9);
 }
 
-.player-info h2 {
+.day-progress-card h2 {
 	margin: 0 0 18px;
 	font-size: 26px;
 	font-weight: 950;
@@ -826,7 +826,7 @@ button {
 	align-items: center;
 	gap: 2px;
 	flex-wrap: nowrap;
-	color: #17162a;
+	color: #ae03a3;
 }
 
 .heart-row svg {
@@ -887,14 +887,14 @@ button {
 
 
 /* Day progress */
-.day-progress-card {
+.player-info {
 	position: relative;
 	display: grid;
 	place-items: center;
 	text-align: center;
 }
 
-.day-progress-card p {
+.player-info p {
 	margin: 0;
 	color: #4e4c56;
 	font-size: 16px;
@@ -902,9 +902,9 @@ button {
 }
 
 .progress-circle {
-	width: 116px;
-	height: 116px;
-	margin: 18px 0 8px;
+	width: 100px;
+	height: 100px;
+	margin: 0;
 	border-radius: 999px;
 	display: flex;
 	align-items: center;
@@ -949,69 +949,238 @@ button {
 	margin: 10px 0 0;
 }
 
-.progress-note {
-	grid-area: note;
-	justify-self: center;
 
-	margin: 4px 0 0;
-	color: #5f5a67;
-	font-size: 15px;
-	font-weight: 950;
+/* Day progress widget like reference AQUI*/
+.day-progress-widget {
+	width: 100%;
+	min-height: 180px;
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 10px;
+	margin-bottom: 18px;
+	border-radius: 20px;
+
+	background: rgba(255, 255, 255, 0.88);
+	border: 1px solid rgba(225, 218, 208, 0.9);
+
+	box-shadow:
+		0 14px 34px rgba(58, 50, 72, 0.07),
+		inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+	overflow: hidden;
+}
+
+.day-progress-left {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 24px;
+}
+
+.day-progress-right {
+	flex: 0 0 140px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 4px;
+	z-index: 1;
+}
+
+.day-progress-title {
+	margin: 0;
+	font-size: 12px;
+	font-weight: 800;
+	color: var(--text);
 	text-align: center;
 }
 
-.dashboard-reposition .day-progress-card::after {
+.daily-progress-count {
+	display: block;
+	font-size: 12px;
+	font-weight: 800;
+	color: var(--text);
+}
+
+.progress-note {
+	margin: 0;
+	font-size: 14px;
+	font-weight: 700;
+	color: var(--muted);
+}
+
+
+/* Montañitas decorativas abajo izquierda */
+.low-poly-mountains {
+	position: absolute;
+	left: 50%;
+	bottom: 0;
+	transform: translateX(-50%);
+
+	width: 210px;
+	height: 75px;
+	margin: 0;
+
+	pointer-events: none;
+	opacity: 0.8;
+	z-index: 1;
+}
+
+.mountain {
+	position: absolute;
+	bottom: 0;
+	display: block;
+	overflow: hidden;
+	clip-path: polygon(50% 0, 100% 100%, 0 100%);
+	background: #b9dcae;
+}
+
+/* Faceta izquierda */
+.mountain::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: #d5ebcd;
+	clip-path: polygon(50% 0, 50% 100%, 0 100%);
+}
+
+/* Faceta interior */
+.mountain::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: rgba(126, 183, 107, 0.42);
+	clip-path: polygon(50% 0, 78% 100%, 50% 68%, 28% 100%);
+}
+
+.mountain-small-left {
+	left: 0;
+	width: 52px;
+	height: 27px;
+	background: #aed49f;
+}
+
+.mountain-center {
+	left: 31px;
+	width: 82px;
+	height: 48px;
+	background: #a7d09a;
+}
+
+.mountain-tall {
+	left: 70px;
+	width: 100px;
+	height: 68px;
+	background: #95c788;
+}
+
+.mountain-tall::before {
+	background: #c9e5c0;
+}
+
+.mountain-tall::after {
+	background: rgba(101, 166, 82, 0.45);
+}
+
+.mountain-small-right {
+	left: 135px;
+	width: 53px;
+	height: 34px;
+	background: #b9dbad;
+}
+
+.mountain-right {
+	right: 0;
+	width: 76px;
+	height: 42px;
+	background: #9dcc90;
+}
+
+
+
+
+.dashboard-reposition .player-info::after {
 	content: none;
 }
 
+
 /* Time card */
-.time-progress-inline {
-	display: grid;
-	/* grid-template-columns: 140px 1fr; */
-	align-items: center;
-	gap: 18px;
+.time-summary-card {
 	width: 100%;
+	display: grid;
+	grid-template-columns: minmax(100px, 1fr) minmax(100px, 1fr);
+	align-items: center;
+	gap: 20px;
+	padding: 15px 10px;
+	margin-bottom: 18px;
+	border: 1px solid rgba(227, 220, 214, 0.8);
+	border-radius: 26px;
+	background: rgba(255, 255, 255, 0.94);
+	box-shadow:
+		0 14px 36px rgba(73, 58, 48, 0.08),
+		inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.current-time-section {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 28px;
 }
 
 .clock-card {
-	min-height: 105px;
-	display: grid;
-	grid-template-rows: 1fr auto;
+	width: 100%;
+	max-width: 230px;
+	display: flex;
 	align-items: center;
-    justify-items: center;
+	justify-content: center;
+	padding: 10px;
+	border-radius: 15px;
+	background: linear-gradient(180deg, #242424, #0d0d0d);
 }
 
 .clock-card strong {
-	background: #202124;
 	color: #f9f9f9;
-	border-radius: 20px;
-	padding: 15px 14px;
-	font-size: 40px;
+	font-size: 1.4em;
 	line-height: 1;
-	font-weight: 300;
+	font-weight: 600;
 	letter-spacing: 0.08em;
 	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-	box-shadow: inset 0 -6px 14px rgba(255, 255, 255, 0.08);
 	width: fit-content;
+}
+
+.time-progress-inline {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	color: #232038;
 }
 
 .progress-list {
 	display: grid;
 	/* grid-template-columns: repeat(2, minmax(0, 1fr)); */
-	gap: 10px;
-	margin-bottom: 25px;
+	gap: 8px;
+	/* margin-bottom: 25px; */
 }
 
 .progress-item {
 	display: grid;
-	gap: 8px;
+	gap: 2px;
+
 }
 
 .progress-label {
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	font-weight: 800;
+	font-weight: 600;
 	color: #45434d;
 	font-size: 12px;
 }
@@ -1026,6 +1195,29 @@ button {
 .progress-bar div {
 	height: 100%;
 	border-radius: inherit;
+}
+
+
+/* Daily Goals Notifications */
+.daily-goals-notifications {
+	width: 100%;
+	min-height: 100px;
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 10px;
+	border-radius: 20px;
+
+	background: rgba(255, 255, 255, 0.88);
+	border: 1px solid rgba(225, 218, 208, 0.9);
+
+	box-shadow:
+		0 14px 34px rgba(58, 50, 72, 0.07),
+		inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+	overflow: hidden;
 }
 
 .section-title-row {
@@ -1220,6 +1412,7 @@ button {
 
 /* AI Card - compact redesign */
 .ai-card {
+	width: 100%;
 	min-height: auto;
 	padding: 18px 10px 16px;
 	border-radius: 20px;
@@ -1432,33 +1625,6 @@ button {
     clip-path: polygon(50% 0, 94% 22%, 94% 74%, 50% 100%, 6% 74%, 6% 22%);
 }
 
-
-
-/* Day progress widget like reference */
-.day-progress-widget {
-	position: relative;
-	display: grid;
-	grid-template-columns: 1fr 120px;
-	grid-template-rows: auto 1fr auto;
-	grid-template-areas:
-		"title circle"
-		"mountains circle"
-		"mountains note";
-	align-items: center;
-	margin-bottom: 18px;
-	padding: 10px 5px;
-	border-radius: 20px;
-
-	background: rgba(255, 255, 255, 0.88);
-	border: 1px solid rgba(225, 218, 208, 0.9);
-
-	box-shadow:
-		0 14px 34px rgba(58, 50, 72, 0.07),
-		inset 0 1px 0 rgba(255, 255, 255, 0.95);
-
-	overflow: hidden;
-}
-
 .day-progress-widget > p:first-child {
 	grid-area: title;
 	align-self: start;
@@ -1471,63 +1637,6 @@ button {
 	letter-spacing: 0.02em;
 	z-index: 2;
 }
-
-/* Montañitas decorativas abajo izquierda */
-.day-progress-widget::after {
-	content: "";
-	grid-area: mountains;
-	align-self: end;
-
-	width: 150px;
-	height: 48px;
-	margin-left: 2px;
-	margin-bottom: 2px;
-
-	background:
-		linear-gradient(135deg, transparent 0 38%, rgba(148, 198, 127, 0.42) 39% 62%, transparent 63%),
-		linear-gradient(45deg, transparent 0 36%, rgba(118, 178, 98, 0.38) 37% 64%, transparent 65%),
-		linear-gradient(135deg, transparent 0 42%, rgba(164, 210, 142, 0.55) 43% 68%, transparent 69%);
-
-	background-size:
-		62px 34px,
-		72px 38px,
-		92px 44px;
-
-	background-position:
-		0 16px,
-		38px 10px,
-		72px 5px;
-
-	background-repeat: no-repeat;
-	opacity: 0.75;
-	z-index: 1;
-}
-
-/* .day-progress-widget .progress-circle span {
-	font-size: 32px;
-	font-weight: 950;
-	line-height: 1;
-	letter-spacing: -0.05em;
-	margin: 0;
-}
-
-.day-progress-widget .progress-circle small {
-	font-size: 18px;
-	font-weight: 950;
-	line-height: 1;
-	margin: 10px 0 0;
-}
-
-.day-progress-widget .progress-note {
-	grid-area: note;
-	justify-self: center;
-
-	margin: 4px 0 0;
-	color: #5f5a67;
-	font-size: 15px;
-	font-weight: 950;
-	text-align: center;
-} */
 
 
 
@@ -1572,21 +1681,19 @@ button {
 	/* Player card */
 	.player-card {
 		width: 100%;
-		grid-template-columns: 220px 1fr;
+		grid-template-columns: 350px 1fr;
 	}
 
 	.dashboard-reposition .day-progress-widget {
+		width: 100%;
+		min-height: 180px;
 		position: relative;
-		display: block;
-		grid-template-columns: 1fr 120px;
-		grid-template-rows: auto 1fr auto;
-		grid-template-areas:
-			"title circle"
-			"mountains circle"
-			"mountains note";
-		align-items: center;
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 10px;
+		padding: 10px;
 		margin-bottom: 18px;
-		padding: 10px 5px;
 		border-radius: 20px;
 
 		background: rgba(255, 255, 255, 0.88);
@@ -1599,24 +1706,124 @@ button {
 		overflow: hidden;
 	}
 
-	.player-info {
+	.day-progress-card {
 		border-right: 0;
 		padding-right: 15px;
 	}
 
-	.day-progress-card {
+	.player-info {
 		/* border-right: 1px solid rgba(216, 210, 202, 0.9); */
 		padding-right: 15px;
 	}
 
-	/*.clock-card {
-		border-right: 0;
-		padding-bottom: 20px;
+	/* time card */
+	.time-summary-card {
+		width: 100%;
+		display: grid;
+		grid-template-columns: minmax(93px, 1fr) minmax(200px, 1fr);
+		align-items: center;
+		gap: 10px;
+		padding: 15px 10px;
+		margin-bottom: 18px;
+		border: 1px solid rgba(227, 220, 214, 0.8);
+		border-radius: 20px;
+		background: rgba(255, 255, 255, 0.94);
+		box-shadow:
+			0 14px 36px rgba(73, 58, 48, 0.08),
+			inset 0 1px 0 rgba(255, 255, 255, 0.95);
 	}
 
-	.quick-actions-row {
-		grid-template-columns: 1fr;
-	} */
+	.current-time-section {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: center;
+		gap: 28px;
+	}
+
+	.clock-card {
+		width: 100%;
+		max-width: 230px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 10px;
+		border-radius: 15px;
+		background: linear-gradient(180deg, #242424, #0d0d0d);
+	}
+
+	.clock-card strong {
+		color: #f9f9f9;
+		font-size: 1.4em;
+		line-height: 1;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+		width: fit-content;
+	}
+
+	.time-progress-inline {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		color: #232038;
+	}
+
+	.progress-list {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 8px;
+		/* margin-bottom: 25px; */
+	}
+
+	.progress-item {
+		display: grid;
+		gap: 2px;
+
+	}
+
+	.progress-label {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-weight: 600;
+		color: #45434d;
+		font-size: 10px;
+	}
+
+	.progress-bar {
+		height: 6px;
+		background: #e1ddd7;
+		border-radius: 999px;
+		overflow: hidden;
+	}
+
+	.progress-bar div {
+		height: 100%;
+		border-radius: inherit;
+	}
+
+	/* Daily Goals Notifications */
+	.daily-goals-notifications {
+		width: 100%;
+		min-height: 180px;
+		position: relative;
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 10px;
+		padding: 10px;
+		border-radius: 20px;
+
+		background: rgba(255, 255, 255, 0.88);
+		border: 1px solid rgba(225, 218, 208, 0.9);
+
+		box-shadow:
+			0 14px 34px rgba(58, 50, 72, 0.07),
+			inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+		overflow: hidden;
+	}
 
 
 	
@@ -1660,6 +1867,38 @@ button {
 		color: var(--purple);
 		font-size: 15px;
 		font-weight: 950;
+	}
+
+
+	.heart-row {
+		display: flex;
+		align-items: center;
+		gap: 2px;
+		flex-wrap: nowrap;
+		color: #ae03a3;
+
+	}
+
+	.heart-row svg {
+		width: 12px;
+		height: 12px;
+	}
+
+	/* Player avatar */
+	.avatar-display {
+		width: 160px;
+		height: 345px;
+		padding-top: 20px;
+		/* background-color: red; */
+	}
+
+	.player-avatar {
+		position: relative;
+		width: 180px;
+		height: 300px;
+		margin: 0 auto;
+		isolation: isolate;
+		overflow: visible;
 	}
 }
 
@@ -1717,16 +1956,6 @@ button {
 		margin-top: 6px;
 	}
 
-	.dashboard-reposition .heart-row svg {
-		width: 20px;
-		height: 20px;
-	}
-
-	/* .dashboard-reposition .avatar-display {
-		height: 390px;
-		overflow: visible;
-	} */
-
 	.dashboard-reposition .player-avatar {
 		width: 320px;
 		height: 390px;
@@ -1763,7 +1992,7 @@ button {
 		margin-inline: auto;
 	}
 
-	.dashboard-reposition .player-info {
+	.dashboard-reposition .day-progress-card {
 		grid-area: left;
 		display: grid;
 		grid-template-columns: 1fr;
@@ -1781,14 +2010,72 @@ button {
 		gap: 14px;
 	}
 
-	.dashboard-reposition .clock-card {
-		display: none;
+	/* time card */
+	.time-summary-card {
+		width: 100%;
+		display: grid;
+		grid-template-columns: minmax(118px, 1fr) minmax(235px, 1fr);
+		align-items: center;
+		gap: 10px;
+		padding: 15px 10px;
+		margin-bottom: 18px;
+		border: 1px solid rgba(227, 220, 214, 0.8);
+		border-radius: 20px;
+		background: rgba(255, 255, 255, 0.94);
+		box-shadow:
+			0 14px 36px rgba(73, 58, 48, 0.08),
+			inset 0 1px 0 rgba(255, 255, 255, 0.95);
+	}
+
+	.clock-card {
+		width: 100%;
+		max-width: 230px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 10px;
+		border-radius: 15px;
+		background: linear-gradient(180deg, #242424, #0d0d0d);
+	}
+
+	.clock-card strong {
+		color: #f9f9f9;
+		font-size: 1.4em;
+		line-height: 1;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+		width: fit-content;
 	}
 
 	.dashboard-reposition .progress-list {
 		gap: 12px;
 		padding: 0 8px;
 	}
+
+
+	/* Daily Goals Notifications */
+	.daily-goals-notifications {
+		width: 100%;
+		min-height: 230px;
+		position: relative;
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 10px;
+		padding: 10px;
+		border-radius: 20px;
+
+		background: rgba(255, 255, 255, 0.88);
+		border: 1px solid rgba(225, 218, 208, 0.9);
+
+		box-shadow:
+			0 14px 34px rgba(58, 50, 72, 0.07),
+			inset 0 1px 0 rgba(255, 255, 255, 0.95);
+
+		overflow: hidden;
+	}
+
 
 	.dashboard-reposition .priorities-card {
 		padding: 18px 14px;
@@ -1812,7 +2099,7 @@ button {
 		font-weight: 950;
 	}
 
-	.dashboard-reposition .day-progress-card {
+	.dashboard-reposition .player-info {
 		grid-area: right;
 		display: grid;
 		gap: 14px;
@@ -1932,7 +2219,7 @@ button {
 	.life-status-card {
 		position: absolute;
 		top: 8px;
-		left: 0;
+		left: 20px;
 		display: flex;
 		flex-direction: column;
 		align-items: stretch;
@@ -1993,7 +2280,8 @@ button {
 		align-items: center;
 		gap: 2px;
 		flex-wrap: nowrap;
-		color: #17162a;
+		color: #ae03a3;
+
 	}
 
 	.heart-row svg {
@@ -2011,7 +2299,7 @@ button {
 
 	.avatar-display {
 		width: 160px;
-		height: 405px;
+		height: 405px !important;
 		/* background-color: red; */
 	}
 
@@ -2050,37 +2338,37 @@ button {
 	}
 
 	/* Posiciones actuales de tus piezas */
-	.avatar-head {
+	/* .avatar-head {
 		width: 120px;
 		top: -165px;
 		left: 17px;
 		z-index: 4;
-	}
+	} */
 
 	.avatar-shirt {
 		width: 196px;
-		top: -46px;
+		top: -76px;
 		left: -17px;
 		z-index: 5;
 	}
 
 	.avatar-torso {
 		width: 222px;
-		top: -75px;
+		top: -105px;
 		left: -31px;
 		z-index: 3;
 	}
 
 	.avatar-legs {
 		width: 158px;
-		top: 100px;
+		top: 70px;
 		left: 3px;
 		z-index: 2;
 	}
 
 	.avatar-feets {
 		width: 167px;
-		top: 189px;
+		top: 159px;
 		left: -5px;
 		z-index: 1;
 	}
@@ -3072,6 +3360,7 @@ button {
 	color: white;
 	font-weight: 700;
 	cursor: pointer;
+	display: none; /* AQUI */
 }
 
 @keyframes viewFadeUp {

@@ -644,60 +644,80 @@ function App() {
 			{currentView === "dashboard" && (
 				<section className="dashboard-reposition">
 					<section className="player-card">
-						<div className="player-info">
-							<div className="clock-card">
-								<strong>{currentTime}</strong>
+						<div className="day-progress-card">
+							<div className="time-summary-card">
+								<section className="current-time-section">
+									<div className="clock-card">
+										<strong>{currentTime}</strong>
+									</div>
+								</section>
+
+								<section className="time-progress-inline">
+									<div className="progress-list">
+										{progressStats.map((item) => (
+											<div className="progress-item" key={item.key}>
+												<div className="progress-label">
+													<CalendarCheck size={21} strokeWidth={1.8} />
+													<span>
+														{item.label}: {item.value}%
+													</span>
+												</div>
+
+												<div className="progress-bar">
+													<div
+														style={{
+															width: `${item.value}%`,
+															background: item.color,
+														}}
+													/>
+												</div>
+											</div>
+										))}
+									</div>
+								</section>
 							</div>
 
 							<div className="day-progress-widget">
-								<p>☀ Progreso del día</p>
+								<div className="day-progress-left">
+									<small className="daily-progress-count">
+										Progreso: {completedDailyTasks}/{totalDailyTasks}
+									</small>
 
-								<div
-									className="progress-circle"
-									style={{
-										"--daily-progress": `${dailyProgressPercent * 3.6}deg`,
-									}}
-								>
-									<span>
-										{dailyGoalsLoading ? "..." : dailyProgressPercent}
-									</span>
+									<p className="progress-note">
+										{dailyProgressPercent === 100
+											? "¡Día completado!"
+											: "¡Sigue así!"}
+									</p>
 
-									{!dailyGoalsLoading && <small>%</small>}
+									<div className="low-poly-mountains" aria-hidden="true">
+										<span className="mountain mountain-small-left" />
+										<span className="mountain mountain-center" />
+										<span className="mountain mountain-tall" />
+										<span className="mountain mountain-small-right" />
+										<span className="mountain mountain-right" />
+									</div>
 								</div>
 
-								<p className="progress-note">
-									{dailyProgressPercent === 100
-										? "¡Día completado!"
-										: "¡Sigue así!"}
-								</p>
+								<div className="day-progress-right">
+									<p className="day-progress-title">☀ Progreso del día</p>
 
-								<small className="daily-progress-count">
-									Progreso: {completedDailyTasks}/{totalDailyTasks}
-								</small>
+									<div
+										className="progress-circle"
+										style={{
+											"--daily-progress": `${dailyProgressPercent * 3.6}deg`,
+										}}
+									>
+										<span>
+											{dailyGoalsLoading ? "..." : dailyProgressPercent}
+										</span>
+
+										{!dailyGoalsLoading && <small>%</small>}
+									</div>
+								</div>
 							</div>
 
-							<div className="time-progress-inline">
-								<div className="progress-list">
-									{progressStats.map((item) => (
-										<div className="progress-item" key={item.key}>
-											<div className="progress-label">
-												<CalendarCheck size={21} strokeWidth={1.8} />
-												<span>
-													{item.label}: {item.value}%
-												</span>
-											</div>
+							<div className="daily-goals-notifications">
 
-											<div className="progress-bar">
-												<div
-													style={{
-														width: `${item.value}%`,
-														background: item.color,
-													}}
-												/>
-											</div>
-										</div>
-									))}
-								</div>
 							</div>
 						</div>
 
@@ -756,8 +776,8 @@ function App() {
 							</div>
 
 							<div className="wallet-row">
-								<span>🪙 {displayPlayer.coins} Monedas</span>
-								<span>💎 {displayPlayer.gems}</span>
+								<span>🪙 {displayPlayer.coins} Coins</span>
+								<span>💎 {displayPlayer.gems} Gems</span>
 							</div>
 
 							<button
@@ -769,7 +789,7 @@ function App() {
 							</button>
 						</div>
 
-						<div className="day-progress-card">
+						<div className="player-info">
 							<article className="priorities-card">
 								<div className="card-title">
 									<span>🏆</span>
