@@ -191,3 +191,24 @@ export async function createDailyGoal(dailyGoalData) {
 
 	return result;
 }
+
+
+// Progress daily goal task
+export async function progressDailyGoalTask(data) {
+	const response = await fetch(
+		`${LEVELUP_API_URL}/api/daily-goals/tasks/progress`,
+		{
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(data),
+		}
+	);
+
+	const result = await response.json();
+
+	if (!response.ok) {
+		throw new Error(result.detail || "Could not update daily goal progress");
+	}
+
+	return result;
+}

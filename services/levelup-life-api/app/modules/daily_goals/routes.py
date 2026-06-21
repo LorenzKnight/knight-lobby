@@ -153,44 +153,71 @@ def get_daily_goals(user_id: int):
 
     for goal in goals_result["data"]:
         tasks_result = select_from(
-            table_name="""
-                daily_goal_tasks AS dgt
-                LEFT JOIN daily_goal_task_logs AS dgtl
-                    ON dgtl.daily_goal_task_id = dgt.daily_goal_task_id
-                    AND dgtl.user_id = %s
-                    AND dgtl.completed_date = %s
-            """,
+            table_name="daily_goal_tasks",
             columns=[
-                "dgt.daily_goal_task_id",
-                "dgt.daily_goal_id",
-                "dgt.title",
-                "dgt.description",
-                "dgt.is_required",
-                "dgt.progress_type",
-                "dgt.target_value",
-                "dgt.step_value",
-                "dgt.unit",
-                "dgt.sort_order",
-                "dgtl.daily_goal_task_log_id",
-                "dgtl.progress_value",
-                "dgtl.is_completed",
+                "daily_goal_task_id",
+                "daily_goal_id",
+                "title",
+                "description",
+                "is_required",
+                "progress_type",
+                "target_value",
+                "step_value",
+                "unit",
+                "sort_order",
             ],
             where_clause={
-                "dgt.daily_goal_id": goal["daily_goal_id"],
+                "daily_goal_id": goal["daily_goal_id"],
             },
             options={
-                "params": [user_id, today],
-                "order_by": "dgt.sort_order",
+                "order_by": "sort_order",
                 "order_direction": "ASC",
             },
         )
 
         tasks = tasks_result["data"] if tasks_result["success"] else []
 
+        task_logs_result = select_from(
+            table_name="daily_goal_task_logs",
+            columns=[
+                "daily_goal_task_log_id",
+                "daily_goal_task_id",
+                "progress_value",
+                "is_completed",
+            ],
+            where_clause={
+                "user_id": user_id,
+                "daily_goal_id": goal["daily_goal_id"],
+                "completed_date": today,
+            },
+        )
+
+        task_logs = task_logs_result["data"] if task_logs_result["success"] else []
+
+        task_logs_by_task_id = {
+            log["daily_goal_task_id"]: log
+            for log in task_logs
+        }
+
         formatted_tasks = []
 
         for task in tasks:
-            progress_value = task["progress_value"] or 0
+            task_log = task_logs_by_task_id.get(
+                task["daily_goal_task_id"]
+            )
+
+            progress_value = (
+                task_log["progress_value"]
+                if task_log
+                else 0
+            )
+
+            is_completed = (
+                task_log["is_completed"]
+                if task_log
+                else False
+            )
+
             target_value = task["target_value"] or 1
 
             task_progress_percent = calculate_progress(
@@ -200,10 +227,15 @@ def get_daily_goals(user_id: int):
 
             formatted_tasks.append({
                 **task,
+                "daily_goal_task_log_id": (
+                    task_log["daily_goal_task_log_id"]
+                    if task_log
+                    else None
+                ),
                 "progress_value": float(progress_value),
                 "target_value": float(target_value),
                 "step_value": float(task["step_value"] or 1),
-                "is_completed": bool(task["is_completed"]),
+                "is_completed": bool(is_completed),
                 "task_progress_text": f"{progress_value}/{target_value} {task['unit']}",
                 "task_progress_percent": task_progress_percent,
             })
@@ -216,9 +248,15 @@ def get_daily_goals(user_id: int):
             if task["is_completed"]
         )
 
-        progress_percent = calculate_progress(
-            completed_tasks,
-            total_tasks,
+        total_task_progress = sum(
+            task["task_progress_percent"]
+            for task in formatted_tasks
+        )
+
+        progress_percent = (
+            round(total_task_progress / total_tasks)
+            if total_tasks > 0
+            else 0
         )
 
         daily_goals.append({
@@ -321,6 +359,7 @@ def complete_daily_goal_task(payload: CompleteDailyGoalTaskRequest):
                 "daily_goal_id": payload.daily_goal_id,
                 "daily_goal_task_id": payload.daily_goal_task_id,
                 "completed_date": today,
+                "progress_value": 1,
                 "is_completed": True,
             },
         )

@@ -37,6 +37,7 @@ import {
 	getDailyGoals,
 	getGameProfile,
 	getLifeAreas,
+	progressDailyGoalTask,
 	saveAvatarConfig,
 } from "./services/api";
 import "./App.css";
@@ -669,6 +670,72 @@ function App() {
 		}
 	}
 
+	async function handleProgressDailyGoalTask(goalId, task) {
+		if (!authUser?.user_id || completingTaskId) return;
+
+		setCompletingTaskId(task.daily_goal_task_id);
+
+		try {
+			const result = await progressDailyGoalTask({
+				user_id: authUser.user_id,
+				daily_goal_id: goalId,
+				daily_goal_task_id: task.daily_goal_task_id,
+				progress_amount: Number(task.step_value || 1),
+			});
+
+			if (!result.success) return;
+
+			const goalsResult = await getDailyGoals(authUser.user_id);
+
+			if (goalsResult.success) {
+				setDailyGoals(goalsResult.data || []);
+			}
+
+			if (result.data.reward_applied && result.data.game_profile) {
+				setGameProfile((currentProfile) => ({
+					...currentProfile,
+					...result.data.game_profile,
+				}));
+
+				showToast(
+					result.data.game_profile.leveled_up
+						? "¡Subiste de nivel!"
+						: "¡Día completado!",
+					"Has completado todos tus hábitos diarios.",
+					"success"
+				);
+
+				return;
+			}
+
+			if (result.data.daily_goal_completed) {
+				showToast(
+					"Hábito completado",
+					"Este hábito diario fue completado.",
+					"success"
+				);
+
+				return;
+			}
+
+			showToast(
+				"Progreso actualizado",
+				result.data.task_progress_text,
+				"success"
+			);
+		} catch (error) {
+			console.error("Could not update daily goal progress:", error);
+
+			showToast(
+				"No se pudo actualizar",
+				"La tarea no pudo guardar el progreso.",
+				"error"
+			);
+		} finally {
+			setCompletingTaskId(null);
+		}
+	}
+
 	function handleBackToDashboard() {
 		setCurrentView("dashboard");
 		setSelectedLifeArea(null);
@@ -939,39 +1006,80 @@ function App() {
 											</div>
 
 											<div className="daily-goal-task-list">
-												{goal.tasks.map((task) => (
-													<button
-														type="button"
-														className={`daily-goal-task ${
-															task.is_completed ? "completed" : ""
-														}`}
-														key={task.daily_goal_task_id}
-														disabled={
-															task.is_completed ||
-															completingTaskId === task.daily_goal_task_id
-														}
-														onClick={() =>
-															handleCompleteDailyGoalTask(
-																goal.daily_goal_id,
-																task.daily_goal_task_id
-															)
-														}
-													>
-														<span>
-															{task.is_completed ? "✓" : "○"}
-														</span>
+												{goal.tasks.map((task) => {
+													const isNumericTask = task.progress_type === "numeric";
 
-														<strong>{task.title}</strong>
+													return (
+														<div
+															className={`daily-goal-task-card ${
+																task.is_completed ? "completed" : ""
+															}`}
+															key={task.daily_goal_task_id}
+														>
+															<button
+																type="button"
+																className={`daily-goal-task ${
+																	task.is_completed ? "completed" : ""
+																}`}
+																disabled={
+																	task.is_completed ||
+																	completingTaskId === task.daily_goal_task_id
+																}
+																onClick={() => {
+																	if (isNumericTask) {
+																		handleProgressDailyGoalTask(
+																			goal.daily_goal_id,
+																			task
+																		);
+																		return;
+																	}
 
-														<small>
-															{task.is_completed
-																? "Completada"
-																: completingTaskId === task.daily_goal_task_id
-																	? "Guardando..."
-																	: "Completar"}
-														</small>
-													</button>
-												))}
+																	handleCompleteDailyGoalTask(
+																		goal.daily_goal_id,
+																		task.daily_goal_task_id
+																	);
+																}}
+															>
+																<span>{task.is_completed ? "✓" : "○"}</span>
+
+																<strong>{task.title}</strong>
+
+																<small>
+																	{task.is_completed
+																		? "Completada"
+																		: completingTaskId === task.daily_goal_task_id
+																			? "Guardando..."
+																			: isNumericTask
+																				? `+${task.step_value} ${task.unit}`
+																				: "Completar"}
+																</small>
+															</button>
+
+															{isNumericTask && (
+																<div className="daily-goal-task-progress">
+																	<div className="daily-goal-task-progress-info">
+																		<span>
+																			{task.task_progress_text ||
+																				`0/${task.target_value} ${task.unit}`}
+																		</span>
+
+																		<strong>
+																			{task.task_progress_percent || 0}%
+																		</strong>
+																	</div>
+
+																	<div className="daily-goal-task-progress-bar">
+																		<div
+																			style={{
+																				width: `${task.task_progress_percent || 0}%`,
+																			}}
+																		/>
+																	</div>
+																</div>
+															)}
+														</div>
+													);
+												})}
 											</div>
 										</article>
 									))

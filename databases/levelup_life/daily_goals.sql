@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS daily_goal_task_logs (
     daily_goal_task_id INT NOT NULL,
     progress_value NUMERIC NOT NULL DEFAULT 0,
     completed_date DATE NOT NULL,
-    is_completed BOOLEAN NOT NULL DEFAULT TRUE,
+    is_completed BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (user_id, daily_goal_task_id, completed_date)
 );
