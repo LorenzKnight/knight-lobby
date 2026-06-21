@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from knight_core.functions import select_from, insert_into
+from knight_core.functions import select_from, insert_into, update_table
 from app.modules.rewards.service import apply_reward
 
 
@@ -19,6 +19,32 @@ class CompleteDailyGoalTaskRequest(BaseModel):
     daily_goal_id: int
     daily_goal_task_id: int
 
+class ProgressDailyGoalTaskRequest(BaseModel):
+    user_id: int
+    daily_goal_id: int
+    daily_goal_task_id: int
+    progress_amount: float
+
+class CreateDailyGoalRequest(BaseModel):
+    user_id: int
+    life_area_id: int | None = None
+
+    title: str
+    description: str | None = None
+
+    task_title: str
+    task_description: str | None = None
+
+    progress_type: str = "checkbox"
+    target_value: float = 1
+    step_value: float = 1
+    unit: str = "task"
+
+    exp_reward: int = 10
+    coins_reward: int = 2
+    gems_reward: int = 0
+    sort_order: int = 0
+
 
 # Calculates the completion percentage.
 def calculate_progress(completed_tasks: int, total_tasks: int) -> int:
@@ -26,6 +52,64 @@ def calculate_progress(completed_tasks: int, total_tasks: int) -> int:
         return 0
 
     return round((completed_tasks / total_tasks) * 100)
+
+# Counter without repetition
+def evaluate_daily_goal_completion(
+    user_id: int,
+    daily_goal_id: int,
+    today: date,
+):
+    tasks_result = select_from(
+        table_name="daily_goal_tasks",
+        columns=[
+            "daily_goal_task_id",
+        ],
+        where_clause={
+            "daily_goal_id": daily_goal_id,
+        },
+    )
+
+    total_tasks = (
+        tasks_result["count"]
+        if tasks_result["success"]
+        else 0
+    )
+
+    completed_tasks_result = select_from(
+        table_name="daily_goal_task_logs",
+        columns=[
+            "daily_goal_task_log_id",
+        ],
+        where_clause={
+            "user_id": user_id,
+            "daily_goal_id": daily_goal_id,
+            "completed_date": today,
+            "is_completed": True,
+        },
+    )
+
+    completed_tasks = (
+        completed_tasks_result["count"]
+        if completed_tasks_result["success"]
+        else 0
+    )
+
+    progress_percent = calculate_progress(
+        completed_tasks,
+        total_tasks,
+    )
+
+    daily_goal_completed = (
+        total_tasks > 0
+        and completed_tasks == total_tasks
+    )
+
+    return {
+        "total_tasks": total_tasks,
+        "completed_tasks": completed_tasks,
+        "progress_percent": progress_percent,
+        "daily_goal_completed": daily_goal_completed,
+    }
 
 
 # Loads the daily goals and their task progress.
@@ -38,6 +122,7 @@ def get_daily_goals(user_id: int):
         columns=[
             "daily_goal_id",
             "user_id",
+            "life_area_id",
             "title",
             "description",
             "exp_reward",
@@ -81,8 +166,14 @@ def get_daily_goals(user_id: int):
                 "dgt.title",
                 "dgt.description",
                 "dgt.is_required",
+                "dgt.progress_type",
+                "dgt.target_value",
+                "dgt.step_value",
+                "dgt.unit",
                 "dgt.sort_order",
                 "dgtl.daily_goal_task_log_id",
+                "dgtl.progress_value",
+                "dgtl.is_completed",
             ],
             where_clause={
                 "dgt.daily_goal_id": goal["daily_goal_id"],
@@ -96,13 +187,26 @@ def get_daily_goals(user_id: int):
 
         tasks = tasks_result["data"] if tasks_result["success"] else []
 
-        formatted_tasks = [
-            {
+        formatted_tasks = []
+
+        for task in tasks:
+            progress_value = task["progress_value"] or 0
+            target_value = task["target_value"] or 1
+
+            task_progress_percent = calculate_progress(
+                float(progress_value),
+                float(target_value),
+            )
+
+            formatted_tasks.append({
                 **task,
-                "is_completed": task["daily_goal_task_log_id"] is not None,
-            }
-            for task in tasks
-        ]
+                "progress_value": float(progress_value),
+                "target_value": float(target_value),
+                "step_value": float(task["step_value"] or 1),
+                "is_completed": bool(task["is_completed"]),
+                "task_progress_text": f"{progress_value}/{target_value} {task['unit']}",
+                "task_progress_percent": task_progress_percent,
+            })
 
         total_tasks = len(formatted_tasks)
 
@@ -149,6 +253,7 @@ def complete_daily_goal_task(payload: CompleteDailyGoalTaskRequest):
         columns=[
             "daily_goal_id",
             "user_id",
+            "life_area_id",
             "title",
             "is_active",
         ],
@@ -318,6 +423,7 @@ def complete_daily_goal_task(payload: CompleteDailyGoalTaskRequest):
             table_name="daily_goals",
             columns=[
                 "daily_goal_id",
+                "life_area_id",
                 "exp_reward",
                 "coins_reward",
                 "gems_reward",
@@ -459,5 +565,301 @@ def complete_daily_goal_task(payload: CompleteDailyGoalTaskRequest):
             "all_daily_goals_completed": all_daily_goals_completed,
             "reward_applied": reward_applied,
             "game_profile": game_profile,
+        },
+    }
+
+# Create daily goal
+@router.post("")
+def create_daily_goal(payload: CreateDailyGoalRequest):
+    if not payload.title.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Daily goal title is required",
+        )
+
+    if not payload.task_title.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Task title is required",
+        )
+
+    if payload.progress_type not in ["checkbox", "numeric"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid progress type",
+        )
+
+    if payload.target_value <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Target value must be greater than zero",
+        )
+
+    if payload.step_value <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Step value must be greater than zero",
+        )
+
+    if payload.life_area_id is not None:
+        life_area_result = select_from(
+            table_name="life_areas",
+            columns=[
+                "life_area_id",
+                "user_id",
+            ],
+            where_clause={
+                "life_area_id": payload.life_area_id,
+                "user_id": payload.user_id,
+            },
+            options={
+                "fetch_first": True,
+            },
+        )
+
+        if not life_area_result["success"]:
+            raise HTTPException(
+                status_code=404,
+                detail="Life area not found",
+            )
+
+    goal_result = insert_into(
+        table_name="daily_goals",
+        query_data={
+            "user_id": payload.user_id,
+            "life_area_id": payload.life_area_id,
+            "title": payload.title.strip(),
+            "description": payload.description,
+            "exp_reward": payload.exp_reward,
+            "coins_reward": payload.coins_reward,
+            "gems_reward": payload.gems_reward,
+            "sort_order": payload.sort_order,
+        },
+    )
+
+    if not goal_result["success"]:
+        raise HTTPException(
+            status_code=400,
+            detail=goal_result["message"],
+        )
+
+    created_goal_result = select_from(
+        table_name="daily_goals",
+        columns=[
+            "daily_goal_id",
+            "user_id",
+            "life_area_id",
+            "title",
+            "description",
+            "exp_reward",
+            "coins_reward",
+            "gems_reward",
+            "is_active",
+            "sort_order",
+        ],
+        where_clause={
+            "user_id": payload.user_id,
+            "title": payload.title.strip(),
+            "is_active": True,
+        },
+        options={
+            "order_by": "daily_goal_id",
+            "order_direction": "DESC",
+            "fetch_first": True,
+        },
+    )
+
+    if not created_goal_result["success"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Daily goal was created but could not be loaded",
+        )
+
+    created_goal = created_goal_result["data"]
+
+    task_result = insert_into(
+        table_name="daily_goal_tasks",
+        query_data={
+            "daily_goal_id": created_goal["daily_goal_id"],
+            "title": payload.task_title.strip(),
+            "description": payload.task_description,
+            "progress_type": payload.progress_type,
+            "target_value": payload.target_value,
+            "step_value": payload.step_value,
+            "unit": payload.unit,
+            "sort_order": 0,
+        },
+    )
+
+    if not task_result["success"]:
+        raise HTTPException(
+            status_code=400,
+            detail=task_result["message"],
+        )
+
+    return {
+        "success": True,
+        "message": "Daily goal created successfully",
+        "data": created_goal,
+    }
+
+# Add partial progress
+@router.post("/tasks/progress")
+def progress_daily_goal_task(payload: ProgressDailyGoalTaskRequest):
+    today = date.today()
+
+    if payload.progress_amount <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Progress amount must be greater than zero",
+        )
+
+    goal_result = select_from(
+        table_name="daily_goals",
+        columns=[
+            "daily_goal_id",
+            "user_id",
+            "life_area_id",
+            "title",
+            "is_active",
+        ],
+        where_clause={
+            "daily_goal_id": payload.daily_goal_id,
+            "user_id": payload.user_id,
+            "is_active": True,
+        },
+        options={
+            "fetch_first": True,
+        },
+    )
+
+    if not goal_result["success"]:
+        raise HTTPException(
+            status_code=404,
+            detail="Daily goal not found",
+        )
+
+    task_result = select_from(
+        table_name="daily_goal_tasks",
+        columns=[
+            "daily_goal_task_id",
+            "daily_goal_id",
+            "title",
+            "progress_type",
+            "target_value",
+            "step_value",
+            "unit",
+        ],
+        where_clause={
+            "daily_goal_task_id": payload.daily_goal_task_id,
+            "daily_goal_id": payload.daily_goal_id,
+        },
+        options={
+            "fetch_first": True,
+        },
+    )
+
+    if not task_result["success"]:
+        raise HTTPException(
+            status_code=404,
+            detail="Daily goal task not found",
+        )
+
+    task = task_result["data"]
+
+    if task["progress_type"] != "numeric":
+        raise HTTPException(
+            status_code=400,
+            detail="This task does not support numeric progress",
+        )
+
+    existing_log = select_from(
+        table_name="daily_goal_task_logs",
+        columns=[
+            "daily_goal_task_log_id",
+            "progress_value",
+            "is_completed",
+        ],
+        where_clause={
+            "user_id": payload.user_id,
+            "daily_goal_task_id": payload.daily_goal_task_id,
+            "completed_date": today,
+        },
+        options={
+            "fetch_first": True,
+        },
+    )
+
+    current_progress = 0
+
+    if existing_log["success"]:
+        current_progress = existing_log["data"]["progress_value"] or 0
+
+    new_progress = float(current_progress) + payload.progress_amount
+    target_value = float(task["target_value"] or 1)
+
+    if new_progress > target_value:
+        new_progress = target_value
+
+    is_completed = new_progress >= target_value
+
+    if existing_log["success"]:
+        save_result = update_table(
+            table_name="daily_goal_task_logs",
+            query_data={
+                "progress_value": new_progress,
+                "is_completed": is_completed,
+            },
+            where_clause={
+                "daily_goal_task_log_id": existing_log["data"]["daily_goal_task_log_id"],
+            },
+        )
+    else:
+        save_result = insert_into(
+            table_name="daily_goal_task_logs",
+            query_data={
+                "user_id": payload.user_id,
+                "daily_goal_id": payload.daily_goal_id,
+                "daily_goal_task_id": payload.daily_goal_task_id,
+                "completed_date": today,
+                "progress_value": new_progress,
+                "is_completed": is_completed,
+            },
+        )
+
+    if not save_result["success"]:
+        raise HTTPException(
+            status_code=400,
+            detail=save_result["message"],
+        )
+
+    task_progress_percent = calculate_progress(
+        new_progress,
+        target_value,
+    )
+
+    completion_state = evaluate_daily_goal_completion(
+        user_id=payload.user_id,
+        daily_goal_id=payload.daily_goal_id,
+        today=today,
+    )
+
+    return {
+        "success": True,
+        "message": "Daily goal task progress updated successfully",
+        "data": {
+            "daily_goal_id": payload.daily_goal_id,
+            "daily_goal_task_id": payload.daily_goal_task_id,
+            "progress_value": new_progress,
+            "target_value": target_value,
+            "unit": task["unit"],
+            "task_progress_text": f"{new_progress}/{target_value} {task['unit']}",
+            "task_progress_percent": task_progress_percent,
+            "task_completed": is_completed,
+            "completed_tasks": completion_state["completed_tasks"],
+            "total_tasks": completion_state["total_tasks"],
+            "progress_text": f"{completion_state['completed_tasks']}/{completion_state['total_tasks']}",
+            "progress_percent": completion_state["progress_percent"],
+            "daily_goal_completed": completion_state["daily_goal_completed"],
         },
     }

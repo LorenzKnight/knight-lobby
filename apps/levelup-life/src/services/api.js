@@ -171,3 +171,23 @@ export async function completeDailyGoalTask(data) {
 
 	return result;
 }
+
+
+// create daily goal.
+export async function createDailyGoal(dailyGoalData) {
+	const response = await fetch(`${LEVELUP_API_URL}/api/daily-goals`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(dailyGoalData),
+	});
+
+	const result = await response.json();
+
+	if (!response.ok) {
+		throw new Error(result.detail || "Could not create daily goal");
+	}
+
+	return result;
+}
