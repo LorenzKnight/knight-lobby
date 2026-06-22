@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	BarChart3,
 	Bell,
@@ -61,6 +61,10 @@ function App() {
 	const [dailyGoals, setDailyGoals] = useState([]);
 	const [dailyGoalsLoading, setDailyGoalsLoading] = useState(false);
 	const [completingTaskId, setCompletingTaskId] = useState(null);
+	
+	const dailyGoalsPreviewRef = useRef(null);
+	const [selectedDailyGoalId, setSelectedDailyGoalId] = useState(null);
+	const [dailyGoalMenuArrowTop, setDailyGoalMenuArrowTop] = useState(40);
 
 	const [showDailyGoalForm, setShowDailyGoalForm] = useState(false);
 	const [dailyGoalError, setDailyGoalError] = useState("");
@@ -285,9 +289,11 @@ function App() {
 		setAuthUser(null);
 		setGameProfile(null);
 		setDailyGoals([]);
+		setSelectedDailyGoalId(null);
 		setShowAreasMenu(false);
 		setShowQuickAddMenu(false);
 		setShowAreaForm(false);
+		setShowDailyGoalForm(false);
 		setShowAvatarMenu(false);
 		setToast(null);
 	}
@@ -736,6 +742,27 @@ function App() {
 		}
 	}
 
+	function handleOpenDailyGoalMenu(goalId, event) {
+		const previewElement = dailyGoalsPreviewRef.current;
+		const clickedElement = event.currentTarget;
+
+		if (previewElement && clickedElement) {
+			const previewRect = previewElement.getBoundingClientRect();
+			const clickedRect = clickedElement.getBoundingClientRect();
+
+			const arrowTop =
+				clickedRect.top -
+				previewRect.top +
+				clickedRect.height / 2;
+
+			setDailyGoalMenuArrowTop(arrowTop);
+		}
+
+		setSelectedDailyGoalId((currentId) =>
+			currentId === goalId ? null : goalId
+		);
+	}
+
 	function handleBackToDashboard() {
 		setCurrentView("dashboard");
 		setSelectedLifeArea(null);
@@ -874,6 +901,10 @@ function App() {
 
 	const isAreasActive = showAreasMenu || currentView === "life-area-detail";
 
+	const selectedDailyGoal = dailyGoals.find(
+		(goal) => goal.daily_goal_id === selectedDailyGoalId
+	);
+
 	return (
 		<main className="levelup-shell">
 			<header className="levelup-topbar">
@@ -964,126 +995,157 @@ function App() {
 								</div>
 							</div>
 
-							<div className="daily-goals-preview">
+							<div className="daily-goals-preview" ref={dailyGoalsPreviewRef}>
 								<div className="daily-goals-preview-header">
 									<strong>Habitos u objetivos diarios</strong>
 									<span>{completedDailyTasks}/{totalDailyTasks}</span>
 								</div>
 
-								{dailyGoalsLoading && (
-									<p className="daily-goals-message">Cargando objetivos...</p>
-								)}
+								<div className="daily-goals-scroll-area">
+									{dailyGoalsLoading && (
+										<p className="daily-goals-message">Cargando objetivos...</p>
+									)}
 
-								{!dailyGoalsLoading && dailyGoals.length === 0 && (
-									<p className="daily-goals-message">
-										Todavía no tienes objetivos diarios.
-									</p>
-								)}
+									{!dailyGoalsLoading && dailyGoals.length === 0 && (
+										<p className="daily-goals-message">
+											Todavía no tienes objetivos diarios.
+										</p>
+									)}
 
-								{!dailyGoalsLoading &&
-									dailyGoals.map((goal) => (
-										<article
-											className="daily-goal-card"
-											key={goal.daily_goal_id}
-										>
-											<div className="daily-goal-card-header">
-												<div>
-													<strong>{goal.title}</strong>
-													<small>
-														Progreso: {goal.progress_text}
-													</small>
-												</div>
+									{!dailyGoalsLoading &&
+										dailyGoals.map((goal) => (
+											<article
+												className={`daily-goal-card ${
+													selectedDailyGoalId === goal.daily_goal_id ? "selected" : ""
+												}`}
+												key={goal.daily_goal_id}
+											>
+												<button
+													type="button"
+													className="daily-goal-summary-button"
+													onClick={(event) =>
+														handleOpenDailyGoalMenu(goal.daily_goal_id, event)
+													}
+												>
+													<div className="daily-goal-card-header">
+														<strong>{goal.title}</strong>
+														<span>{goal.progress_percent}%</span>
+													</div>
 
-												<span>{goal.progress_percent}%</span>
-											</div>
-
-											<div className="daily-goal-mini-bar">
-												<div
-													style={{
-														width: `${goal.progress_percent}%`,
-													}}
-												/>
-											</div>
-
-											<div className="daily-goal-task-list">
-												{goal.tasks.map((task) => {
-													const isNumericTask = task.progress_type === "numeric";
-
-													return (
+													<div className="daily-goal-mini-bar">
 														<div
-															className={`daily-goal-task-card ${
+															style={{
+																width: `${goal.progress_percent}%`,
+															}}
+														/>
+													</div>
+												</button>
+											</article>
+										))
+									}
+								</div>
+
+								{selectedDailyGoal && (
+									<div
+										className="daily-goal-floating-menu"
+										style={{
+											"--arrow-top": `${dailyGoalMenuArrowTop}px`,
+										}}
+									>
+										<div className="daily-goal-floating-header">
+											<div>
+												<strong>{selectedDailyGoal.title}</strong>
+												<small>{selectedDailyGoal.progress_percent}% completado</small>
+											</div>
+
+											<button
+												type="button"
+												onClick={() => setSelectedDailyGoalId(null)}
+												aria-label="Cerrar hábito diario"
+											>
+												×
+											</button>
+										</div>
+
+										<div className="daily-goal-task-list">
+											{selectedDailyGoal.tasks.map((task) => {
+												const isNumericTask = task.progress_type === "numeric";
+
+												return (
+													<div
+														className={`daily-goal-task-card ${
+															task.is_completed ? "completed" : ""
+														}`}
+														key={task.daily_goal_task_id}
+													>
+														<button
+															type="button"
+															className={`daily-goal-task ${
 																task.is_completed ? "completed" : ""
 															}`}
-															key={task.daily_goal_task_id}
-														>
-															<button
-																type="button"
-																className={`daily-goal-task ${
-																	task.is_completed ? "completed" : ""
-																}`}
-																disabled={
-																	task.is_completed ||
-																	completingTaskId === task.daily_goal_task_id
-																}
-																onClick={() => {
-																	if (isNumericTask) {
-																		handleProgressDailyGoalTask(
-																			goal.daily_goal_id,
-																			task
-																		);
-																		return;
-																	}
-
-																	handleCompleteDailyGoalTask(
-																		goal.daily_goal_id,
-																		task.daily_goal_task_id
+															disabled={
+																task.is_completed ||
+																completingTaskId === task.daily_goal_task_id
+															}
+															onClick={() => {
+																if (isNumericTask) {
+																	handleProgressDailyGoalTask(
+																		selectedDailyGoal.daily_goal_id,
+																		task
 																	);
-																}}
-															>
-																<span>{task.is_completed ? "✓" : "○"}</span>
+																	return;
+																}
 
-																<strong>{task.title}</strong>
+																handleCompleteDailyGoalTask(
+																	selectedDailyGoal.daily_goal_id,
+																	task.daily_goal_task_id
+																);
+															}}
+														>
+															<span>{task.is_completed ? "✓" : "○"}</span>
 
-																<small>
-																	{task.is_completed
-																		? "Completada"
-																		: completingTaskId === task.daily_goal_task_id
-																			? "Guardando..."
-																			: isNumericTask
-																				? `+${task.step_value} ${task.unit}`
-																				: "Completar"}
-																</small>
-															</button>
+															<strong>{task.title}</strong>
 
-															{isNumericTask && (
-																<div className="daily-goal-task-progress">
-																	<div className="daily-goal-task-progress-info">
-																		<span>
-																			{task.task_progress_text ||
-																				`0/${task.target_value} ${task.unit}`}
-																		</span>
+															<small>
+																{task.is_completed
+																	? "Completada"
+																	: completingTaskId === task.daily_goal_task_id
+																		? "Guardando..."
+																		: isNumericTask
+																			? `+${task.step_value} ${task.unit}`
+																			: "Completar"}
+															</small>
+														</button>
 
-																		<strong>
-																			{task.task_progress_percent || 0}%
-																		</strong>
-																	</div>
+														{isNumericTask && (
+															<div className="daily-goal-task-progress">
+																<div className="daily-goal-task-progress-info">
+																	<span>
+																		{task.task_progress_text ||
+																			`0/${task.target_value} ${task.unit}`}
+																	</span>
 
-																	<div className="daily-goal-task-progress-bar">
-																		<div
-																			style={{
-																				width: `${task.task_progress_percent || 0}%`,
-																			}}
-																		/>
-																	</div>
+																	<strong>
+																		{task.task_progress_percent || 0}%
+																	</strong>
 																</div>
-															)}
-														</div>
-													);
-												})}
-											</div>
-										</article>
-									))
-								}
+
+																<div className="daily-goal-task-progress-bar">
+																	<div
+																		style={{
+																			width: `${task.task_progress_percent || 0}%`,
+																		}}
+																	/>
+																</div>
+															</div>
+														)}
+													</div>
+												);
+											})}
+										</div>
+									</div>
+								)}
+								
 							</div>
 						</div>
 
