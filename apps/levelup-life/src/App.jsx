@@ -1369,18 +1369,6 @@ function App() {
 						<button
 							type="button"
 							className="quick-add-item"
-							onClick={() => handleQuickAddAction("goal")}
-						>
-							<span className="quick-add-icon">🏆</span>
-							<span>
-								<strong>Nuevo objetivo</strong>
-								<small>Meta grande con progreso</small>
-							</span>
-						</button>
-
-						<button
-							type="button"
-							className="quick-add-item"
 							onClick={() => handleQuickAddAction("daily_goal")}
 						>
 							<span className="quick-add-icon">🔥</span>
@@ -1399,6 +1387,18 @@ function App() {
 							<span>
 								<strong>Nueva misión</strong>
 								<small>Tarea o pendiente importante</small>
+							</span>
+						</button>
+
+						<button
+							type="button"
+							className="quick-add-item"
+							onClick={() => handleQuickAddAction("goal")}
+						>
+							<span className="quick-add-icon">🏆</span>
+							<span>
+								<strong>Nuevo objetivo</strong>
+								<small>Meta grande con progreso</small>
 							</span>
 						</button>
 					</div>
