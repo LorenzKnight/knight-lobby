@@ -212,3 +212,30 @@ export async function progressDailyGoalTask(data) {
 
 	return result;
 }
+
+
+// Check daily goal reminders
+export async function checkDailyGoalReminders(userId) {
+	const response = await fetch(
+		`${LEVELUP_API_URL}/api/daily-goals/reminders/check`,
+		{
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				user_id: userId,
+			}),
+		}
+	);
+
+	const result = await response.json();
+
+	if (!response.ok) {
+		throw new Error(
+			result.detail || "Could not check daily goal reminders"
+		);
+	}
+
+	return result;
+}

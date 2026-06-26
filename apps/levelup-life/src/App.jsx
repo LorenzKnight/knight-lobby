@@ -29,6 +29,7 @@ import PlayerAvatar from "./components/PlayerAvatar";
 import AvatarCustomizationView from "./components/AvatarCustomizationView";
 import {
 	addReward,
+	checkDailyGoalReminders,
 	completeDailyGoalTask,
 	createDailyGoal,
 	createLifeArea,
@@ -41,6 +42,15 @@ import {
 	saveAvatarConfig,
 } from "./services/api";
 import "./App.css";
+
+/**
+ * @typedef {{
+ *   id: string;
+ *   title: string;
+ *   message: string;
+ *   type: string;
+ * }} AppToast
+ */
 
 function App() {
 	const [authToken, setAuthToken] = useState(localStorage.getItem("knight_token"));
@@ -75,10 +85,15 @@ function App() {
 	const [dailyGoalLifeAreaId, setDailyGoalLifeAreaId] = useState("");
 
 	const [dailyGoalTaskTitle, setDailyGoalTaskTitle] = useState("");
-	const [dailyGoalProgressType, setDailyGoalProgressType] = useState("numeric");
+	const [dailyGoalProgressType, setDailyGoalProgressType] = useState("checkbox");
 	const [dailyGoalTargetValue, setDailyGoalTargetValue] = useState(1);
 	const [dailyGoalStepValue, setDailyGoalStepValue] = useState(1);
-	const [dailyGoalUnit, setDailyGoalUnit] = useState("km");
+	const [dailyGoalUnit, setDailyGoalUnit] = useState("task");
+
+	const [dailyGoalReminderEnabled, setDailyGoalReminderEnabled] = useState(false);
+	const [dailyGoalReminderIntervalMinutes, setDailyGoalReminderIntervalMinutes] = useState(120);
+	const [dailyGoalReminderStartTime, setDailyGoalReminderStartTime] = useState("08:00");
+	const [dailyGoalReminderEndTime, setDailyGoalReminderEndTime] = useState("22:00");
 
 	const [avatarItems, setAvatarItems] = useState({
 		caps: [],
@@ -107,7 +122,12 @@ function App() {
 	const [areaError, setAreaError] = useState("");
 	const [areaSaving, setAreaSaving] = useState(false);
 
-	const [toast, setToast] = useState(null);
+	/** @type {[AppToast[], Function]} */
+	const [toastQueue, setToastQueue] = useState([]);
+
+	/** @type {[AppToast | null, Function]} */
+	const [activeToast, setActiveToast] = useState(null);
+
 	const [currentTime, setCurrentTime] = useState("");
 
 	const [lifeAreas, setLifeAreas] = useState([]);
@@ -185,6 +205,66 @@ function App() {
 
 		loadDailyGoals();
 	}, [authUser]);
+
+	useEffect(() => {
+		if (!authUser?.user_id) return;
+
+		let isMounted = true;
+
+		async function loadDailyGoalReminders() {
+			try {
+				const result = await checkDailyGoalReminders(authUser.user_id);
+
+				if (!isMounted || !result.success) return;
+
+				const notifications = result.data || [];
+
+				notifications.forEach((notification) => {
+					showToast(
+						notification.title,
+						notification.message,
+						notification.type
+					);
+				});
+			} catch (error) {
+				console.error("Could not check daily goal reminders:", error);
+			}
+		}
+
+		loadDailyGoalReminders();
+
+		const reminderInterval = setInterval(() => {
+			loadDailyGoalReminders();
+		}, 60000);
+
+		return () => {
+			isMounted = false;
+			clearInterval(reminderInterval);
+		};
+	}, [authUser]);
+
+	useEffect(() => {
+		if (activeToast || toastQueue.length === 0) return;
+
+		const timeout = setTimeout(() => {
+			const nextToast = toastQueue[0];
+
+			setActiveToast(nextToast);
+			setToastQueue((currentQueue) => currentQueue.slice(1));
+		}, 0);
+
+		return () => clearTimeout(timeout);
+	}, [activeToast, toastQueue]);
+
+	useEffect(() => {
+		if (!activeToast) return;
+
+		const timeout = setTimeout(() => {
+			setActiveToast(null);
+		}, 3200);
+
+		return () => clearTimeout(timeout);
+	}, [activeToast]);
 
 	useEffect(() => {
 		async function loadLifeAreas() {
@@ -295,7 +375,8 @@ function App() {
 		setShowAreaForm(false);
 		setShowDailyGoalForm(false);
 		setShowAvatarMenu(false);
-		setToast(null);
+		setActiveToast(null);
+		setToastQueue([]);
 	}
 
 	function createSlug(text) {
@@ -341,10 +422,15 @@ function App() {
 			setDailyGoalLifeAreaId("");
 
 			setDailyGoalTaskTitle("");
-			setDailyGoalProgressType("numeric");
+			setDailyGoalProgressType("checkbox");
 			setDailyGoalTargetValue(1);
 			setDailyGoalStepValue(1);
-			setDailyGoalUnit("km");
+			setDailyGoalUnit("task");
+
+			setDailyGoalReminderEnabled(false);
+			setDailyGoalReminderIntervalMinutes(120);
+			setDailyGoalReminderStartTime("08:00");
+			setDailyGoalReminderEndTime("22:00");
 
 			setShowAreaForm(false);
 			setShowDailyGoalForm(true);
@@ -390,6 +476,14 @@ function App() {
 			return;
 		}
 
+		if (
+			dailyGoalReminderEnabled &&
+			Number(dailyGoalReminderIntervalMinutes) <= 0
+		) {
+			setDailyGoalError("El intervalo del recordatorio debe ser mayor que cero.");
+			return;
+		}
+
 		setDailyGoalError("");
 		setDailyGoalSaving(true);
 
@@ -415,6 +509,17 @@ function App() {
 				coins_reward: 2,
 				gems_reward: 0,
 				sort_order: dailyGoals.length + 1,
+
+				reminder_enabled: dailyGoalReminderEnabled,
+				reminder_interval_minutes: dailyGoalReminderEnabled
+					? Number(dailyGoalReminderIntervalMinutes)
+					: null,
+				reminder_start_time: dailyGoalReminderEnabled
+					? dailyGoalReminderStartTime
+					: null,
+				reminder_end_time: dailyGoalReminderEnabled
+					? dailyGoalReminderEndTime
+					: null,
 			};
 
 			const result = await createDailyGoal(payload);
@@ -563,15 +668,17 @@ function App() {
 	}
 
 	function showToast(title, message = "", type = "success") {
-		setToast({
+		const newToast = {
+			id: crypto.randomUUID(),
 			title,
 			message,
 			type,
-		});
+		};
 
-		setTimeout(() => {
-			setToast(null);
-		}, 3200);
+		setToastQueue((currentQueue) => [
+			...currentQueue,
+			newToast,
+		]);
 	}
 
 	async function handleTestReward() {
@@ -823,8 +930,8 @@ function App() {
 						<h1>LevelUp Life</h1>
 						<p className="login-kicker">Life as a video game</p>
 						<p>
-							Organiza tu vida como si fuera un videojuego: hábitos, áreas,
-							progreso y misiones diarias.
+							Organize your life like a video game: habits, areas,
+							Progress and daily missions.
 						</p>
 					</div>
 
@@ -833,7 +940,7 @@ function App() {
 							Email
 							<input
 								type="email"
-								placeholder="tu@email.com"
+								placeholder="your@email.com"
 								value={loginEmail}
 								onChange={(event) => setLoginEmail(event.target.value)}
 								required
@@ -841,7 +948,7 @@ function App() {
 						</label>
 
 						<label>
-							Contraseña
+							Password
 							<input
 								type="password"
 								placeholder="••••••••"
@@ -854,7 +961,7 @@ function App() {
 						{loginError && <p className="login-error">{loginError}</p>}
 
 						<button type="submit" disabled={loginLoading}>
-							{loginLoading ? "Entrando..." : "Entrar a mi vida"}
+							{loginLoading ? "Entering..." : "Entering my life"}
 						</button>
 					</form>
 				</section>
@@ -1484,7 +1591,7 @@ function App() {
 				</div>
 			)}
 
-			{showDailyGoalForm && (
+			{/* {showDailyGoalForm && (
 				<div className="area-form-backdrop">
 					<section className="area-form-modal">
 						<div className="area-form-header">
@@ -1636,6 +1743,68 @@ function App() {
 								</div>
 							)}
 
+							<div className="daily-goal-reminder-section">
+								<label className="daily-goal-reminder-toggle">
+									<input
+										type="checkbox"
+										checked={dailyGoalReminderEnabled}
+										onChange={(event) =>
+											setDailyGoalReminderEnabled(event.target.checked)
+										}
+									/>
+
+									<span>
+										<strong>Activar recordatorio</strong>
+										<small>Tu avatar te avisará si este hábito sigue pendiente.</small>
+									</span>
+								</label>
+
+								{dailyGoalReminderEnabled && (
+									<div className="daily-goal-reminder-fields">
+										<label>
+											Recordar cada
+											<select
+												value={dailyGoalReminderIntervalMinutes}
+												onChange={(event) =>
+													setDailyGoalReminderIntervalMinutes(event.target.value)
+												}
+											>
+												<option value="15">15 minutos</option>
+												<option value="30">30 minutos</option>
+												<option value="60">1 hora</option>
+												<option value="120">2 horas</option>
+												<option value="180">3 horas</option>
+												<option value="240">4 horas</option>
+											</select>
+										</label>
+
+										<div className="area-form-row">
+											<label>
+												Desde
+												<input
+													type="time"
+													value={dailyGoalReminderStartTime}
+													onChange={(event) =>
+														setDailyGoalReminderStartTime(event.target.value)
+													}
+												/>
+											</label>
+
+											<label>
+												Hasta
+												<input
+													type="time"
+													value={dailyGoalReminderEndTime}
+													onChange={(event) =>
+														setDailyGoalReminderEndTime(event.target.value)
+													}
+												/>
+											</label>
+										</div>
+									</div>
+								)}
+							</div>
+
 							{dailyGoalError && (
 								<p className="area-form-error">
 									{dailyGoalError}
@@ -1645,6 +1814,297 @@ function App() {
 							<button type="submit" disabled={dailyGoalSaving}>
 								{dailyGoalSaving ? "Guardando..." : "Guardar hábito diario"}
 							</button>
+						</form>
+					</section>
+				</div>
+			)} */}
+
+			{showDailyGoalForm && (
+				<div className="area-form-backdrop">
+					<section className="area-form-modal daily-goal-form-modal">
+						<div className="area-form-header daily-goal-form-header">
+							<div>
+								<span>Nuevo hábito diario</span>
+								<h2>Crear Daily Goal</h2>
+							</div>
+
+							<button
+								type="button"
+								onClick={() => {
+									setShowDailyGoalForm(false);
+									setDailyGoalError("");
+								}}
+								aria-label="Cerrar formulario"
+							>
+								×
+							</button>
+						</div>
+
+						<form
+							className="area-form daily-goal-form"
+							onSubmit={handleCreateDailyGoalSubmit}
+						>
+							<div className="daily-goal-form-scroll">
+								<label>
+									Área de vida
+									<select
+										value={dailyGoalLifeAreaId}
+										onChange={(event) =>
+											setDailyGoalLifeAreaId(event.target.value)
+										}
+									>
+										<option value="">Sin área</option>
+
+										{lifeAreas.map((area) => (
+											<option
+												key={area.life_area_id}
+												value={area.life_area_id}
+											>
+												{area.icon} {area.name}
+											</option>
+										))}
+									</select>
+								</label>
+
+								<label>
+									Nombre del hábito diario
+									<input
+										type="text"
+										placeholder="Ej: Caminar"
+										value={dailyGoalTitle}
+										onChange={(event) =>
+											setDailyGoalTitle(event.target.value)
+										}
+										required
+									/>
+								</label>
+
+								<label>
+									Descripción
+									<textarea
+										placeholder="Ej: Movimiento diario para mejorar mi salud..."
+										value={dailyGoalDescription}
+										onChange={(event) =>
+											setDailyGoalDescription(event.target.value)
+										}
+										rows={3}
+									/>
+								</label>
+
+								<label>
+									Tarea diaria
+									<input
+										type="text"
+										placeholder="Ej: Caminar 3 km"
+										value={dailyGoalTaskTitle}
+										onChange={(event) =>
+											setDailyGoalTaskTitle(event.target.value)
+										}
+										required
+									/>
+								</label>
+
+								{/* <div className="daily-goal-form-grid">
+									<label>
+										Tipo
+										<select
+											value={dailyGoalProgressType}
+											onChange={(event) =>
+												setDailyGoalProgressType(event.target.value)
+											}
+										>
+											<option value="numeric">Numérico</option>
+											<option value="checkbox">Simple</option>
+										</select>
+									</label>
+
+									<label>
+										Unidad
+										<input
+											type="text"
+											placeholder="km"
+											value={dailyGoalUnit}
+											onChange={(event) =>
+												setDailyGoalUnit(event.target.value)
+											}
+										/>
+									</label>
+								</div>
+
+								<div className="daily-goal-form-grid">
+									<label>
+										Meta total
+										<input
+											type="number"
+											min="0.1"
+											step="0.1"
+											value={dailyGoalTargetValue}
+											onChange={(event) =>
+												setDailyGoalTargetValue(event.target.value)
+											}
+										/>
+									</label>
+
+									<label>
+										Avance por click
+										<input
+											type="number"
+											min="0.1"
+											step="0.1"
+											value={dailyGoalStepValue}
+											onChange={(event) =>
+												setDailyGoalStepValue(event.target.value)
+											}
+										/>
+									</label>
+								</div> */}
+
+								<div className="area-form-row">
+									<label>
+										Tipo
+										<select
+											value={dailyGoalProgressType}
+											onChange={(event) => {
+												const value = event.target.value;
+
+												setDailyGoalProgressType(value);
+
+												if (value === "checkbox") {
+													setDailyGoalTargetValue(1);
+													setDailyGoalStepValue(1);
+													setDailyGoalUnit("task");
+												}
+
+												if (value === "numeric" && dailyGoalUnit === "task") {
+													setDailyGoalUnit("km");
+												}
+											}}
+										>
+											<option value="checkbox">Simple</option>
+											<option value="numeric">Numérico</option>
+										</select>
+									</label>
+
+									{dailyGoalProgressType === "numeric" && (
+										<label>
+											Unidad
+											<input
+												type="text"
+												placeholder="km, litros, minutos..."
+												value={dailyGoalUnit}
+												onChange={(event) =>
+													setDailyGoalUnit(event.target.value)
+												}
+											/>
+										</label>
+									)}
+								</div>
+
+								{dailyGoalProgressType === "numeric" && (
+									<div className="area-form-row">
+										<label>
+											Meta total
+											<input
+												type="number"
+												min="0.1"
+												step="0.1"
+												value={dailyGoalTargetValue}
+												onChange={(event) =>
+													setDailyGoalTargetValue(event.target.value)
+												}
+											/>
+										</label>
+
+										<label>
+											Avance por click
+											<input
+												type="number"
+												min="0.1"
+												step="0.1"
+												value={dailyGoalStepValue}
+												onChange={(event) =>
+													setDailyGoalStepValue(event.target.value)
+												}
+											/>
+										</label>
+									</div>
+								)}
+
+								<div className="daily-goal-reminder-section compact">
+									<label className="daily-goal-reminder-toggle compact">
+										<input
+											type="checkbox"
+											checked={dailyGoalReminderEnabled}
+											onChange={(event) =>
+												setDailyGoalReminderEnabled(event.target.checked)
+											}
+										/>
+
+										<span>
+											<strong>Activar recordatorio</strong>
+											<small>
+												Tu avatar te avisará si este hábito sigue pendiente.
+											</small>
+										</span>
+									</label>
+
+									{dailyGoalReminderEnabled && (
+										<div className="daily-goal-reminder-fields">
+											<label>
+												Cada
+												<select
+													value={dailyGoalReminderIntervalMinutes}
+													onChange={(event) =>
+														setDailyGoalReminderIntervalMinutes(event.target.value)
+													}
+												>
+													<option value="15">15 min</option>
+													<option value="30">30 min</option>
+													<option value="60">1 hora</option>
+													<option value="120">2 horas</option>
+													<option value="180">3 horas</option>
+												</select>
+											</label>
+
+											<div className="daily-goal-form-grid">
+												<label>
+													Desde
+													<input
+														type="time"
+														value={dailyGoalReminderStartTime}
+														onChange={(event) =>
+															setDailyGoalReminderStartTime(event.target.value)
+														}
+													/>
+												</label>
+
+												<label>
+													Hasta
+													<input
+														type="time"
+														value={dailyGoalReminderEndTime}
+														onChange={(event) =>
+															setDailyGoalReminderEndTime(event.target.value)
+														}
+													/>
+												</label>
+											</div>
+										</div>
+									)}
+								</div>
+
+								{dailyGoalError && (
+									<p className="area-form-error">
+										{dailyGoalError}
+									</p>
+								)}
+							</div>
+
+							<div className="daily-goal-form-actions">
+								<button type="submit" disabled={dailyGoalSaving}>
+									{dailyGoalSaving ? "Guardando..." : "Guardar hábito diario"}
+								</button>
+							</div>
 						</form>
 					</section>
 				</div>
@@ -1663,7 +2123,7 @@ function App() {
 				/>
 			)}
 
-			<Toast toast={toast} onClose={() => setToast(null)} />
+			<Toast toast={activeToast} onClose={() => setActiveToast(null)} />
 
 			<nav className="levelup-bottom-nav">
 				<button

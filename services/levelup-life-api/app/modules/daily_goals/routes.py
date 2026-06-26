@@ -1,4 +1,5 @@
-from datetime import date
+from datetime import date, datetime, timezone
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -44,6 +45,14 @@ class CreateDailyGoalRequest(BaseModel):
     coins_reward: int = 2
     gems_reward: int = 0
     sort_order: int = 0
+
+    reminder_enabled: bool = False
+    reminder_interval_minutes: int | None = None
+    reminder_start_time: str | None = None
+    reminder_end_time: str | None = None
+
+class CheckDailyGoalRemindersRequest(BaseModel):
+    user_id: int
 
 
 # Calculates the completion percentage.
@@ -110,6 +119,31 @@ def evaluate_daily_goal_completion(
         "progress_percent": progress_percent,
         "daily_goal_completed": daily_goal_completed,
     }
+
+# Date helper: get the current date according to Sweden
+def get_today():
+    return datetime.now(ZoneInfo("Europe/Stockholm")).date()
+
+# Datetime helper: get current date and time according to Sweden
+def get_now_stockholm():
+    return datetime.now(ZoneInfo("Europe/Stockholm"))
+
+# Reminder helper: validar si la hora actual está dentro del rango
+def is_current_time_inside_reminder_window(
+    current_time,
+    start_time,
+    end_time,
+):
+    if not start_time or not end_time:
+        return True
+
+    # Caso normal: 08:00 - 22:00
+    if start_time <= end_time:
+        return start_time <= current_time <= end_time
+
+    # Caso nocturno: 22:00 - 06:00
+    return current_time >= start_time or current_time <= end_time
+
 
 
 # Loads the daily goals and their task progress.
@@ -673,6 +707,12 @@ def create_daily_goal(payload: CreateDailyGoalRequest):
             "coins_reward": payload.coins_reward,
             "gems_reward": payload.gems_reward,
             "sort_order": payload.sort_order,
+
+            "reminder_enabled": payload.reminder_enabled,
+            "reminder_interval_minutes": payload.reminder_interval_minutes,
+            "reminder_start_time": payload.reminder_start_time,
+            "reminder_end_time": payload.reminder_end_time,
+            "last_reminder_at": None,
         },
     )
 
@@ -901,4 +941,116 @@ def progress_daily_goal_task(payload: ProgressDailyGoalTaskRequest):
             "progress_percent": completion_state["progress_percent"],
             "daily_goal_completed": completion_state["daily_goal_completed"],
         },
+    }
+
+# Den upptäcker pågående vanor och meddelar dig.
+@router.post("/reminders/check")
+def check_daily_goal_reminders(payload: CheckDailyGoalRemindersRequest):
+    now_stockholm = get_now_stockholm()
+    now_utc = datetime.now(timezone.utc)
+    today = now_stockholm.date()
+    current_time = now_stockholm.time()
+
+    goals_result = select_from(
+        table_name="daily_goals",
+        columns=[
+            "daily_goal_id",
+            "user_id",
+            "title",
+            "reminder_enabled",
+            "reminder_interval_minutes",
+            "reminder_start_time",
+            "reminder_end_time",
+            "last_reminder_at",
+        ],
+        where_clause={
+            "user_id": payload.user_id,
+            "is_active": True,
+            "reminder_enabled": True,
+        },
+        options={
+            "order_by": "sort_order",
+            "order_direction": "ASC",
+        },
+    )
+
+    if not goals_result["success"]:
+        return {
+            "success": True,
+            "message": "No reminder-enabled daily goals found",
+            "data": [],
+            "count": 0,
+        }
+
+    notifications = []
+
+    for goal in goals_result["data"]:
+        reminder_interval_minutes = goal["reminder_interval_minutes"]
+
+        if not reminder_interval_minutes or reminder_interval_minutes <= 0:
+            continue
+
+        is_inside_window = is_current_time_inside_reminder_window(
+            current_time=current_time,
+            start_time=goal["reminder_start_time"],
+            end_time=goal["reminder_end_time"],
+        )
+
+        if not is_inside_window:
+            continue
+
+        completion_state = evaluate_daily_goal_completion(
+            user_id=payload.user_id,
+            daily_goal_id=goal["daily_goal_id"],
+            today=today,
+        )
+
+        if completion_state["daily_goal_completed"]:
+            continue
+
+        last_reminder_at = goal["last_reminder_at"]
+
+        if last_reminder_at:
+            if last_reminder_at.tzinfo is None:
+                last_reminder_at = last_reminder_at.replace(
+                    tzinfo=timezone.utc
+                )
+
+            minutes_since_last_reminder = (
+                now_utc - last_reminder_at.astimezone(timezone.utc)
+            ).total_seconds() / 60
+
+            if minutes_since_last_reminder < reminder_interval_minutes:
+                continue
+
+        notification = {
+            "daily_goal_id": goal["daily_goal_id"],
+            "title": "🔔 Tu avatar necesita atención",
+            "message": f"Todavía tienes pendiente: {goal['title']}.",
+            "type": "warning",
+        }
+
+        notifications.append(notification)
+
+        update_result = update_table(
+            table_name="daily_goals",
+            query_data={
+                "last_reminder_at": now_utc,
+            },
+            where_clause={
+                "daily_goal_id": goal["daily_goal_id"],
+            },
+        )
+
+        if not update_result["success"]:
+            raise HTTPException(
+                status_code=400,
+                detail=update_result["message"],
+            )
+
+    return {
+        "success": True,
+        "message": "Daily goal reminders checked successfully",
+        "data": notifications,
+        "count": len(notifications),
     }

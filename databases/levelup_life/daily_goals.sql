@@ -7,6 +7,11 @@ CREATE TABLE IF NOT EXISTS daily_goals (
     exp_reward INT NOT NULL DEFAULT 10,
     coins_reward INT NOT NULL DEFAULT 2,
     gems_reward INT NOT NULL DEFAULT 0,
+    reminder_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    reminder_interval_minutes INT,
+    reminder_start_time TIME,
+    reminder_end_time TIME,
+    last_reminder_at TIMESTAMPTZ,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     sort_order INT NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -61,12 +66,9 @@ CREATE TABLE IF NOT EXISTS daily_goal_reward_logs (
 
 
 
-ALTER TABLE daily_goal_tasks
-ADD COLUMN IF NOT EXISTS progress_type VARCHAR(30) NOT NULL DEFAULT 'checkbox',
-ADD COLUMN IF NOT EXISTS target_value NUMERIC NOT NULL DEFAULT 1,
-ADD COLUMN IF NOT EXISTS step_value NUMERIC NOT NULL DEFAULT 1,
-ADD COLUMN IF NOT EXISTS unit VARCHAR(50) NOT NULL DEFAULT 'task';
-
-
-ALTER TABLE daily_goal_task_logs
-ADD COLUMN IF NOT EXISTS progress_value NUMERIC NOT NULL DEFAULT 0;
+ALTER TABLE daily_goals
+ADD COLUMN IF NOT EXISTS reminder_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+ADD COLUMN IF NOT EXISTS reminder_interval_minutes INT,
+ADD COLUMN IF NOT EXISTS reminder_start_time TIME,
+ADD COLUMN IF NOT EXISTS reminder_end_time TIME,
+ADD COLUMN IF NOT EXISTS last_reminder_at TIMESTAMPTZ;
