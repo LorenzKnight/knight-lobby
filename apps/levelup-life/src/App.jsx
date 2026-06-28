@@ -90,7 +90,7 @@ function App() {
 	const [dailyGoalStepValue, setDailyGoalStepValue] = useState(1);
 	const [dailyGoalUnit, setDailyGoalUnit] = useState("task");
 
-	const [dailyGoalReminderEnabled, setDailyGoalReminderEnabled] = useState(false);
+	const [dailyGoalReminderEnabled, setDailyGoalReminderEnabled] = useState(true);
 	const [dailyGoalReminderIntervalMinutes, setDailyGoalReminderIntervalMinutes] = useState(120);
 	const [dailyGoalReminderStartTime, setDailyGoalReminderStartTime] = useState("08:00");
 	const [dailyGoalReminderEndTime, setDailyGoalReminderEndTime] = useState("22:00");
@@ -427,7 +427,7 @@ function App() {
 			setDailyGoalStepValue(1);
 			setDailyGoalUnit("task");
 
-			setDailyGoalReminderEnabled(false);
+			setDailyGoalReminderEnabled(true);
 			setDailyGoalReminderIntervalMinutes(120);
 			setDailyGoalReminderStartTime("08:00");
 			setDailyGoalReminderEndTime("22:00");
@@ -1756,15 +1756,28 @@ function App() {
 										<input
 											type="checkbox"
 											checked={dailyGoalReminderEnabled}
-											onChange={(event) =>
-												setDailyGoalReminderEnabled(event.target.checked)
-											}
+											onChange={(event) => {
+												const isEnabled = event.target.checked;
+
+												setDailyGoalReminderEnabled(isEnabled);
+
+												if (!isEnabled) {
+													setDailyGoalReminderIntervalMinutes("");
+													setDailyGoalReminderStartTime("");
+													setDailyGoalReminderEndTime("");
+													return;
+												}
+
+												setDailyGoalReminderIntervalMinutes(120);
+												setDailyGoalReminderStartTime("08:00");
+												setDailyGoalReminderEndTime("22:00");
+											}}
 										/>
 
 										<span>
-											<strong>Activar recordatorio</strong>
+											<strong>Recordatorios activos</strong>
 											<small>
-												Tu avatar te avisará si este hábito sigue pendiente.
+												Desmarca esta opción si no quieres que tu avatar te recuerde este hábito.
 											</small>
 										</span>
 									</label>
