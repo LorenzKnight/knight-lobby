@@ -4100,7 +4100,7 @@ button {
 }
 
 
-/* Area form modal AQUI */
+/* Area form modal */
 .area-form-backdrop {
 	position: fixed;
 	inset: 0;
@@ -4164,8 +4164,8 @@ button {
 
 .area-form-header button {
 	position: absolute;
-	top: 0;
-	right: 0;
+	top: 12px;
+	right: 12px;
 	width: 34px;
 	height: 34px;
 	padding-bottom: 5px;
@@ -4188,7 +4188,7 @@ button {
 	display: grid;
 	gap: 7px;
 	color: #5d5964;
-	font-size: 13px;
+	font-size: 10px;
 	font-weight: 850;
 }
 
@@ -4479,6 +4479,14 @@ button {
 
 .daily-goal-form .daily-goal-reminder-fields {
 	gap: 10px;
+}
+
+.daily-goal-form .daily-goal-type-row.simple-only {
+	grid-template-columns: 1fr;
+}
+
+.daily-goal-form .daily-goal-type-row.has-unit {
+	grid-template-columns: minmax(80%, 1fr) minmax(14%, 1fr);
 }
 
 @keyframes areaFormUp {
