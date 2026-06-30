@@ -341,6 +341,29 @@ function App() {
 		loadAvatarItems();
 	}, [authUser]);
 
+	useEffect(() => {
+		function handleEscapeKey(event) {
+			if (event.key === "Escape") {
+				closeFloatingMenus();
+			}
+		}
+
+		document.addEventListener("keydown", handleEscapeKey);
+
+		return () => {
+			document.removeEventListener("keydown", handleEscapeKey);
+		};
+	}, []);
+
+	function closeFloatingMenus() {
+		setSelectedDailyGoalId(null);
+		setShowQuickAddMenu(false);
+		setShowAreasMenu(false);
+		setShowAvatarMenu(false);
+		setShowAreaForm(false);
+		setShowDailyGoalForm(false);
+	}
+
 	async function handleLoginSubmit(event) {
 		event.preventDefault();
 
@@ -390,19 +413,26 @@ function App() {
 	}
 
 	function handleToggleAreasMenu() {
+		setSelectedDailyGoalId(null);
 		setShowQuickAddMenu(false);
 		setShowAvatarMenu(false);
+
 		setShowAreasMenu((currentValue) => !currentValue);
 	}
 
 	function handleToggleQuickAddMenu() {
+		setSelectedDailyGoalId(null);
 		setShowAreasMenu(false);
 		setShowAvatarMenu(false);
+
 		setShowQuickAddMenu((currentValue) => !currentValue);
 	}
 
 	function handleQuickAddAction(action) {
+		setSelectedDailyGoalId(null);
 		setShowQuickAddMenu(false);
+		setShowAreasMenu(false);
+		setShowAvatarMenu(false);
 
 		if (action === "area") {
 			setAreaError("");
@@ -410,6 +440,8 @@ function App() {
 			setAreaIcon("✨");
 			setAreaColor("#7a58b4");
 			setAreaDescription("");
+
+			setShowDailyGoalForm(false);
 			setShowAreaForm(true);
 			return;
 		}
@@ -441,6 +473,7 @@ function App() {
 	}
 
 	function handleSelectArea(area) {
+		setSelectedDailyGoalId(null);
 		setSelectedLifeArea(area);
 		setCurrentView("life-area-detail");
 		setShowAreasMenu(false);
@@ -634,8 +667,10 @@ function App() {
 	}
 
 	function handleToggleAvatarMenu() {
+		setSelectedDailyGoalId(null);
 		setShowAreasMenu(false);
 		setShowQuickAddMenu(false);
+
 		setShowAvatarMenu((currentValue) => !currentValue);
 	}
 
@@ -850,6 +885,10 @@ function App() {
 	}
 
 	function handleOpenDailyGoalMenu(goalId, event) {
+		setShowQuickAddMenu(false);
+		setShowAreasMenu(false);
+		setShowAvatarMenu(false);
+
 		const previewElement = dailyGoalsPreviewRef.current;
 		const clickedElement = event.currentTarget;
 
@@ -873,8 +912,10 @@ function App() {
 	function handleBackToDashboard() {
 		setCurrentView("dashboard");
 		setSelectedLifeArea(null);
+		setSelectedDailyGoalId(null);
 		setShowAreasMenu(false);
 		setShowQuickAddMenu(false);
+		setShowAvatarMenu(false);
 	}
 
 	function getSelectedAvatarImages() {
@@ -999,11 +1040,19 @@ function App() {
 		0
 	);
 
+	const totalDailyTaskProgress = dailyGoals.reduce((total, goal) => {
+		const tasks = goal.tasks || [];
+
+		const goalTaskProgress = tasks.reduce((taskTotal, task) => {
+			return taskTotal + (task.task_progress_percent || 0);
+		}, 0);
+
+		return total + goalTaskProgress;
+	}, 0);
+
 	const dailyProgressPercent =
 		totalDailyTasks > 0
-			? Math.round(
-				(completedDailyTasks / totalDailyTasks) * 100
-			)
+			? Math.round(totalDailyTaskProgress / totalDailyTasks)
 			: 0;
 
 	const isAreasActive = showAreasMenu || currentView === "life-area-detail";
@@ -1015,7 +1064,11 @@ function App() {
 	return (
 		<main className="levelup-shell">
 			<header className="levelup-topbar">
-				<button type="button" className="icon-button">
+				<button
+					type="button"
+					className="icon-button"
+					onClick={closeFloatingMenus}
+				>
 					<Menu size={27} strokeWidth={1.8} />
 				</button>
 
