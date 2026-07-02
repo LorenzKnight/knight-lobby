@@ -1025,9 +1025,10 @@ def check_daily_goal_reminders(payload: CheckDailyGoalRemindersRequest):
 
         notification = {
             "daily_goal_id": goal["daily_goal_id"],
-            "title": "🔔 Tu avatar necesita atención",
-            "message": f"Todavía tienes pendiente: {goal['title']}.",
-            "type": "warning",
+            "title": "Tu avatar te necesita",
+            "message": f"No olvides avanzar en: {goal['title']}.",
+            "type": "reminder",
+            "icon": "🥺",
         }
 
         notifications.append(notification)

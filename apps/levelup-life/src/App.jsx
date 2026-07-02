@@ -24,6 +24,7 @@ import {
 	progressStats,
 } from "./data/mockLevelupData";
 import Toast from "./components/Toast";
+import TamagotchiReminder from "./components/TamagotchiReminder";
 import LifeAreaDetailView from "./components/LifeAreaDetailView";
 import PlayerAvatar from "./components/PlayerAvatar";
 import AvatarCustomizationView from "./components/AvatarCustomizationView";
@@ -128,6 +129,9 @@ function App() {
 	/** @type {[AppToast | null, Function]} */
 	const [activeToast, setActiveToast] = useState(null);
 
+	const [reminderQueue, setReminderQueue] = useState([]);
+	const [activeReminder, setActiveReminder] = useState(null);
+
 	const [currentTime, setCurrentTime] = useState("");
 
 	const [lifeAreas, setLifeAreas] = useState([]);
@@ -220,10 +224,10 @@ function App() {
 				const notifications = result.data || [];
 
 				notifications.forEach((notification) => {
-					showToast(
+					showTamagotchiReminder(
 						notification.title,
 						notification.message,
-						notification.type
+						notification.icon || "🔔"
 					);
 				});
 			} catch (error) {
@@ -355,6 +359,19 @@ function App() {
 		};
 	}, []);
 
+	useEffect(() => {
+		if (activeReminder || reminderQueue.length === 0) return;
+
+		const timeout = setTimeout(() => {
+			const nextReminder = reminderQueue[0];
+
+			setActiveReminder(nextReminder);
+			setReminderQueue((currentQueue) => currentQueue.slice(1));
+		}, 0);
+
+		return () => clearTimeout(timeout);
+	}, [activeReminder, reminderQueue]);
+
 	function closeFloatingMenus() {
 		setSelectedDailyGoalId(null);
 		setShowQuickAddMenu(false);
@@ -400,6 +417,8 @@ function App() {
 		setShowAvatarMenu(false);
 		setActiveToast(null);
 		setToastQueue([]);
+		setActiveReminder(null);
+		setReminderQueue([]);
 	}
 
 	function createSlug(text) {
@@ -716,6 +735,20 @@ function App() {
 		]);
 	}
 
+	function showTamagotchiReminder(title, message = "", icon = "🔔") {
+		const newReminder = {
+			id: crypto.randomUUID(),
+			title,
+			message,
+			icon,
+		};
+
+		setReminderQueue((currentQueue) => [
+			...currentQueue,
+			newReminder,
+		]);
+	}
+
 	async function handleTestReward() {
 		if (!authUser?.user_id) return;
 
@@ -946,6 +979,10 @@ function App() {
 			feets: selectedFeets?.image_url,
 			bag: selectedBag?.image_url,
 		};
+	}
+
+	function handleCloseReminder() {
+		setActiveReminder(null);
 	}
 
 	if (checkingSession) {
@@ -1910,7 +1947,17 @@ function App() {
 				/>
 			)}
 
-			<Toast toast={activeToast} onClose={() => setActiveToast(null)} />
+			<Toast 
+				toast={activeToast}
+				onClose={() => setActiveToast(null)}
+			/>
+
+			{activeReminder && (
+				<TamagotchiReminder
+					reminder={activeReminder}
+					onClose={handleCloseReminder}
+				/>
+			)}
 
 			<nav className="levelup-bottom-nav">
 				<button
