@@ -213,13 +213,17 @@ function App() {
 	useEffect(() => {
 		if (!authUser?.user_id) return;
 
-		let isMounted = true;
+		let reminderCheckInProgress = false;
 
 		async function loadDailyGoalReminders() {
+			if (reminderCheckInProgress) return;
+
+			reminderCheckInProgress = true;
+
 			try {
 				const result = await checkDailyGoalReminders(authUser.user_id);
 
-				if (!isMounted || !result.success) return;
+				if (!result.success) return;
 
 				const notifications = result.data || [];
 
@@ -232,6 +236,8 @@ function App() {
 				});
 			} catch (error) {
 				console.error("Could not check daily goal reminders:", error);
+			} finally {
+				reminderCheckInProgress = false;
 			}
 		}
 
@@ -242,10 +248,9 @@ function App() {
 		}, 60000);
 
 		return () => {
-			isMounted = false;
 			clearInterval(reminderInterval);
 		};
-	}, [authUser]);
+	}, [authUser?.user_id]);
 
 	useEffect(() => {
 		if (activeToast || toastQueue.length === 0) return;
@@ -550,7 +555,7 @@ function App() {
 				description: dailyGoalDescription.trim() || null,
 
 				task_title: dailyGoalTaskTitle.trim(),
-				task_description: null,
+				task_description: dailyGoalDescription.trim() || null,
 
 				progress_type: dailyGoalProgressType,
 				target_value: Number(dailyGoalTargetValue),
