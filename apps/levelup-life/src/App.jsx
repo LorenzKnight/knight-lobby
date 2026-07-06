@@ -21,7 +21,7 @@ import { getMe, loginUser } from "./api/authApi";
 import {
 	player,
 	priorities,
-	progressStats,
+	// progressStats,
 } from "./data/mockLevelupData";
 import Toast from "./components/Toast";
 import TamagotchiReminder from "./components/TamagotchiReminder";
@@ -133,6 +133,7 @@ function App() {
 	const [activeReminder, setActiveReminder] = useState(null);
 
 	const [currentTime, setCurrentTime] = useState("");
+	const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
 	const [lifeAreas, setLifeAreas] = useState([]);
 	const [lifeAreasLoading, setLifeAreasLoading] = useState(false);
@@ -308,6 +309,7 @@ function App() {
 			});
 
 			setCurrentTime(formattedTime);
+			setCurrentDateTime(now);
 		}
 
 		updateClock();
@@ -990,6 +992,116 @@ function App() {
 		setActiveReminder(null);
 	}
 
+
+	// progress porcentaje de tareas completadas
+	function getProgressPercent(startDate, endDate, currentDate) {
+		const totalTime = endDate.getTime() - startDate.getTime();
+		const elapsedTime = currentDate.getTime() - startDate.getTime();
+
+		if (totalTime <= 0) return 0;
+
+		const progress = Math.round((elapsedTime / totalTime) * 100);
+
+		return Math.min(100, Math.max(0, progress));
+	}
+
+	function getYearProgress(currentDate) {
+		const year = currentDate.getFullYear();
+
+		const startOfYear = new Date(year, 0, 1, 0, 0, 0);
+		const startOfNextYear = new Date(year + 1, 0, 1, 0, 0, 0);
+
+		return getProgressPercent(startOfYear, startOfNextYear, currentDate);
+	}
+
+	function getMonthProgress(currentDate) {
+		const year = currentDate.getFullYear();
+		const month = currentDate.getMonth();
+
+		const startOfMonth = new Date(year, month, 1, 0, 0, 0);
+		const startOfNextMonth = new Date(year, month + 1, 1, 0, 0, 0);
+
+		return getProgressPercent(startOfMonth, startOfNextMonth, currentDate);
+	}
+
+	function getWeekProgress(currentDate) {
+		const currentDay = currentDate.getDay();
+
+		// En JS domingo es 0. Queremos que la semana empiece el lunes.
+		const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+
+		const startOfWeek = new Date(currentDate);
+		startOfWeek.setDate(currentDate.getDate() + mondayOffset);
+		startOfWeek.setHours(0, 0, 0, 0);
+
+		const startOfNextWeek = new Date(startOfWeek);
+		startOfNextWeek.setDate(startOfWeek.getDate() + 7);
+
+		return getProgressPercent(startOfWeek, startOfNextWeek, currentDate);
+	}
+
+	function getDayProgress(currentDate) {
+		const startOfDay = new Date(currentDate);
+		startOfDay.setHours(0, 0, 0, 0);
+
+		const startOfNextDay = new Date(currentDate);
+		startOfNextDay.setDate(startOfNextDay.getDate() + 1);
+		startOfNextDay.setHours(0, 0, 0, 0);
+
+		return getProgressPercent(startOfDay, startOfNextDay, currentDate);
+	}
+
+	function getAvatarMood(dayProgress, dailyProgress) {
+		const difference = dailyProgress - dayProgress;
+
+		if (dailyProgress >= 100) {
+			return {
+				emoji: "🏆",
+				label: "Día completado",
+				status: "completed",
+			};
+		}
+
+		if (difference >= 10) {
+			return {
+				emoji: "😎",
+				label: "Vas adelantado",
+				status: "ahead",
+			};
+		}
+
+		if (difference >= -10) {
+			return {
+				emoji: "🙂",
+				label: "Vas bien",
+				status: "good",
+			};
+		}
+
+		if (dayProgress >= 75 && dailyProgress < 50) {
+			return {
+				emoji: "🥺",
+				label: "Tu avatar necesita atención",
+				status: "danger",
+			};
+		}
+
+		if (difference >= -30) {
+			return {
+				emoji: "😟",
+				label: "Un poco atrasado",
+				status: "behind",
+			};
+		}
+
+		return {
+			emoji: "😰",
+			label: "Modo peligro",
+			status: "critical",
+		};
+	}
+	// CONTINUA AQUI.
+
 	if (checkingSession) {
 		return (
 			<main className="levelup-loading">
@@ -1097,11 +1209,50 @@ function App() {
 			? Math.round(totalDailyTaskProgress / totalDailyTasks)
 			: 0;
 
+	const yearProgress = getYearProgress(currentDateTime);
+	const monthProgress = getMonthProgress(currentDateTime);
+	const weekProgress = getWeekProgress(currentDateTime);
+	const dayTimeProgress = getDayProgress(currentDateTime);
+
+	const avatarMood = getAvatarMood(
+		dayTimeProgress,
+		dailyProgressPercent
+	);
+
+	const progressStats = [
+		{
+			key: "year",
+			label: "Year",
+			value: yearProgress,
+			color: "#7a58b4",
+		},
+		{
+			key: "month",
+			label: "Month",
+			value: monthProgress,
+			color: "#e5834f",
+		},
+		{
+			key: "week",
+			label: "Week",
+			value: weekProgress,
+			color: "#4b9a65",
+		},
+		{
+			key: "day",
+			label: "Day",
+			value: dayTimeProgress,
+			color: "#4d7fbd",
+		},
+	];
+
 	const isAreasActive = showAreasMenu || currentView === "life-area-detail";
 
 	const selectedDailyGoal = dailyGoals.find(
 		(goal) => goal.daily_goal_id === selectedDailyGoalId
 	);
+
+
 
 	return (
 		<main className="levelup-shell">
@@ -1386,8 +1537,21 @@ function App() {
 								<Shirt size={21} strokeWidth={1.9} />
 							</button>
 
+							<div className={`avatar-mood-card ${avatarMood.status}`}>{/*  estado del emijo */}
+								<span className="avatar-mood-emoji">{avatarMood.emoji}</span>
+
+								<div>
+									<strong>{avatarMood.label}</strong>
+									<small>
+										Hábitos: {dailyProgressPercent}% · Día: {dayTimeProgress}%
+									</small>
+								</div>
+							</div>
+							
 							<div className="avatar-display">
 								<PlayerAvatar avatarImages={getSelectedAvatarImages()} />
+
+								
 							</div>
 
 							<h2>{displayName}</h2>
