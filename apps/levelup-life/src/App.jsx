@@ -21,7 +21,6 @@ import { getMe, loginUser } from "./api/authApi";
 import {
 	player,
 	priorities,
-	// progressStats,
 } from "./data/mockLevelupData";
 import Toast from "./components/Toast";
 import TamagotchiReminder from "./components/TamagotchiReminder";
@@ -1052,20 +1051,25 @@ function App() {
 	}
 
 	function getAvatarMood(dayProgress, dailyProgress) {
-		const difference = dailyProgress - dayProgress;
+		const safeDailyProgress = Math.min(100, Math.max(0, dailyProgress));
+		const safeDayProgress = Math.min(100, Math.max(0, dayProgress));
 
-		if (dailyProgress >= 100) {
+		const difference = safeDailyProgress - safeDayProgress;
+
+		if (safeDailyProgress >= 100) {
 			return {
 				emoji: "🏆",
 				label: "Día completado",
+				message: "Todas las misiones listas",
 				status: "completed",
 			};
 		}
 
-		if (difference >= 10) {
+		if (difference >= 15) {
 			return {
 				emoji: "😎",
 				label: "Vas adelantado",
+				message: "Buen ritmo hoy",
 				status: "ahead",
 			};
 		}
@@ -1074,14 +1078,25 @@ function App() {
 			return {
 				emoji: "🙂",
 				label: "Vas bien",
+				message: "Mantén el ritmo",
 				status: "good",
 			};
 		}
 
-		if (dayProgress >= 75 && dailyProgress < 50) {
+		if (safeDayProgress >= 85 && safeDailyProgress < 60) {
+			return {
+				emoji: "😰",
+				label: "Modo peligro",
+				message: "Atiende tus hábitos",
+				status: "critical",
+			};
+		}
+
+		if (safeDayProgress >= 70 && safeDailyProgress < 50) {
 			return {
 				emoji: "🥺",
-				label: "Tu avatar necesita atención",
+				label: "Necesita atención",
+				message: "Hay tareas pendientes",
 				status: "danger",
 			};
 		}
@@ -1089,7 +1104,8 @@ function App() {
 		if (difference >= -30) {
 			return {
 				emoji: "😟",
-				label: "Un poco atrasado",
+				label: "Un poco atrás",
+				message: "Todavía puedes recuperar",
 				status: "behind",
 			};
 		}
@@ -1097,6 +1113,7 @@ function App() {
 		return {
 			emoji: "😰",
 			label: "Modo peligro",
+			message: "Reacciona ahora",
 			status: "critical",
 		};
 	}
@@ -1206,7 +1223,13 @@ function App() {
 
 	const dailyProgressPercent =
 		totalDailyTasks > 0
-			? Math.round(totalDailyTaskProgress / totalDailyTasks)
+			? Math.min(
+				100,
+				Math.max(
+					0,
+					Math.round(totalDailyTaskProgress / totalDailyTasks)
+				)
+			)
 			: 0;
 
 	const yearProgress = getYearProgress(currentDateTime);
@@ -1542,16 +1565,20 @@ function App() {
 
 								<div>
 									<strong>{avatarMood.label}</strong>
-									<small>
-										Hábitos: {dailyProgressPercent}% · Día: {dayTimeProgress}%
+
+									<small className="avatar-mood-message">
+										{avatarMood.message}
+									</small>
+
+									<small className="avatar-mood-stats">
+										Hábitos: {dailyProgressPercent}%<br />
+										Día: {dayTimeProgress}%
 									</small>
 								</div>
 							</div>
-							
+
 							<div className="avatar-display">
 								<PlayerAvatar avatarImages={getSelectedAvatarImages()} />
-
-								
 							</div>
 
 							<h2>{displayName}</h2>
