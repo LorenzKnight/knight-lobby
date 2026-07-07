@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	BarChart3,
 	Bell,
@@ -131,8 +131,12 @@ function App() {
 	const [reminderQueue, setReminderQueue] = useState([]);
 	const [activeReminder, setActiveReminder] = useState(null);
 
+	const activeReminderRef = useRef(null);
+	activeReminderRef.current = activeReminder;
+
 	const [currentTime, setCurrentTime] = useState("");
 	const [currentDateTime, setCurrentDateTime] = useState(new Date());
+	const avatarMoodRef = useRef(null);
 
 	const [lifeAreas, setLifeAreas] = useState([]);
 	const [lifeAreasLoading, setLifeAreasLoading] = useState(false);
@@ -209,48 +213,6 @@ function App() {
 
 		loadDailyGoals();
 	}, [authUser]);
-
-	useEffect(() => {
-		if (!authUser?.user_id) return;
-
-		let reminderCheckInProgress = false;
-
-		async function loadDailyGoalReminders() {
-			if (reminderCheckInProgress) return;
-
-			reminderCheckInProgress = true;
-
-			try {
-				const result = await checkDailyGoalReminders(authUser.user_id);
-
-				if (!result.success) return;
-
-				const notifications = result.data || [];
-
-				notifications.forEach((notification) => {
-					showTamagotchiReminder(
-						notification.title,
-						notification.message,
-						notification.icon || "🔔"
-					);
-				});
-			} catch (error) {
-				console.error("Could not check daily goal reminders:", error);
-			} finally {
-				reminderCheckInProgress = false;
-			}
-		}
-
-		loadDailyGoalReminders();
-
-		const reminderInterval = setInterval(() => {
-			loadDailyGoalReminders();
-		}, 60000);
-
-		return () => {
-			clearInterval(reminderInterval);
-		};
-	}, [authUser?.user_id]);
 
 	useEffect(() => {
 		if (activeToast || toastQueue.length === 0) return;
@@ -741,19 +703,187 @@ function App() {
 		]);
 	}
 
-	function showTamagotchiReminder(title, message = "", icon = "🔔") {
-		const newReminder = {
-			id: crypto.randomUUID(),
-			title,
-			message,
-			icon,
-		};
+	const buildMoodAwareReminder = useCallback(
+		(notification, currentAvatarMood) => {
+			const notificationTitle = notification.title || "Tu avatar te necesita";
+			const notificationMessage = notification.message || "";
+			const notificationIcon = notification.icon || "🔔";
 
-		setReminderQueue((currentQueue) => [
-			...currentQueue,
-			newReminder,
-		]);
-	}
+			const taskTitle =
+				notification.task_title ||
+				notification.taskTitle ||
+				"";
+
+			const dailyGoalTitle =
+				notification.daily_goal_title ||
+				notification.dailyGoalTitle ||
+				"";
+
+			if (!currentAvatarMood) {
+				return {
+					title: notificationTitle,
+					message: notificationMessage,
+					icon: notificationIcon,
+					taskTitle,
+					dailyGoalTitle,
+				};
+			}
+
+			const actionNeededStatuses = [
+				"behind",
+				"danger",
+				"critical",
+			];
+
+			const isActionNeeded = actionNeededStatuses.includes(
+				currentAvatarMood.status
+			);
+
+			if (!isActionNeeded) {
+				return null;
+			}
+
+			if (currentAvatarMood.status === "critical") {
+				return {
+					title: "Modo peligro",
+					message: `${notificationMessage} Queda poco día para reaccionar.`,
+					icon: "😰",
+					taskTitle,
+					dailyGoalTitle,
+				};
+			}
+
+			if (currentAvatarMood.status === "danger") {
+				return {
+					title: "Necesito atención",
+					message: notificationMessage,
+					icon: "🥺",
+					taskTitle,
+					dailyGoalTitle,
+				};
+			}
+
+			if (currentAvatarMood.status === "behind") {
+				return {
+					title: "Vamos, todavía puedes",
+					message: notificationMessage,
+					icon: "😟",
+					taskTitle,
+					dailyGoalTitle,
+				};
+			}
+
+			return {
+				title: notificationTitle,
+				message: notificationMessage,
+				icon: notificationIcon,
+				taskTitle,
+				dailyGoalTitle,
+			};
+		},
+		[]
+	);
+
+	const showTamagotchiReminder = useCallback(
+		(title, message = "", icon = "🔔", details = {}) => {
+			const newReminder = {
+				id: crypto.randomUUID(),
+				title,
+				message,
+				icon,
+				taskTitle: details.taskTitle || "",
+				dailyGoalTitle: details.dailyGoalTitle || "",
+			};
+
+			setReminderQueue((currentQueue) => {
+				const reminderAlreadyQueued = currentQueue.some((reminder) => {
+					return (
+						reminder.title === title &&
+						reminder.message === message &&
+						reminder.taskTitle === newReminder.taskTitle
+					);
+				});
+
+				if (reminderAlreadyQueued) {
+					return currentQueue;
+				}
+
+				const currentActiveReminder = activeReminderRef.current;
+
+				if (
+					currentActiveReminder &&
+					currentActiveReminder.title === title &&
+					currentActiveReminder.message === message &&
+					currentActiveReminder.taskTitle === newReminder.taskTitle
+				) {
+					return currentQueue;
+				}
+
+				return [
+					...currentQueue,
+					newReminder,
+				];
+			});
+		},
+		[]
+	);
+
+	useEffect(() => {
+		if (!authUser?.user_id) return;
+
+		let reminderCheckInProgress = false;
+
+		async function loadDailyGoalReminders() {
+			if (reminderCheckInProgress) return;
+
+			reminderCheckInProgress = true;
+
+			try {
+				const result = await checkDailyGoalReminders(authUser.user_id);
+
+				if (!result.success) return;
+
+				const notifications = result.data || [];
+
+				notifications.forEach((notification) => {
+					const moodReminder = buildMoodAwareReminder(
+						notification,
+						avatarMoodRef.current
+					);
+
+					if (!moodReminder) return;
+
+					showTamagotchiReminder(
+						moodReminder.title,
+						moodReminder.message,
+						moodReminder.icon,
+						{
+							taskTitle: moodReminder.taskTitle,
+							dailyGoalTitle: moodReminder.dailyGoalTitle,
+						}
+					);
+				});
+			} catch (error) {
+				console.error("Could not check daily goal reminders:", error);
+			} finally {
+				reminderCheckInProgress = false;
+			}
+		}
+
+		loadDailyGoalReminders();
+
+		const reminderInterval = setInterval(() => {
+			loadDailyGoalReminders();
+		}, 60000);
+
+		return () => {
+			clearInterval(reminderInterval);
+		};
+	}, [
+		authUser?.user_id,
+		buildMoodAwareReminder,
+		showTamagotchiReminder,
+	]);
 
 	async function handleTestReward() {
 		if (!authUser?.user_id) return;
@@ -991,7 +1121,6 @@ function App() {
 		setActiveReminder(null);
 	}
 
-
 	// progress porcentaje de tareas completadas
 	function getProgressPercent(startDate, endDate, currentDate) {
 		const totalTime = endDate.getTime() - startDate.getTime();
@@ -1117,7 +1246,8 @@ function App() {
 			status: "critical",
 		};
 	}
-	// CONTINUA AQUI.
+
+	
 
 	if (checkingSession) {
 		return (
@@ -1241,6 +1371,8 @@ function App() {
 		dayTimeProgress,
 		dailyProgressPercent
 	);
+
+	avatarMoodRef.current = avatarMood;
 
 	const progressStats = [
 		{

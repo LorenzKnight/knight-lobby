@@ -19,6 +19,18 @@ function TamagotchiReminder({ reminder, onClose }) {
 
 				<h2>{reminder.title}</h2>
 
+                {reminder.taskTitle && (
+                    <strong className="tamagotchi-reminder-task">
+                        {reminder.taskTitle}
+                    </strong>
+                )}
+
+                {reminder.dailyGoalTitle && (
+                    <small className="tamagotchi-reminder-goal">
+                        {reminder.dailyGoalTitle}
+                    </small>
+                )}
+
 				<p>{reminder.message}</p>
 
 				<button
