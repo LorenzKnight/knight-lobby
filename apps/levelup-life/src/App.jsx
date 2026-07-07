@@ -740,7 +740,13 @@ function App() {
 			);
 
 			if (!isActionNeeded) {
-				return null;
+				return {
+					title: notificationTitle,
+					message: notificationMessage,
+					icon: notificationIcon,
+					taskTitle,
+					dailyGoalTitle,
+				};
 			}
 
 			if (currentAvatarMood.status === "critical") {
@@ -952,7 +958,7 @@ function App() {
 					result.data.game_profile.leveled_up
 						? "¡Subiste de nivel!"
 						: "¡Día completado!",
-					"Has completado todos tus objetivos diarios.",
+					"Recompensa recibida por completar este hábito diario.",
 					"success"
 				);
 
