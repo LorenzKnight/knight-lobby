@@ -30,6 +30,7 @@ import AvatarCustomizationView from "./components/AvatarCustomizationView";
 import {
 	addReward,
 	checkDailyGoalReminders,
+	closePreviousDailyGoalsDay,
 	completeDailyGoalTask,
 	createDailyGoal,
 	createLifeArea,
@@ -190,6 +191,41 @@ function App() {
 
 		loadGameProfile();
 	}, [authUser]);
+
+	useEffect(() => {
+		async function closePreviousDay() {
+			if (!authUser?.user_id) return;
+
+			try {
+				const result = await closePreviousDailyGoalsDay(authUser.user_id);
+
+				if (!result.success) return;
+
+				const data = result.data || {};
+
+				if (!data.penalty_applied) return;
+
+				if (data.game_profile) {
+					setGameProfile((currentProfile) => ({
+						...currentProfile,
+						...data.game_profile,
+					}));
+				}
+
+				showToast(
+					data.level_lost
+						? "Perdiste un nivel"
+						: "Perdiste un corazón",
+					data.message || "No completaste tus tareas diarias.",
+					"error"
+				);
+			} catch (error) {
+				console.error("Could not close previous day:", error);
+			}
+		}
+
+		closePreviousDay();
+	}, [authUser?.user_id]);
 
 	useEffect(() => {
 		async function loadDailyGoals() {

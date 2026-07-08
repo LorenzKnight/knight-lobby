@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, HTTPException
@@ -52,6 +52,9 @@ class CreateDailyGoalRequest(BaseModel):
     reminder_end_time: str | None = None
 
 class CheckDailyGoalRemindersRequest(BaseModel):
+    user_id: int
+
+class ClosePreviousDayRequest(BaseModel):
     user_id: int
 
 
@@ -143,6 +146,74 @@ def is_current_time_inside_reminder_window(
 
     # Caso nocturno: 22:00 - 06:00
     return current_time >= start_time or current_time <= end_time
+
+
+def get_yesterday_stockholm():
+    return datetime.now(ZoneInfo("Europe/Stockholm")).date() - timedelta(days=1)
+
+
+def was_created_on_or_before_date(created_at, target_date):
+    if not created_at:
+        return True
+
+    if created_at.tzinfo:
+        created_date = created_at.astimezone(ZoneInfo("Europe/Stockholm")).date()
+    else:
+        created_date = created_at.date()
+
+    return created_date <= target_date
+
+
+def is_task_completed_for_date(user_id: int, task: dict, target_date):
+    log_result = select_from(
+        table_name="daily_goal_task_logs",
+        columns=[
+            "daily_goal_task_log_id",
+            "progress_value",
+            "is_completed",
+        ],
+        where_clause={
+            "user_id": user_id,
+            "daily_goal_task_id": task["daily_goal_task_id"],
+            "completed_date": target_date,
+        },
+    )
+
+    task_log = None
+
+    task_logs = get_data_or_empty(log_result)
+
+    if len(task_logs) > 0:
+        task_log = task_logs[0]
+
+    progress_type = task["progress_type"] or "checkbox"
+
+    if progress_type == "numeric":
+        progress_value = 0
+
+        if task_log and task_log["progress_value"] is not None:
+            progress_value = float(task_log["progress_value"])
+
+        target_value = float(task["target_value"] or 1)
+
+        return progress_value >= target_value
+
+    return bool(task_log and task_log["is_completed"])
+
+
+def get_data_or_empty(result):
+    if result["success"]:
+        return result["data"] or []
+
+    message = str(result.get("message", ""))
+
+    if "No records found" in message:
+        return []
+
+    raise HTTPException(
+        status_code=400,
+        detail=message or "Database query failed.",
+    )
 
 
 
@@ -996,8 +1067,10 @@ def get_first_pending_task_for_daily_goal(
 
         task_log = None
 
-        if log_result["success"] and len(log_result["data"]) > 0:
-            task_log = log_result["data"][0]
+        task_logs = get_data_or_empty(log_result)
+
+        if len(task_logs) > 0:
+            task_log = task_logs[0]
 
         progress_value = 0
 
@@ -1164,4 +1237,288 @@ def check_daily_goal_reminders(payload: CheckDailyGoalRemindersRequest):
         "message": "Daily goal reminders checked successfully",
         "data": notifications,
         "count": len(notifications),
+    }
+
+# Close the previous day and apply penalties for missed tasks and goals.
+@router.post("/day/close")
+def close_previous_daily_goals_day(payload: ClosePreviousDayRequest):
+    penalty_date = get_yesterday_stockholm()
+
+    existing_penalty_result = select_from(
+        table_name="daily_life_penalties",
+        columns=[
+            "daily_life_penalty_id",
+            "user_id",
+            "penalty_date",
+            "missed_tasks",
+            "missed_goals",
+            "life_lost",
+            "level_lost",
+            "created_at",
+        ],
+        where_clause={
+            "user_id": payload.user_id,
+            "penalty_date": penalty_date,
+        },
+    )
+
+    existing_penalties = get_data_or_empty(existing_penalty_result)
+
+    if len(existing_penalties) > 0:
+        return {
+            "success": True,
+            "message": "Previous day was already closed.",
+            "data": {
+                "penalty_date": penalty_date,
+                "penalty_applied": False,
+                "already_closed": True,
+                "penalty": existing_penalties[0],
+            },
+        }
+
+    goals_result = select_from(
+        table_name="daily_goals",
+        columns=[
+            "daily_goal_id",
+            "user_id",
+            "title",
+            "is_active",
+            "created_at",
+        ],
+        where_clause={
+            "user_id": payload.user_id,
+            "is_active": True,
+        },
+        options={
+            "order_by": "sort_order",
+            "order_direction": "ASC",
+        },
+    )
+
+    goals = get_data_or_empty(goals_result)
+
+    missed_tasks = 0
+    missed_goals = 0
+    checked_goals = 0
+    checked_tasks = 0
+
+    for goal in goals:
+        goal_existed_on_penalty_date = was_created_on_or_before_date(
+            goal["created_at"],
+            penalty_date,
+        )
+
+        if not goal_existed_on_penalty_date:
+            continue
+
+        tasks_result = select_from(
+            table_name="daily_goal_tasks",
+            columns=[
+                "daily_goal_task_id",
+                "daily_goal_id",
+                "title",
+                "progress_type",
+                "target_value",
+                "created_at",
+            ],
+            where_clause={
+                "daily_goal_id": goal["daily_goal_id"],
+            },
+            options={
+                "order_by": "sort_order",
+                "order_direction": "ASC",
+            },
+        )
+
+        tasks = get_data_or_empty(tasks_result)
+
+        goal_has_missed_tasks = False
+        goal_had_tasks_that_day = False
+
+        for task in tasks:
+            task_existed_on_penalty_date = was_created_on_or_before_date(
+                task["created_at"],
+                penalty_date,
+            )
+
+            if not task_existed_on_penalty_date:
+                continue
+
+            goal_had_tasks_that_day = True
+            checked_tasks += 1
+
+            task_completed = is_task_completed_for_date(
+                user_id=payload.user_id,
+                task=task,
+                target_date=penalty_date,
+            )
+
+            if not task_completed:
+                missed_tasks += 1
+                goal_has_missed_tasks = True
+
+        if goal_had_tasks_that_day:
+            checked_goals += 1
+
+        if goal_has_missed_tasks:
+            missed_goals += 1
+
+    if checked_tasks == 0:
+        return {
+            "success": True,
+            "message": "There were no daily tasks to close for previous day.",
+            "data": {
+                "penalty_date": penalty_date,
+                "penalty_applied": False,
+                "already_closed": False,
+                "checked_goals": checked_goals,
+                "checked_tasks": checked_tasks,
+                "missed_tasks": missed_tasks,
+                "missed_goals": missed_goals,
+            },
+        }
+
+    if missed_tasks == 0:
+        insert_result = insert_into(
+            table_name="daily_life_penalties",
+            query_data={
+                "user_id": payload.user_id,
+                "penalty_date": penalty_date,
+                "missed_tasks": 0,
+                "missed_goals": 0,
+                "life_lost": 0,
+                "level_lost": 0,
+            },
+        )
+
+        if not insert_result["success"]:
+            raise HTTPException(
+                status_code=400,
+                detail=insert_result["message"],
+            )
+
+        return {
+            "success": True,
+            "message": "Previous day completed successfully. No penalty applied.",
+            "data": {
+                "penalty_date": penalty_date,
+                "penalty_applied": False,
+                "already_closed": False,
+                "checked_goals": checked_goals,
+                "checked_tasks": checked_tasks,
+                "missed_tasks": 0,
+                "missed_goals": 0,
+            },
+        }
+
+    profile_result = select_from(
+        table_name="user_game_profiles",
+        columns=[
+            "user_id",
+            "level",
+            "current_life",
+            "max_life",
+            "current_exp",
+            "total_exp",
+            "coins",
+            "gems",
+        ],
+        where_clause={
+            "user_id": payload.user_id,
+        },
+    )
+
+    profiles = get_data_or_empty(profile_result)
+
+    if len(profiles) == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="Game profile not found.",
+        )
+
+    profile = profiles[0]
+
+    current_level = int(profile["level"] or 1)
+    current_life = int(profile["current_life"] or 0)
+    max_life = int(profile["max_life"] or 5)
+
+    level_lost = 0
+    life_lost = 1
+
+    if current_life > 1:
+        new_life = current_life - 1
+        new_level = current_level
+    else:
+        new_life = max_life
+        new_level = max(1, current_level - 1)
+
+        if current_level > 1:
+            level_lost = 1
+
+    update_profile_result = update_table(
+        table_name="user_game_profiles",
+        query_data={
+            "level": new_level,
+            "current_life": new_life,
+            "updated_at": datetime.now(timezone.utc),
+        },
+        where_clause={
+            "user_id": payload.user_id,
+        },
+    )
+
+    if not update_profile_result["success"]:
+        raise HTTPException(
+            status_code=400,
+            detail=update_profile_result["message"],
+        )
+
+    insert_penalty_result = insert_into(
+        table_name="daily_life_penalties",
+        query_data={
+            "user_id": payload.user_id,
+            "penalty_date": penalty_date,
+            "missed_tasks": missed_tasks,
+            "missed_goals": missed_goals,
+            "life_lost": life_lost,
+            "level_lost": level_lost,
+        },
+    )
+
+    if not insert_penalty_result["success"]:
+        raise HTTPException(
+            status_code=400,
+            detail=insert_penalty_result["message"],
+        )
+
+    if level_lost:
+        message = "No completaste tus tareas diarias. Perdiste un nivel y recuperaste tus corazones."
+    else:
+        message = "No completaste tus tareas diarias. Perdiste un corazón."
+
+    return {
+        "success": True,
+        "message": "Previous day closed with penalty.",
+        "data": {
+            "penalty_date": penalty_date,
+            "penalty_applied": True,
+            "already_closed": False,
+            "checked_goals": checked_goals,
+            "checked_tasks": checked_tasks,
+            "missed_tasks": missed_tasks,
+            "missed_goals": missed_goals,
+            "life_lost": life_lost,
+            "level_lost": level_lost,
+            "message": message,
+            "game_profile": {
+                "user_id": payload.user_id,
+                "level": new_level,
+                "current_life": new_life,
+                "max_life": max_life,
+                "current_exp": profile["current_exp"],
+                "total_exp": profile["total_exp"],
+                "coins": profile["coins"],
+                "gems": profile["gems"],
+            },
+        },
     }

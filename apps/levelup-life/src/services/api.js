@@ -239,3 +239,28 @@ export async function checkDailyGoalReminders(userId) {
 
 	return result;
 }
+
+
+// Close previous daily goals day
+export async function closePreviousDailyGoalsDay(userId) {
+	const response = await fetch(
+		`${LEVELUP_API_URL}/api/daily-goals/day/close`,
+		{
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				user_id: userId,
+			}),
+		}
+	);
+
+	const result = await response.json();
+
+	if (!response.ok) {
+		throw new Error(result.detail || "Could not close previous daily goals day");
+	}
+
+	return result;
+}
