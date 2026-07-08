@@ -74,16 +74,27 @@ def apply_reward(
     new_coins = profile["coins"] + coins_earned
     new_gems = profile["gems"] + gems_earned
 
+    current_life = profile["current_life"]
+    max_life = profile["max_life"]
+
+    new_current_life = current_life
+
+    if leveled_up:
+        new_current_life = max_life
+
+    profile_update_data = {
+        "level": new_level,
+        "current_exp": new_current_exp,
+        "total_exp": new_total_exp,
+        "coins": new_coins,
+        "gems": new_gems,
+        "current_life": new_current_life,
+        "updated_at": datetime.now(timezone.utc),
+    }
+
     update_result = update_table(
         table_name="user_game_profiles",
-        query_data={
-            "level": new_level,
-            "current_exp": new_current_exp,
-            "total_exp": new_total_exp,
-            "coins": new_coins,
-            "gems": new_gems,
-            "updated_at": datetime.now(timezone.utc),
-        },
+        query_data=profile_update_data,
         where_clause={
             "user_id": user_id,
         },
@@ -130,8 +141,8 @@ def apply_reward(
             "total_exp": new_total_exp,
             "coins": new_coins,
             "gems": new_gems,
-            "current_life": profile["current_life"],
-            "max_life": profile["max_life"],
+            "current_life": new_current_life,
+            "max_life": max_life,
             "required_exp": required_exp,
             "exp_percent": exp_percent,
             "leveled_up": leveled_up,
