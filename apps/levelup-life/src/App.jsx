@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+	Backpack,
 	BarChart3,
 	Bell,
 	BriefcaseBusiness,
@@ -10,10 +11,10 @@ import {
 	Lock,
 	LogOut,
 	Menu,
-	PiggyBank,
 	Plus,
 	Shirt,
 	Sparkles,
+	Store,
 	Swords,
 	WalletCards,
 } from "lucide-react";
@@ -1849,11 +1850,11 @@ function App() {
 							<ChevronRight />
 						</button>
 
-						<button type="button" className="shop-card">
-							<PiggyBank size={38} strokeWidth={1.8} />
+						<button type="button" className="inventory-card">
+							<Backpack size={38} strokeWidth={1.8} />
 							<span>
-								<strong>La Tiendita</strong>
-								<small>Mejora tu personaje y equipa tu camino</small>
+								<strong>Inventario</strong>
+								<small>Revisa objetos, boosts y recompensas</small>
 							</span>
 							<ChevronRight />
 						</button>
@@ -2357,8 +2358,8 @@ function App() {
 				</button>
 
 				<button type="button">
-					<BarChart3 size={24} strokeWidth={1.8} />
-					<span>Progreso</span>
+					<Store size={24} strokeWidth={1.8} />
+					<span>Tiendita</span>
 				</button>
 
 				<button type="button" onClick={handleLogout}>

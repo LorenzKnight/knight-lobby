@@ -299,7 +299,7 @@ button {
 .priorities-card,
 .ai-card,
 .battle-card,
-.shop-card,
+.inventory-card,
 .levelup-bottom-nav {
 	background:
 		linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.78));
@@ -2075,7 +2075,7 @@ button {
 }
 
 .battle-card,
-.shop-card {
+.inventory-card {
 	min-height: 92px;
 	border-radius: 20px;
 	border: 1px solid var(--border);
@@ -2093,14 +2093,14 @@ button {
 	color: #4f3d7f;
 }
 
-.shop-card {
+.inventory-card {
 	background:
 		linear-gradient(135deg, rgba(238, 190, 83, 0.22), rgba(255, 255, 255, 0.92));
 	color: #775222;
 }
 
 .battle-card strong,
-.shop-card strong {
+.inventory-card strong {
 	display: block;
 	font-size: 22px;
 	font-weight: 950;
@@ -2108,7 +2108,7 @@ button {
 }
 
 .battle-card small,
-.shop-card small {
+.inventory-card small {
 	display: block;
 	margin-top: 4px;
 	color: #6e6975;
@@ -3308,7 +3308,7 @@ button {
 	}
 
 	.dashboard-reposition .battle-card,
-	.dashboard-reposition .shop-card {
+	.dashboard-reposition .inventory-card {
 		grid-template-columns: 48px 1fr 28px;
 		padding: 16px 18px;
 	}
