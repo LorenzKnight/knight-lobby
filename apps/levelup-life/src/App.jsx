@@ -28,6 +28,7 @@ import TamagotchiReminder from "./components/TamagotchiReminder";
 import LifeAreaDetailView from "./components/LifeAreaDetailView";
 import PlayerAvatar from "./components/PlayerAvatar";
 import AvatarCustomizationView from "./components/AvatarCustomizationView";
+import ShopView from "./components/ShopView";
 import {
 	addReward,
 	checkDailyGoalReminders,
@@ -69,6 +70,8 @@ function App() {
 
 	const [showAvatarMenu, setShowAvatarMenu] = useState(false);
 	const [avatarCategory, setAvatarCategory] = useState("shirts");
+
+	const [showShopView, setShowShopView] = useState(false);
 
 	const [dailyGoals, setDailyGoals] = useState([]);
 	const [dailyGoalsLoading, setDailyGoalsLoading] = useState(false);
@@ -384,6 +387,7 @@ function App() {
 		setShowAvatarMenu(false);
 		setShowAreaForm(false);
 		setShowDailyGoalForm(false);
+		setShowShopView(false);
 	}
 
 	async function handleLoginSubmit(event) {
@@ -424,6 +428,7 @@ function App() {
 		setToastQueue([]);
 		setActiveReminder(null);
 		setReminderQueue([]);
+		setShowShopView(false);
 	}
 
 	function createSlug(text) {
@@ -724,6 +729,17 @@ function App() {
 				"error"
 			);
 		}
+	}
+
+	function handleOpenShopView() {
+		setSelectedDailyGoalId(null);
+		setShowAreasMenu(false);
+		setShowQuickAddMenu(false);
+		setShowAvatarMenu(false);
+		setShowAreaForm(false);
+		setShowDailyGoalForm(false);
+
+		setShowShopView(true);
 	}
 
 	function showToast(title, message = "", type = "success") {
@@ -2318,6 +2334,13 @@ function App() {
 				/>
 			)}
 
+			{showShopView && (
+				<ShopView
+					player={displayPlayer}
+					onClose={() => setShowShopView(false)}
+				/>
+			)}
+
 			<Toast 
 				toast={activeToast}
 				onClose={() => setActiveToast(null)}
@@ -2357,9 +2380,13 @@ function App() {
 					<Plus size={33} strokeWidth={1.8} />
 				</button>
 
-				<button type="button">
+				<button
+					type="button"
+					className={showShopView ? "active" : ""}
+					onClick={handleOpenShopView}
+				>
 					<Store size={24} strokeWidth={1.8} />
-					<span>Tiendita</span>
+					<span>Shop</span>
 				</button>
 
 				<button type="button" onClick={handleLogout}>
