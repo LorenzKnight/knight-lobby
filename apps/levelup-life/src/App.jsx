@@ -944,6 +944,23 @@ function App() {
 		showTamagotchiReminder,
 	]);
 
+	useEffect(() => {
+		const isOverlayOpen =
+			showShopView ||
+			showAvatarMenu;
+
+		if (!isOverlayOpen) return;
+
+		document.body.classList.add("modal-scroll-locked");
+
+		return () => {
+			document.body.classList.remove("modal-scroll-locked");
+		};
+	}, [
+		showShopView,
+		showAvatarMenu,
+	]);
+
 	async function handleTestReward() {
 		if (!authUser?.user_id) return;
 
