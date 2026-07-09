@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
 	Coins,
 	Gem,
@@ -8,150 +9,58 @@ import {
 	X,
 	Zap,
 } from "lucide-react";
+import { getShopItems } from "../services/api";
 
 function ShopView({ player, onClose }) {
-	const shopSections = [
-        {
-            key: "gems",
-            title: "Gems",
-            description: "Premium currency for special items",
-            icon: <Gem size={24} strokeWidth={1.9} />,
-            items: [
-                {
-                    name: "Small Gem Pack",
-                    description: "Get 10 gems.",
-                    price: "Real money",
-                    oldPrice: null,
-                    currency: "real",
-                    discount: null,
-                    image: "💎",
-                },
-                {
-                    name: "Medium Gem Pack",
-                    description: "Get 50 gems.",
-                    price: "Real money",
-                    oldPrice: null,
-                    currency: "real",
-                    discount: "Best value",
-                    image: "💎",
-                },
-                {
-                    name: "Big Gem Pack",
-                    description: "Get 120 gems.",
-                    price: "Real money",
-                    oldPrice: null,
-                    currency: "real",
-                    discount: "20% OFF",
-                    image: "💎",
-                },
-            ],
-        },
-        {
-            key: "life",
-            title: "Life",
-            description: "Recover hearts when you need help",
-            icon: <HeartPulse size={24} strokeWidth={1.9} />,
-            items: [
-                {
-                    name: "Life Potion",
-                    description: "Recover 1 heart.",
-                    price: 1,
-                    oldPrice: null,
-                    currency: "gem",
-                    discount: null,
-                    image: "❤️",
-                },
-                {
-                    name: "Full Life Potion",
-                    description: "Recover all hearts.",
-                    price: 3,
-                    oldPrice: 4,
-                    currency: "gem",
-                    discount: "25% OFF",
-                    image: "💖",
-                },
-                {
-                    name: "Emergency Heart",
-                    description: "Recover 1 heart instantly.",
-                    price: 150,
-                    oldPrice: null,
-                    currency: "coin",
-                    discount: null,
-                    image: "🫀",
-                },
-            ],
-        },
-        {
-            key: "boosts",
-            title: "Boosts",
-            description: "Temporary bonuses for focused sessions",
-            icon: <Zap size={24} strokeWidth={1.9} />,
-            items: [
-                {
-                    name: "EXP Boost",
-                    description: "+50% EXP for 30 minutes.",
-                    price: 2,
-                    oldPrice: null,
-                    currency: "gem",
-                    discount: null,
-                    image: "⚡",
-                },
-                {
-                    name: "Coins Boost",
-                    description: "Double coins for 30 minutes.",
-                    price: 2,
-                    oldPrice: null,
-                    currency: "gem",
-                    discount: null,
-                    image: "🪙",
-                },
-                {
-                    name: "Focus Boost",
-                    description: "Extra reward for focused sessions.",
-                    price: 200,
-                    oldPrice: 250,
-                    currency: "coin",
-                    discount: "20% OFF",
-                    image: "🔥",
-                },
-            ],
-        },
-        {
-            key: "protection",
-            title: "Protection",
-            description: "Protect your life and streak",
-            icon: <ShieldCheck size={24} strokeWidth={1.9} />,
-            items: [
-                {
-                    name: "Daily Shield",
-                    description: "Avoid losing 1 heart tomorrow.",
-                    price: 2,
-                    oldPrice: null,
-                    currency: "gem",
-                    discount: null,
-                    image: "🛡️",
-                },
-                {
-                    name: "Second Chance",
-                    description: "Save one missed previous day.",
-                    price: 3,
-                    oldPrice: 4,
-                    currency: "gem",
-                    discount: "25% OFF",
-                    image: "🔁",
-                },
-                {
-                    name: "Anti-Drop Charm",
-                    description: "Avoid losing a level once.",
-                    price: 5,
-                    oldPrice: null,
-                    currency: "gem",
-                    discount: "Rare",
-                    image: "🔮",
-                },
-            ],
-        },
-    ];
+	const [shopSections, setShopSections] = useState([]);
+    const [shopLoading, setShopLoading] = useState(false);
+    const [shopError, setShopError] = useState("");
+
+    useEffect(() => {
+        async function loadShopItems() {
+            setShopLoading(true);
+            setShopError("");
+
+            try {
+                const result = await getShopItems();
+
+                if (result.success) {
+                    setShopSections(result.data || []);
+                    return;
+                }
+
+                setShopSections([]);
+            } catch (error) {
+                console.error("Could not load shop items:", error);
+                setShopError("Could not load shop items.");
+                setShopSections([]);
+            } finally {
+                setShopLoading(false);
+            }
+        }
+
+        loadShopItems();
+    }, []);
+
+    function getSectionIcon(iconKey) {
+        if (iconKey === "gem") {
+            return <Gem size={24} strokeWidth={1.9} />;
+        }
+
+        if (iconKey === "heart") {
+            return <HeartPulse size={24} strokeWidth={1.9} />;
+        }
+
+        if (iconKey === "zap") {
+            return <Zap size={24} strokeWidth={1.9} />;
+        }
+
+        if (iconKey === "shield") {
+            return <ShieldCheck size={24} strokeWidth={1.9} />;
+        }
+
+        return <Store size={24} strokeWidth={1.9} />;
+    }
 
     function getCurrencyIcon(currency) {
         if (currency === "gem") return "💎";
@@ -212,64 +121,85 @@ function ShopView({ player, onClose }) {
                     </div>
 
                     <div className="shop-sections">
-                        {shopSections.map((section) => (
-                            <article className="shop-section-card" key={section.key}>
-                                <div className="shop-section-header">
-                                    <div className="shop-section-icon">
-                                        {section.icon}
+                        {shopLoading && (
+                            <p className="shop-state-message">
+                                Loading shop items...
+                            </p>
+                        )}
+
+                        {shopError && (
+                            <p className="shop-state-message error">
+                                {shopError}
+                            </p>
+                        )}
+
+                        {!shopLoading && !shopError && shopSections.length === 0 && (
+                            <p className="shop-state-message">
+                                No shop items available.
+                            </p>
+                        )}
+
+                        {!shopLoading &&
+	                        !shopError &&
+                            shopSections.map((section) => (
+                                <article className="shop-section-card" key={section.key}>
+                                    <div className="shop-section-header">
+                                        <div className="shop-section-icon">
+                                            {getSectionIcon(section.icon_key)}
+                                        </div>
+
+                                        <div>
+                                            <strong>{section.title}</strong>
+                                            <small>{section.description}</small>
+                                        </div>
                                     </div>
 
-                                    <div>
-                                        <strong>{section.title}</strong>
-                                        <small>{section.description}</small>
-                                    </div>
-                                </div>
+                                    <div className="shop-items-grid">
+                                        {section.items.map((item) => (
+                                            <button
+                                                type="button"
+                                                className="shop-item-card"
+                                                key={item.name}
+                                            >
+                                                <div className="shop-item-visual">
+                                                    {item.discount_label && (
+                                                        <span className="shop-item-discount">
+                                                            {item.discount_label}
+                                                        </span>
+                                                    )}
 
-                                <div className="shop-items-grid">
-                                    {section.items.map((item) => (
-                                        <button
-                                            type="button"
-                                            className="shop-item-card"
-                                            key={item.name}
-                                        >
-                                            <div className="shop-item-visual">
-                                                {item.discount && (
-                                                    <span className="shop-item-discount">
-                                                        {item.discount}
+                                                    <span className="shop-item-image">
+                                                        {item.image_emoji}
                                                     </span>
-                                                )}
+                                                </div>
 
-                                                <span className="shop-item-image">
-                                                    {item.image}
+                                                <strong className="shop-item-name">
+                                                    {item.name}
+                                                </strong>
+
+                                                <small className="shop-item-description">
+                                                    {item.description}
+                                                </small>
+
+                                                <span className="shop-item-price">
+                                                    <span className="shop-item-currency">
+                                                        {getCurrencyIcon(item.currency)}
+                                                    </span>
+
+                                                    <strong>{item.price}</strong>
+
+                                                    {item.old_price && (
+                                                        <small>{item.old_price}</small>
+                                                    )}
                                                 </span>
-                                            </div>
 
-                                            <strong className="shop-item-name">
-                                                {item.name}
-                                            </strong>
-
-                                            <small className="shop-item-description">
-                                                {item.description}
-                                            </small>
-
-                                            <span className="shop-item-price">
-                                                <span className="shop-item-currency">
-                                                    {getCurrencyIcon(item.currency)}
-                                                </span>
-
-                                                <strong>{item.price}</strong>
-
-                                                {item.oldPrice && (
-                                                    <small>{item.oldPrice}</small>
-                                                )}
-                                            </span>
-
-                                            <span className="shop-item-dot" />
-                                        </button>
-                                    ))}
-                                </div>
-                            </article>
-                        ))}
+                                                <span className="shop-item-dot" />
+                                            </button>
+                                        ))}
+                                    </div>
+                                </article>
+                            ))
+                        }
                     </div>
                 </div>
             </section>

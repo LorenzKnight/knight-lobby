@@ -6,6 +6,7 @@ from app.modules.avatar.routes import router as avatar_router
 from app.modules.life_areas.routes import router as life_areas_router
 from app.modules.game_profile.routes import router as game_profile_router
 from app.modules.daily_goals.routes import router as daily_goals_router
+from app.modules.shop.routes import router as shop_router
 
 
 app = FastAPI(
@@ -32,7 +33,7 @@ app.include_router(avatar_router)
 app.include_router(life_areas_router)
 app.include_router(game_profile_router)
 app.include_router(daily_goals_router)
-
+app.include_router(shop_router)
 
 @app.get("/")
 def root():
