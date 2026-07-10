@@ -9,9 +9,15 @@ import {
 	X,
 	Zap,
 } from "lucide-react";
-import { getShopItems } from "../services/api";
+import { getShopItems, purchaseShopItem } from "../services/api";
 
-function ShopView({ player, onClose }) {
+function ShopView({
+    player,
+    userId,
+    onClose,
+    onPurchaseSuccess,
+    onPurchaseError,
+}) {
 	const [shopSections, setShopSections] = useState([]);
     const [shopLoading, setShopLoading] = useState(false);
     const [shopError, setShopError] = useState("");
@@ -66,6 +72,82 @@ function ShopView({ player, onClose }) {
         if (currency === "gem") return "💎";
         if (currency === "coin") return "🪙";
         return "";
+    }
+
+    function getFriendlyPurchaseErrorMessage(errorMessage) {
+        if (errorMessage.includes("Your life is already full")) {
+            return {
+                title: "Vida completa",
+                message: "Ya tienes todos tus corazones. No necesitas comprar esta poción ahora.",
+            };
+        }
+
+        if (errorMessage.includes("Not enough gems")) {
+            return {
+                title: "Gemas insuficientes",
+                message: "No tienes suficientes gemas para comprar este item.",
+            };
+        }
+
+        if (errorMessage.includes("Not enough coins")) {
+            return {
+                title: "Coins insuficientes",
+                message: "No tienes suficientes coins para comprar este item.",
+            };
+        }
+
+        if (errorMessage.includes("Real money purchases are not available yet")) {
+            return {
+                title: "Próximamente",
+                message: "Las compras con dinero real todavía no están disponibles.",
+            };
+        }
+
+        if (errorMessage.includes("Shop item not found")) {
+            return {
+                title: "Item no disponible",
+                message: "Este item ya no está disponible en la tienda.",
+            };
+        }
+
+        return {
+            title: "Compra no realizada",
+            message: "No pudimos completar la compra. Inténtalo otra vez.",
+        };
+    }
+
+    async function handlePurchaseItem(item) {
+        if (!userId) {
+            if (onPurchaseError) {
+                onPurchaseError(
+                    "Sesión no encontrada",
+                    "No pudimos identificar tu usuario. Intenta iniciar sesión otra vez."
+                );
+            }
+
+            return;
+        }
+
+        try {
+            const result = await purchaseShopItem(userId, item.item_key);
+
+            if (!result.success) return;
+
+            if (onPurchaseSuccess) {
+                onPurchaseSuccess(result.data.game_profile, item);
+            }
+        } catch (error) {
+            const friendlyMessage = getFriendlyPurchaseErrorMessage(error.message);
+
+            if (onPurchaseError) {
+                onPurchaseError(
+                    friendlyMessage.title,
+                    friendlyMessage.message
+                );
+            }
+
+            console.warn("Shop purchase blocked:", error.message);
+        }
     }
 
 	return (
@@ -159,7 +241,8 @@ function ShopView({ player, onClose }) {
                                             <button
                                                 type="button"
                                                 className="shop-item-card"
-                                                key={item.name}
+                                                key={item.item_key}
+                                                onClick={() => handlePurchaseItem(item)}
                                             >
                                                 <div className="shop-item-visual">
                                                     {item.discount_label && (

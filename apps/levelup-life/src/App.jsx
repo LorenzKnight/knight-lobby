@@ -2354,7 +2354,27 @@ function App() {
 			{showShopView && (
 				<ShopView
 					player={displayPlayer}
+					userId={authUser?.user_id}
 					onClose={() => setShowShopView(false)}
+					onPurchaseSuccess={(updatedProfile, item) => {
+						setGameProfile((currentProfile) => ({
+							...currentProfile,
+							...updatedProfile,
+						}));
+
+						showToast(
+							"Compra realizada",
+							`As optenido ${item.name} correctamente.`,
+							"success"
+						);
+					}}
+					onPurchaseError={(title, message) => {
+						showToast(
+							title,
+							message,
+							"error"
+						);
+					}}
 				/>
 			)}
 

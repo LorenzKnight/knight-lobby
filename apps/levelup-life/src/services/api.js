@@ -278,3 +278,31 @@ export async function getShopItems() {
 
 	return result;
 }
+
+
+// Purchase shop item
+export async function purchaseShopItem(userId, itemKey) {
+	const response = await fetch(`${LEVELUP_API_URL}/api/shop/purchase`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+			user_id: userId,
+			item_key: itemKey,
+		}),
+	});
+
+	const result = await response.json();
+
+	if (!response.ok) {
+        const errorMessage =
+            typeof result.detail === "string"
+                ? result.detail
+                : JSON.stringify(result.detail);
+
+        throw new Error(errorMessage || "Could not purchase shop item");
+    }
+
+	return result;
+}
