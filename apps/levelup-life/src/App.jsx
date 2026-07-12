@@ -33,7 +33,6 @@ import {
 	addReward,
 	checkDailyGoalReminders,
 	closePreviousDailyGoalsDay,
-	completeDailyGoalTask,
 	createDailyGoal,
 	createLifeArea,
 	getAvatarConfig,
@@ -41,7 +40,7 @@ import {
 	getDailyGoals,
 	getGameProfile,
 	getLifeAreas,
-	progressDailyGoalTask,
+	progressDailyGoal,
 	saveAvatarConfig,
 } from "./services/api";
 import "./App.css";
@@ -89,7 +88,6 @@ function App() {
 	const [dailyGoalDescription, setDailyGoalDescription] = useState("");
 	const [dailyGoalLifeAreaId, setDailyGoalLifeAreaId] = useState("");
 
-	const [dailyGoalTaskTitle, setDailyGoalTaskTitle] = useState("");
 	const [dailyGoalProgressType, setDailyGoalProgressType] = useState("checkbox");
 	const [dailyGoalTargetValue, setDailyGoalTargetValue] = useState(1);
 	const [dailyGoalStepValue, setDailyGoalStepValue] = useState(1);
@@ -482,7 +480,6 @@ function App() {
 			setDailyGoalDescription("");
 			setDailyGoalLifeAreaId("");
 
-			setDailyGoalTaskTitle("");
 			setDailyGoalProgressType("checkbox");
 			setDailyGoalTargetValue(1);
 			setDailyGoalStepValue(1);
@@ -523,17 +520,15 @@ function App() {
 			return;
 		}
 
-		if (!dailyGoalTaskTitle.trim()) {
-			setDailyGoalError("Escribe la tarea diaria.");
-			return;
-		}
-
 		if (Number(dailyGoalTargetValue) <= 0) {
 			setDailyGoalError("La meta total debe ser mayor que cero.");
 			return;
 		}
 
-		if (Number(dailyGoalStepValue) <= 0) {
+		if (
+			dailyGoalProgressType === "numeric" &&
+			Number(dailyGoalStepValue) <= 0
+		) {
 			setDailyGoalError("El avance por click debe ser mayor que cero.");
 			return;
 		}
@@ -550,6 +545,8 @@ function App() {
 		setDailyGoalSaving(true);
 
 		try {
+			const isNumericGoal = dailyGoalProgressType === "numeric";
+
 			const payload = {
 				user_id: authUser.user_id,
 				life_area_id: dailyGoalLifeAreaId
@@ -559,16 +556,13 @@ function App() {
 				title: dailyGoalTitle.trim(),
 				description: dailyGoalDescription.trim() || null,
 
-				task_title: dailyGoalTaskTitle.trim(),
-				task_description: dailyGoalDescription.trim() || null,
-
 				progress_type: dailyGoalProgressType,
-				target_value: Number(dailyGoalTargetValue),
-				step_value: Number(dailyGoalStepValue),
-				unit: dailyGoalUnit.trim() || "task",
+				target_value: isNumericGoal ? Number(dailyGoalTargetValue) : 1,
+				step_value: isNumericGoal ? Number(dailyGoalStepValue) : 1,
+				unit: isNumericGoal ? dailyGoalUnit.trim() || "unit" : "task",
 
-				exp_reward: 10,
-				coins_reward: 2,
+				exp_reward: isNumericGoal ? 5 : 10,
+				coins_reward: isNumericGoal ? 1 : 2,
 				gems_reward: 0,
 				sort_order: dailyGoals.length + 1,
 
@@ -594,6 +588,17 @@ function App() {
 				}
 
 				setShowDailyGoalForm(false);
+				setDailyGoalTitle("");
+				setDailyGoalDescription("");
+				setDailyGoalLifeAreaId("");
+				setDailyGoalProgressType("checkbox");
+				setDailyGoalTargetValue(1);
+				setDailyGoalStepValue(1);
+				setDailyGoalUnit("task");
+				setDailyGoalReminderEnabled(true);
+				setDailyGoalReminderIntervalMinutes(120);
+				setDailyGoalReminderStartTime("08:00");
+				setDailyGoalReminderEndTime("22:00");
 
 				showToast(
 					"Hábito diario creado",
@@ -998,16 +1003,15 @@ function App() {
 		}
 	}
 
-	async function handleCompleteDailyGoalTask(goalId, taskId) {
+	async function handleProgressDailyGoal(goal) {
 		if (!authUser?.user_id || completingTaskId) return;
 
-		setCompletingTaskId(taskId);
+		setCompletingTaskId(goal.daily_goal_id);
 
 		try {
-			const result = await completeDailyGoalTask({
+			const result = await progressDailyGoal({
 				user_id: authUser.user_id,
-				daily_goal_id: goalId,
-				daily_goal_task_id: taskId,
+				daily_goal_id: goal.daily_goal_id,
 			});
 
 			if (!result.success) return;
@@ -1027,84 +1031,8 @@ function App() {
 				showToast(
 					result.data.game_profile.leveled_up
 						? "¡Subiste de nivel!"
-						: "¡Día completado!",
-					"Recompensa recibida por completar este hábito diario.",
-					"success"
-				);
-
-				return;
-			}
-
-			if (result.data.daily_goal_completed) {
-				showToast(
-					"Objetivo completado",
-					"Este objetivo diario fue completado.",
-					"success"
-				);
-
-				return;
-			}
-
-			showToast(
-				"Tarea completada",
-				`Progreso: ${result.data.progress_text}`,
-				"success"
-			);
-		} catch (error) {
-			console.error("Could not complete daily goal task:", error);
-
-			showToast(
-				"No se pudo completar",
-				"La tarea no pudo guardarse.",
-				"error"
-			);
-		} finally {
-			setCompletingTaskId(null);
-		}
-	}
-
-	async function handleProgressDailyGoalTask(goalId, task) {
-		if (!authUser?.user_id || completingTaskId) return;
-
-		setCompletingTaskId(task.daily_goal_task_id);
-
-		try {
-			const result = await progressDailyGoalTask({
-				user_id: authUser.user_id,
-				daily_goal_id: goalId,
-				daily_goal_task_id: task.daily_goal_task_id,
-				progress_amount: Number(task.step_value || 1),
-			});
-
-			if (!result.success) return;
-
-			const goalsResult = await getDailyGoals(authUser.user_id);
-
-			if (goalsResult.success) {
-				setDailyGoals(goalsResult.data || []);
-			}
-
-			if (result.data.reward_applied && result.data.game_profile) {
-				setGameProfile((currentProfile) => ({
-					...currentProfile,
-					...result.data.game_profile,
-				}));
-
-				showToast(
-					result.data.game_profile.leveled_up
-						? "¡Subiste de nivel!"
-						: "¡Día completado!",
-					"Has completado todos tus hábitos diarios.",
-					"success"
-				);
-
-				return;
-			}
-
-			if (result.data.daily_goal_completed) {
-				showToast(
-					"Hábito completado",
-					"Este hábito diario fue completado.",
+						: "Hábito completado",
+					`+${goal.exp_reward || 0} EXP y +${goal.coins_reward || 0} coins`,
 					"success"
 				);
 
@@ -1113,15 +1041,15 @@ function App() {
 
 			showToast(
 				"Progreso actualizado",
-				result.data.task_progress_text,
+				`${result.data.progress_value}/${result.data.target_value} ${result.data.unit}`,
 				"success"
 			);
 		} catch (error) {
-			console.error("Could not update daily goal progress:", error);
+			console.error("Could not update daily goal:", error);
 
 			showToast(
 				"No se pudo actualizar",
-				"La tarea no pudo guardar el progreso.",
+				"El hábito no pudo guardar el progreso.",
 				"error"
 			);
 		} finally {
@@ -1407,33 +1335,25 @@ function App() {
 
 	const expPercent = Math.min(Math.max(displayPlayer.exp, 0), 100);
 
-	const totalDailyTasks = dailyGoals.reduce(
-		(total, goal) => total + (goal.total_tasks || 0),
-		0
-	);
+	const totalDailyGoals = dailyGoals.length;
 
-	const completedDailyTasks = dailyGoals.reduce(
-		(total, goal) => total + (goal.completed_tasks || 0),
-		0
-	);
+	const completedDailyGoals = dailyGoals.reduce((total, goal) => {
+		const progressPercent = Number(goal.progress_percent || 0);
 
-	const totalDailyTaskProgress = dailyGoals.reduce((total, goal) => {
-		const tasks = goal.tasks || [];
+		return total + (progressPercent >= 100 ? 1 : 0);
+	}, 0);
 
-		const goalTaskProgress = tasks.reduce((taskTotal, task) => {
-			return taskTotal + (task.task_progress_percent || 0);
-		}, 0);
-
-		return total + goalTaskProgress;
+	const totalDailyGoalProgress = dailyGoals.reduce((total, goal) => {
+		return total + Number(goal.progress_percent || 0);
 	}, 0);
 
 	const dailyProgressPercent =
-		totalDailyTasks > 0
+		totalDailyGoals > 0
 			? Math.min(
 				100,
 				Math.max(
 					0,
-					Math.round(totalDailyTaskProgress / totalDailyTasks)
+					Math.round(totalDailyGoalProgress / totalDailyGoals)
 				)
 			)
 			: 0;
@@ -1482,6 +1402,32 @@ function App() {
 	const selectedDailyGoal = dailyGoals.find(
 		(goal) => goal.daily_goal_id === selectedDailyGoalId
 	);
+
+	function getLifeAreaForGoal(goal) {
+		if (!goal?.life_area_id) return null;
+
+		return lifeAreas.find((area) => {
+			return Number(area.life_area_id) === Number(goal.life_area_id);
+		}) || null;
+	}
+
+	function getGoalAreaColor(goal) {
+		const area = getLifeAreaForGoal(goal);
+
+		return area?.color || "#7a58b4";
+	}
+
+	function getGoalAreaIcon(goal) {
+		const area = getLifeAreaForGoal(goal);
+
+		return area?.icon || "🔥";
+	}
+
+	function getGoalAreaName(goal) {
+		const area = getLifeAreaForGoal(goal);
+
+		return area?.name || "Sin área";
+	}
 
 
 
@@ -1543,7 +1489,7 @@ function App() {
 							<div className="day-progress-widget">
 								<div className="day-progress-left">
 									<small className="daily-progress-count">
-										Progreso: {completedDailyTasks}/{totalDailyTasks}
+										Progreso: {completedDailyGoals}/{totalDailyGoals}
 									</small>
 
 									<p className="progress-note">
@@ -1582,7 +1528,7 @@ function App() {
 							<div className="daily-goals-preview" ref={dailyGoalsPreviewRef}>
 								<div className="daily-goals-preview-header">
 									<strong>Habitos u objetivos diarios</strong>
-									<span>{completedDailyTasks}/{totalDailyTasks}</span>
+									<span>{completedDailyGoals}/{totalDailyGoals}</span>
 								</div>
 
 								<div className="daily-goals-scroll-area">
@@ -1597,35 +1543,54 @@ function App() {
 									)}
 
 									{!dailyGoalsLoading &&
-										dailyGoals.map((goal) => (
-											<article
-												className={`daily-goal-card ${
-													selectedDailyGoalId === goal.daily_goal_id ? "selected" : ""
-												}`}
-												key={goal.daily_goal_id}
-											>
-												<button
-													type="button"
-													className="daily-goal-summary-button"
-													onClick={(event) =>
-														handleOpenDailyGoalMenu(goal.daily_goal_id, event)
-													}
-												>
-													<div className="daily-goal-card-header">
-														<strong>{goal.title}</strong>
-														<span>{goal.progress_percent}%</span>
-													</div>
+										dailyGoals.map((goal) => {
+											const goalAreaColor = getGoalAreaColor(goal);
+											const goalAreaIcon = getGoalAreaIcon(goal);
+											const goalAreaName = getGoalAreaName(goal);
 
-													<div className="daily-goal-mini-bar">
-														<div
-															style={{
-																width: `${goal.progress_percent}%`,
-															}}
-														/>
-													</div>
-												</button>
-											</article>
-										))
+											return (
+												<article
+													className={`daily-goal-card ${
+														selectedDailyGoalId === goal.daily_goal_id ? "selected" : ""
+													}`}
+													style={{
+														"--goal-area-color": goalAreaColor,
+													}}
+													key={goal.daily_goal_id}
+												>
+													<button
+														type="button"
+														className="daily-goal-summary-button"
+														onClick={(event) =>
+															handleOpenDailyGoalMenu(goal.daily_goal_id, event)
+														}
+													>
+														<div className="daily-goal-card-header">
+															<div className="daily-goal-title-with-area">
+																<span className="daily-goal-area-icon">
+																	{goalAreaIcon}
+																</span>
+
+																<div>
+																	<strong>{goal.title}</strong>
+																	<small>{goalAreaName}</small>
+																</div>
+															</div>
+
+															<span>{goal.progress_percent}%</span>
+														</div>
+
+														<div className="daily-goal-mini-bar">
+															<div
+																style={{
+																	width: `${goal.progress_percent}%`,
+																}}
+															/>
+														</div>
+													</button>
+												</article>
+											);
+										})
 									}
 								</div>
 
@@ -1634,6 +1599,7 @@ function App() {
 										className="daily-goal-floating-menu"
 										style={{
 											"--arrow-top": `${dailyGoalMenuArrowTop}px`,
+											"--goal-area-color": getGoalAreaColor(selectedDailyGoal),
 										}}
 									>
 										<div className="daily-goal-floating-header">
@@ -1651,7 +1617,7 @@ function App() {
 											</button>
 										</div>
 
-										<div className="daily-goal-task-list">
+										{/* <div className="daily-goal-task-list">
 											{selectedDailyGoal.tasks.map((task) => {
 												const isNumericTask = task.progress_type === "numeric";
 
@@ -1726,6 +1692,65 @@ function App() {
 													</div>
 												);
 											})}
+										</div> */}
+
+										<div className="daily-goal-task-list">
+											<div
+												className={`daily-goal-task-card ${
+													selectedDailyGoal.progress_percent >= 100 ? "completed" : ""
+												}`}
+											>
+												<button
+													type="button"
+													className={`daily-goal-task ${
+														selectedDailyGoal.progress_percent >= 100 ? "completed" : ""
+													}`}
+													disabled={
+														selectedDailyGoal.progress_percent >= 100 ||
+														completingTaskId === selectedDailyGoal.daily_goal_id
+													}
+													onClick={() => handleProgressDailyGoal(selectedDailyGoal)}
+												>
+													<span>
+														{selectedDailyGoal.progress_percent >= 100 ? "✓" : "○"}
+													</span>
+
+													<strong>{selectedDailyGoal.title}</strong>
+
+													<small>
+														{selectedDailyGoal.progress_percent >= 100
+															? "Completado"
+															: completingTaskId === selectedDailyGoal.daily_goal_id
+																? "Guardando..."
+																: selectedDailyGoal.progress_type === "numeric"
+																	? `+${selectedDailyGoal.step_value} ${selectedDailyGoal.unit}`
+																	: "Completar"}
+													</small>
+												</button>
+
+												{selectedDailyGoal.progress_type === "numeric" && (
+													<div className="daily-goal-task-progress">
+														<div className="daily-goal-task-progress-info">
+															<span>
+																{selectedDailyGoal.progress_value || 0}/
+																{selectedDailyGoal.target_value} {selectedDailyGoal.unit}
+															</span>
+
+															<strong>
+																{selectedDailyGoal.progress_percent || 0}%
+															</strong>
+														</div>
+
+														<div className="daily-goal-task-progress-bar">
+															<div
+																style={{
+																	width: `${selectedDailyGoal.progress_percent || 0}%`,
+																}}
+															/>
+														</div>
+													</div>
+												)}
+											</div>
 										</div>
 									</div>
 								)}
@@ -1975,7 +2000,7 @@ function App() {
 							<span className="quick-add-icon">🔥</span>
 							<span>
 								<strong>Nuevo hábito</strong>
-								<small>Tareas diaria para subir nivel</small>
+								<small>Hábito diario para subir nivel</small>
 							</span>
 						</button>
 
@@ -2091,7 +2116,7 @@ function App() {
 						<div className="area-form-header daily-goal-form-header">
 							<div>
 								<span>Nuevo hábito diario</span>
-								<h2>Crear Daily Goal</h2>
+								<h2>Create a daily habit</h2>
 							</div>
 
 							<button
@@ -2133,10 +2158,10 @@ function App() {
 								</label>
 
 								<label>
-									Nombre del hábito diario
+									Hábito diario
 									<input
 										type="text"
-										placeholder="Ej: Caminar"
+										placeholder="Ej: Caminar 3 km"
 										value={dailyGoalTitle}
 										onChange={(event) =>
 											setDailyGoalTitle(event.target.value)
@@ -2157,19 +2182,6 @@ function App() {
 									/>
 								</label>
 
-								<label>
-									Tarea diaria
-									<input
-										type="text"
-										placeholder="Ej: Caminar 3 km"
-										value={dailyGoalTaskTitle}
-										onChange={(event) =>
-											setDailyGoalTaskTitle(event.target.value)
-										}
-										required
-									/>
-								</label>
-
 								<div
 									className={`area-form-row daily-goal-type-row ${
 										dailyGoalProgressType === "numeric" ? "has-unit" : "simple-only"
@@ -2186,7 +2198,6 @@ function App() {
 
 												if (value === "checkbox") {
 													setDailyGoalTargetValue(1);
-													setDailyGoalStepValue(1);
 													setDailyGoalUnit("task");
 												}
 

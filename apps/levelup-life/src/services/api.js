@@ -194,7 +194,7 @@ export async function createDailyGoal(dailyGoalData) {
 
 
 // Progress daily goal task
-export async function progressDailyGoalTask(data) {
+export async function progressDailyGoalTask(data) { // LEGACY 
 	const response = await fetch(
 		`${LEVELUP_API_URL}/api/daily-goals/tasks/progress`,
 		{
@@ -203,6 +203,26 @@ export async function progressDailyGoalTask(data) {
 			body: JSON.stringify(data),
 		}
 	);
+
+	const result = await response.json();
+
+	if (!response.ok) {
+		throw new Error(result.detail || "Could not update daily goal progress");
+	}
+
+	return result;
+}
+
+
+// Progress daily goal
+export async function progressDailyGoal(payload) {
+	const response = await fetch(`${LEVELUP_API_URL}/api/daily-goals/progress`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(payload),
+	});
 
 	const result = await response.json();
 

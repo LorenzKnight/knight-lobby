@@ -20,11 +20,16 @@ class CompleteDailyGoalTaskRequest(BaseModel):
     daily_goal_id: int
     daily_goal_task_id: int
 
-class ProgressDailyGoalTaskRequest(BaseModel):
+class ProgressDailyGoalTaskRequest(BaseModel): # LEGACY
     user_id: int
     daily_goal_id: int
     daily_goal_task_id: int
     progress_amount: float
+
+
+class ProgressDailyGoalRequest(BaseModel):
+    user_id: int
+    daily_goal_id: int
 
 class CreateDailyGoalRequest(BaseModel):
     user_id: int
@@ -32,9 +37,6 @@ class CreateDailyGoalRequest(BaseModel):
 
     title: str
     description: str | None = None
-
-    task_title: str
-    task_description: str | None = None
 
     progress_type: str = "checkbox"
     target_value: float = 1
@@ -216,11 +218,476 @@ def get_data_or_empty(result):
     )
 
 
+def build_reward_animation_items(
+    exp_earned: int = 0,
+    coins_earned: int = 0,
+    gems_earned: int = 0,
+    applied_boosts=None,
+):
+    applied_boosts = applied_boosts or []
 
-# Loads the daily goals and their task progress.
+    animation_items = []
+
+    if exp_earned:
+        animation_items.append({
+            "text": f"+{exp_earned} EXP",
+            "type": "exp",
+        })
+
+    if coins_earned:
+        animation_items.append({
+            "text": f"+{coins_earned} coins",
+            "type": "coins",
+        })
+
+    if gems_earned:
+        animation_items.append({
+            "text": f"+{gems_earned} gem",
+            "type": "gems",
+        })
+
+    for boost in applied_boosts:
+        boost_type = boost.get("boost_type", "")
+        boost_value = boost.get("boost_value", "")
+
+        if boost_type == "exp_multiplier":
+            animation_items.append({
+                "text": f"EXP Boost x{boost_value} applied",
+                "type": "boost",
+            })
+
+        if boost_type == "coins_multiplier":
+            animation_items.append({
+                "text": f"Coins Boost x{boost_value} applied",
+                "type": "boost",
+            })
+
+    return animation_items
+
+
+def create_reward_event(
+    event_type: str,
+    title: str,
+    message: str,
+    icon: str,
+    exp_earned: int = 0,
+    coins_earned: int = 0,
+    gems_earned: int = 0,
+    source_type: str | None = None,
+    source_id: int | None = None,
+    applied_boosts=None,
+):
+    applied_boosts = applied_boosts or []
+
+    return {
+        "type": event_type,
+        "title": title,
+        "message": message,
+        "icon": icon,
+        "exp_earned": exp_earned,
+        "coins_earned": coins_earned,
+        "gems_earned": gems_earned,
+        "source_type": source_type,
+        "source_id": source_id,
+        "applied_boosts": applied_boosts,
+        "animation_items": build_reward_animation_items(
+            exp_earned=exp_earned,
+            coins_earned=coins_earned,
+            gems_earned=gems_earned,
+            applied_boosts=applied_boosts,
+        ),
+    }
+
+# Loads the active reward boosts for a user.
+def create_reward_event_from_reward_result(
+    reward_result: dict,
+    event_type: str,
+    title: str,
+    message: str,
+    icon: str,
+    fallback_exp: int = 0,
+    fallback_coins: int = 0,
+    fallback_gems: int = 0,
+    source_type: str | None = None,
+    source_id: int | None = None,
+):
+    reward_data = reward_result.get("data") or {}
+
+    reward_values = reward_data.get("reward") or {}
+
+    exp_earned = int(
+        reward_values.get("exp_earned")
+        or reward_data.get("exp_earned")
+        or fallback_exp
+        or 0
+    )
+
+    coins_earned = int(
+        reward_values.get("coins_earned")
+        or reward_data.get("coins_earned")
+        or fallback_coins
+        or 0
+    )
+
+    gems_earned = int(
+        reward_values.get("gems_earned")
+        or reward_data.get("gems_earned")
+        or fallback_gems
+        or 0
+    )
+
+    applied_boosts = (
+        reward_values.get("applied_boosts")
+        or reward_data.get("applied_boosts")
+        or []
+    )
+
+    return create_reward_event(
+        event_type=event_type,
+        title=title,
+        message=message,
+        icon=icon,
+        exp_earned=exp_earned,
+        coins_earned=coins_earned,
+        gems_earned=gems_earned,
+        source_type=source_type,
+        source_id=source_id,
+        applied_boosts=applied_boosts,
+    )
+
+# checks if the user has completed all daily goals in a life area and applies a bonus reward if applicable.
+def check_and_apply_life_area_bonus(
+    user_id: int,
+    life_area_id: int | None,
+    today: date,
+):
+    if life_area_id is None:
+        return {
+            "reward_event": None,
+            "game_profile": None,
+        }
+
+    active_goals_result = select_from(
+        table_name="daily_goals",
+        columns=[
+            "daily_goal_id",
+            "title",
+        ],
+        where_clause={
+            "user_id": user_id,
+            "life_area_id": life_area_id,
+            "is_active": True,
+        },
+    )
+
+    active_goals = get_data_or_empty(active_goals_result)
+
+    # Regla: el bonus de área solo existe si el área tiene más de 1 hábito.
+    if len(active_goals) <= 1:
+        return {
+            "reward_event": None,
+            "game_profile": None,
+        }
+
+    reward_exists_result = select_from(
+        table_name="life_area_reward_logs",
+        columns=[
+            "life_area_reward_log_id",
+        ],
+        where_clause={
+            "user_id": user_id,
+            "life_area_id": life_area_id,
+            "rewarded_date": today,
+        },
+        options={
+            "fetch_first": True,
+        },
+    )
+
+    # Ya se dio el bonus de esta área hoy.
+    if reward_exists_result["success"]:
+        return {
+            "reward_event": None,
+            "game_profile": None,
+        }
+
+    completed_goals_result = select_from(
+        table_name="daily_goal_completion_logs",
+        columns=[
+            "daily_goal_id",
+        ],
+        where_clause={
+            "user_id": user_id,
+            "completed_date": today,
+            "is_completed": True,
+        },
+    )
+
+    completed_goals = get_data_or_empty(completed_goals_result)
+
+    active_goal_ids = {
+        goal["daily_goal_id"]
+        for goal in active_goals
+    }
+
+    completed_goal_ids = {
+        completion["daily_goal_id"]
+        for completion in completed_goals
+    }
+
+    area_completed = active_goal_ids.issubset(completed_goal_ids)
+
+    if not area_completed:
+        return {
+            "reward_event": None,
+            "game_profile": None,
+        }
+
+    area_result = select_from(
+        table_name="life_areas",
+        columns=[
+            "life_area_id",
+            "name",
+            "icon",
+        ],
+        where_clause={
+            "life_area_id": life_area_id,
+            "user_id": user_id,
+        },
+        options={
+            "fetch_first": True,
+        },
+    )
+
+    area_name = "Área de vida"
+    area_icon = "🌟"
+
+    if area_result["success"]:
+        area = area_result["data"]
+        area_name = area["name"] or area_name
+        area_icon = area["icon"] or area_icon
+
+    exp_reward = 20
+    coins_reward = 5
+    gems_reward = 0
+
+    reward_result = apply_reward(
+        user_id=user_id,
+        source_type="life_area",
+        source_id=life_area_id,
+        exp_earned=exp_reward,
+        coins_earned=coins_reward,
+        gems_earned=gems_reward,
+        reason=f"Completed life area: {area_name}",
+    )
+
+    if not reward_result["success"]:
+        raise HTTPException(
+            status_code=400,
+            detail=reward_result["message"],
+        )
+
+    log_result = insert_into(
+        table_name="life_area_reward_logs",
+        query_data={
+            "user_id": user_id,
+            "life_area_id": life_area_id,
+            "rewarded_date": today,
+            "exp_earned": exp_reward,
+            "coins_earned": coins_reward,
+            "gems_earned": gems_reward,
+        },
+    )
+
+    if not log_result["success"]:
+        raise HTTPException(
+            status_code=400,
+            detail=log_result["message"],
+        )
+
+    reward_event = create_reward_event_from_reward_result(
+        reward_result=reward_result,
+        event_type="life_area_completed",
+        title="Área completada",
+        message=f"Completaste todos los hábitos de {area_icon} {area_name}",
+        icon=area_icon,
+        fallback_exp=exp_reward,
+        fallback_coins=coins_reward,
+        fallback_gems=gems_reward,
+        source_type="life_area",
+        source_id=life_area_id,
+    )
+
+    return {
+        "reward_event": reward_event,
+        "game_profile": reward_result["data"],
+    }
+
+
+# Applies the Perfect Day reward when all active daily goals are completed.
+def check_and_apply_perfect_day_bonus(
+    user_id: int,
+    today: date,
+):
+    active_goals_result = select_from(
+        table_name="daily_goals",
+        columns=[
+            "daily_goal_id",
+            "title",
+            "life_area_id",
+        ],
+        where_clause={
+            "user_id": user_id,
+            "is_active": True,
+        },
+    )
+
+    active_goals = get_data_or_empty(active_goals_result)
+
+    if len(active_goals) == 0:
+        return {
+            "reward_event": None,
+            "game_profile": None,
+        }
+
+    reward_exists_result = select_from(
+        table_name="daily_goal_reward_logs",
+        columns=[
+            "daily_goal_reward_log_id",
+        ],
+        where_clause={
+            "user_id": user_id,
+            "rewarded_date": today,
+        },
+        options={
+            "fetch_first": True,
+        },
+    )
+
+    # Ya se entregó el Perfect Day hoy.
+    if reward_exists_result["success"]:
+        return {
+            "reward_event": None,
+            "game_profile": None,
+        }
+
+    completed_goals_result = select_from(
+        table_name="daily_goal_completion_logs",
+        columns=[
+            "daily_goal_id",
+        ],
+        where_clause={
+            "user_id": user_id,
+            "completed_date": today,
+            "is_completed": True,
+        },
+    )
+
+    completed_goals = get_data_or_empty(completed_goals_result)
+
+    active_goal_ids = {
+        goal["daily_goal_id"]
+        for goal in active_goals
+    }
+
+    completed_goal_ids = {
+        completion["daily_goal_id"]
+        for completion in completed_goals
+    }
+
+    perfect_day_completed = active_goal_ids.issubset(completed_goal_ids)
+
+    if not perfect_day_completed:
+        return {
+            "reward_event": None,
+            "game_profile": None,
+        }
+
+    completed_area_ids = {
+        goal["life_area_id"]
+        for goal in active_goals
+        if goal.get("life_area_id") is not None
+    }
+
+    balanced_day_completed = len(completed_area_ids) >= 3
+
+    exp_reward = 55
+    coins_reward = 15
+    gems_reward = 1 if balanced_day_completed else 0
+
+    reward_result = apply_reward(
+        user_id=user_id,
+        source_type="perfect_day",
+        source_id=None,
+        exp_earned=exp_reward,
+        coins_earned=coins_reward,
+        gems_earned=gems_reward,
+        reason=(
+            "Completed Balanced Perfect Day"
+            if balanced_day_completed
+            else "Completed Perfect Day"
+        ),
+    )
+
+    if not reward_result["success"]:
+        raise HTTPException(
+            status_code=400,
+            detail=reward_result["message"],
+        )
+
+    log_result = insert_into(
+        table_name="daily_goal_reward_logs",
+        query_data={
+            "user_id": user_id,
+            "rewarded_date": today,
+            "exp_earned": exp_reward,
+            "coins_earned": coins_reward,
+            "gems_earned": gems_reward,
+        },
+    )
+
+    if not log_result["success"]:
+        raise HTTPException(
+            status_code=400,
+            detail=log_result["message"],
+        )
+
+    reward_event = create_reward_event_from_reward_result(
+        reward_result=reward_result,
+        event_type=(
+            "balanced_perfect_day_completed"
+            if balanced_day_completed
+            else "perfect_day_completed"
+        ),
+        title=(
+            "Balanced Perfect Day"
+            if balanced_day_completed
+            else "Perfect Day"
+        ),
+        message=(
+            "Completaste todos tus hábitos y cubriste 3 áreas de vida"
+            if balanced_day_completed
+            else "Completaste todos tus hábitos del día"
+        ),
+        icon="🏆",
+        fallback_exp=exp_reward,
+        fallback_coins=coins_reward,
+        fallback_gems=gems_reward,
+        source_type="perfect_day",
+        source_id=None,
+    )
+
+    return {
+        "reward_event": reward_event,
+        "game_profile": reward_result["data"],
+    }
+
+
+
+# Loads the daily goals and their direct progress.
 @router.get("")
 def get_daily_goals(user_id: int):
-    today = date.today()
+    today = get_today()
 
     goals_result = select_from(
         table_name="daily_goals",
@@ -233,6 +700,10 @@ def get_daily_goals(user_id: int):
             "exp_reward",
             "coins_reward",
             "gems_reward",
+            "progress_type",
+            "target_value",
+            "step_value",
+            "unit",
             "is_active",
             "sort_order",
         ],
@@ -257,36 +728,10 @@ def get_daily_goals(user_id: int):
     daily_goals = []
 
     for goal in goals_result["data"]:
-        tasks_result = select_from(
-            table_name="daily_goal_tasks",
+        progress_log_result = select_from(
+            table_name="daily_goal_completion_logs",
             columns=[
-                "daily_goal_task_id",
-                "daily_goal_id",
-                "title",
-                "description",
-                "is_required",
-                "progress_type",
-                "target_value",
-                "step_value",
-                "unit",
-                "sort_order",
-            ],
-            where_clause={
-                "daily_goal_id": goal["daily_goal_id"],
-            },
-            options={
-                "order_by": "sort_order",
-                "order_direction": "ASC",
-            },
-        )
-
-        tasks = tasks_result["data"] if tasks_result["success"] else []
-
-        task_logs_result = select_from(
-            table_name="daily_goal_task_logs",
-            columns=[
-                "daily_goal_task_log_id",
-                "daily_goal_task_id",
+                "daily_goal_completion_log_id",
                 "progress_value",
                 "is_completed",
             ],
@@ -295,86 +740,53 @@ def get_daily_goals(user_id: int):
                 "daily_goal_id": goal["daily_goal_id"],
                 "completed_date": today,
             },
+            options={
+                "fetch_first": True,
+            },
         )
 
-        task_logs = task_logs_result["data"] if task_logs_result["success"] else []
+        progress_log = None
 
-        task_logs_by_task_id = {
-            log["daily_goal_task_id"]: log
-            for log in task_logs
-        }
+        if progress_log_result["success"]:
+            progress_log = progress_log_result["data"]
 
-        formatted_tasks = []
+        progress_type = goal["progress_type"] or "checkbox"
+        target_value = float(goal["target_value"] or 1)
+        step_value = float(goal["step_value"] or 1)
+        unit = goal["unit"] or "task"
 
-        for task in tasks:
-            task_log = task_logs_by_task_id.get(
-                task["daily_goal_task_id"]
-            )
+        progress_value = 0
+        is_completed = False
 
-            progress_value = (
-                task_log["progress_value"]
-                if task_log
-                else 0
-            )
+        if progress_log:
+            progress_value = float(progress_log["progress_value"] or 0)
+            is_completed = bool(progress_log["is_completed"])
 
-            is_completed = (
-                task_log["is_completed"]
-                if task_log
-                else False
-            )
+        if progress_type == "checkbox":
+            target_value = 1
+            step_value = 1
+            unit = "task"
+            progress_value = 1 if is_completed else 0
 
-            target_value = task["target_value"] or 1
-
-            task_progress_percent = calculate_progress(
-                float(progress_value),
-                float(target_value),
-            )
-
-            formatted_tasks.append({
-                **task,
-                "daily_goal_task_log_id": (
-                    task_log["daily_goal_task_log_id"]
-                    if task_log
-                    else None
-                ),
-                "progress_value": float(progress_value),
-                "target_value": float(target_value),
-                "step_value": float(task["step_value"] or 1),
-                "is_completed": bool(is_completed),
-                "task_progress_text": f"{progress_value}/{target_value} {task['unit']}",
-                "task_progress_percent": task_progress_percent,
-            })
-
-        total_tasks = len(formatted_tasks)
-
-        completed_tasks = sum(
-            1
-            for task in formatted_tasks
-            if task["is_completed"]
+        progress_percent = calculate_progress(
+            progress_value,
+            target_value,
         )
 
-        total_task_progress = sum(
-            task["task_progress_percent"]
-            for task in formatted_tasks
-        )
-
-        progress_percent = (
-            round(total_task_progress / total_tasks)
-            if total_tasks > 0
-            else 0
-        )
+        progress_percent = min(100, max(0, progress_percent))
 
         daily_goals.append({
             **goal,
-            "tasks": formatted_tasks,
-            "completed_tasks": completed_tasks,
-            "total_tasks": total_tasks,
-            "progress_text": f"{completed_tasks}/{total_tasks}",
+            "tasks": [],
+            "completed_tasks": 1 if is_completed else 0,
+            "total_tasks": 1,
+            "progress_value": progress_value,
+            "target_value": target_value,
+            "step_value": step_value,
+            "unit": unit,
+            "progress_text": f"{progress_value:g}/{target_value:g} {unit}",
             "progress_percent": progress_percent,
-            "is_completed_today": (
-                total_tasks > 0
-                and completed_tasks == total_tasks
-            ),
+            "is_completed_today": is_completed,
         })
 
     return {
@@ -385,8 +797,9 @@ def get_daily_goals(user_id: int):
     }
 
 
+
 # Completes one task and rewards the user when all daily goals are completed.
-@router.post("/tasks/complete")
+@router.post("/tasks/complete") # LEGACY 
 def complete_daily_goal_task(payload: CompleteDailyGoalTaskRequest):
     today = date.today()
 
@@ -721,12 +1134,6 @@ def create_daily_goal(payload: CreateDailyGoalRequest):
             detail="Daily goal title is required",
         )
 
-    if not payload.task_title.strip():
-        raise HTTPException(
-            status_code=400,
-            detail="Task title is required",
-        )
-
     if payload.progress_type not in ["checkbox", "numeric"]:
         raise HTTPException(
             status_code=400,
@@ -739,11 +1146,17 @@ def create_daily_goal(payload: CreateDailyGoalRequest):
             detail="Target value must be greater than zero",
         )
 
-    if payload.step_value <= 0:
+    if payload.progress_type == "numeric" and payload.step_value <= 0:
         raise HTTPException(
             status_code=400,
             detail="Step value must be greater than zero",
         )
+    
+    is_numeric_goal = payload.progress_type == "numeric"
+
+    target_value = payload.target_value if is_numeric_goal else 1
+    step_value = payload.step_value if is_numeric_goal else 1
+    unit = payload.unit if is_numeric_goal else "task"
 
     if payload.life_area_id is not None:
         life_area_result = select_from(
@@ -779,6 +1192,11 @@ def create_daily_goal(payload: CreateDailyGoalRequest):
             "gems_reward": payload.gems_reward,
             "sort_order": payload.sort_order,
 
+            "progress_type": payload.progress_type,
+            "target_value": target_value,
+            "step_value": step_value,
+            "unit": unit,
+
             "reminder_enabled": payload.reminder_enabled,
             "reminder_interval_minutes": payload.reminder_interval_minutes,
             "reminder_start_time": payload.reminder_start_time,
@@ -804,6 +1222,10 @@ def create_daily_goal(payload: CreateDailyGoalRequest):
             "exp_reward",
             "coins_reward",
             "gems_reward",
+            "progress_type",
+            "target_value",
+            "step_value",
+            "unit",
             "is_active",
             "sort_order",
         ],
@@ -827,34 +1249,15 @@ def create_daily_goal(payload: CreateDailyGoalRequest):
 
     created_goal = created_goal_result["data"]
 
-    task_result = insert_into(
-        table_name="daily_goal_tasks",
-        query_data={
-            "daily_goal_id": created_goal["daily_goal_id"],
-            "title": payload.task_title.strip(),
-            "description": payload.task_description,
-            "progress_type": payload.progress_type,
-            "target_value": payload.target_value,
-            "step_value": payload.step_value,
-            "unit": payload.unit,
-            "sort_order": 0,
-        },
-    )
-
-    if not task_result["success"]:
-        raise HTTPException(
-            status_code=400,
-            detail=task_result["message"],
-        )
-
     return {
         "success": True,
         "message": "Daily goal created successfully",
         "data": created_goal,
     }
 
+
 # Add partial progress
-@router.post("/tasks/progress")
+@router.post("/tasks/progress") # LEGACY
 def progress_daily_goal_task(payload: ProgressDailyGoalTaskRequest):
     today = date.today()
 
@@ -1013,6 +1416,229 @@ def progress_daily_goal_task(payload: ProgressDailyGoalTaskRequest):
             "daily_goal_completed": completion_state["daily_goal_completed"],
         },
     }
+
+
+@router.post("/progress")
+def progress_daily_goal(payload: ProgressDailyGoalRequest):
+    today = date.today()
+
+    goal_result = select_from(
+        table_name="daily_goals",
+        columns=[
+            "daily_goal_id",
+            "user_id",
+            "life_area_id",
+            "title",
+            "progress_type",
+            "target_value",
+            "step_value",
+            "unit",
+            "exp_reward",
+            "coins_reward",
+            "gems_reward",
+            "is_active",
+        ],
+        where_clause={
+            "daily_goal_id": payload.daily_goal_id,
+            "user_id": payload.user_id,
+            "is_active": True,
+        },
+        options={
+            "fetch_first": True,
+        },
+    )
+
+    if not goal_result["success"]:
+        raise HTTPException(
+            status_code=404,
+            detail="Daily goal not found",
+        )
+
+    goal = goal_result["data"]
+
+    existing_log_result = select_from(
+        table_name="daily_goal_completion_logs",
+        columns=[
+            "daily_goal_completion_log_id",
+            "progress_value",
+            "is_completed",
+        ],
+        where_clause={
+            "user_id": payload.user_id,
+            "daily_goal_id": payload.daily_goal_id,
+            "completed_date": today,
+        },
+        options={
+            "fetch_first": True,
+        },
+    )
+
+    existing_log = None
+
+    if existing_log_result["success"]:
+        existing_log = existing_log_result["data"]
+
+    current_progress_value = 0
+    was_completed = False
+
+    if existing_log:
+        current_progress_value = float(existing_log["progress_value"] or 0)
+        was_completed = bool(existing_log["is_completed"])
+
+    if was_completed:
+        return {
+            "success": True,
+            "message": "Daily goal already completed",
+            "data": {
+                "daily_goal_id": payload.daily_goal_id,
+                "progress_value": current_progress_value,
+                "target_value": float(goal["target_value"] or 1),
+                "step_value": float(goal["step_value"] or 1),
+                "unit": goal["unit"],
+                "progress_percent": 100,
+                "is_completed": True,
+                "reward_applied": False,
+                "reward_events": [],
+                "game_profile": None,
+            },
+        }
+
+    is_numeric_goal = goal["progress_type"] == "numeric"
+
+    target_value = float(goal["target_value"] or 1)
+    step_value = float(goal["step_value"] or 1)
+
+    if is_numeric_goal:
+        new_progress_value = min(
+            target_value,
+            current_progress_value + step_value,
+        )
+    else:
+        new_progress_value = 1
+
+    is_completed = new_progress_value >= target_value
+
+    if existing_log:
+        update_result = update_table(
+            table_name="daily_goal_completion_logs",
+            query_data={
+                "progress_value": new_progress_value,
+                "is_completed": is_completed,
+            },
+            where_clause={
+                "daily_goal_completion_log_id": existing_log["daily_goal_completion_log_id"],
+            },
+        )
+
+        if not update_result["success"]:
+            raise HTTPException(
+                status_code=400,
+                detail=update_result["message"],
+            )
+    else:
+        insert_result = insert_into(
+            table_name="daily_goal_completion_logs",
+            query_data={
+                "user_id": payload.user_id,
+                "daily_goal_id": payload.daily_goal_id,
+                "completed_date": today,
+                "progress_value": new_progress_value,
+                "is_completed": is_completed,
+            },
+        )
+
+        if not insert_result["success"]:
+            raise HTTPException(
+                status_code=400,
+                detail=insert_result["message"],
+            )
+
+    progress_percent = round((new_progress_value / target_value) * 100)
+    progress_percent = min(100, max(0, progress_percent))
+
+    reward_applied = False
+    game_profile = None
+    reward_events = []
+
+    if is_completed and not was_completed:
+        reward_result = apply_reward(
+            user_id=payload.user_id,
+            source_type="daily_goal",
+            source_id=payload.daily_goal_id,
+            exp_earned=goal["exp_reward"],
+            coins_earned=goal["coins_reward"],
+            gems_earned=goal["gems_reward"],
+            reason=f"Completed daily goal: {goal['title']}",
+        )
+
+        if reward_result["success"]:
+            reward_applied = True
+            game_profile = reward_result["data"]
+
+            reward_events.append(
+                create_reward_event_from_reward_result(
+                    reward_result=reward_result,
+                    event_type="daily_goal_completed",
+                    title="Hábito completado",
+                    message=f"Completaste {goal['title']}",
+                    icon="✅",
+                    fallback_exp=goal["exp_reward"],
+                    fallback_coins=goal["coins_reward"],
+                    fallback_gems=goal["gems_reward"],
+                    source_type="daily_goal",
+                    source_id=payload.daily_goal_id,
+                )
+            )
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=reward_result["message"],
+            )
+        
+        life_area_bonus_result = check_and_apply_life_area_bonus(
+            user_id=payload.user_id,
+            life_area_id=goal["life_area_id"],
+            today=today,
+        )
+
+        if life_area_bonus_result["reward_event"]:
+            reward_applied = True
+            game_profile = life_area_bonus_result["game_profile"]
+
+            reward_events.append(
+                life_area_bonus_result["reward_event"]
+            )
+
+        perfect_day_bonus_result = check_and_apply_perfect_day_bonus(
+            user_id=payload.user_id,
+            today=today,
+        )
+
+        if perfect_day_bonus_result["reward_event"]:
+            reward_applied = True
+            game_profile = perfect_day_bonus_result["game_profile"]
+
+            reward_events.append(
+                perfect_day_bonus_result["reward_event"]
+            )
+
+    return {
+        "success": True,
+        "message": "Daily goal progress updated successfully",
+        "data": {
+            "daily_goal_id": payload.daily_goal_id,
+            "progress_value": new_progress_value,
+            "target_value": target_value,
+            "step_value": step_value,
+            "unit": goal["unit"],
+            "progress_percent": progress_percent,
+            "is_completed": is_completed,
+            "reward_applied": reward_applied,
+            "reward_events": reward_events,
+            "game_profile": game_profile,
+        },
+    }
+
 
 # ============================================================
 # Reminder helper: obtiene la primera tarea pendiente del hábito

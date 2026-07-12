@@ -26,6 +26,104 @@ def calculate_level_progress(
     return new_level, new_current_exp, leveled_up
 
 
+# Retrieves the active reward boosts for a user.
+def get_active_reward_boosts(user_id: int):
+    now = datetime.now(timezone.utc)
+
+    boosts_result = select_from(
+        table_name="user_active_boosts",
+        columns=[
+            "user_active_boost_id",
+            "user_id",
+            "item_key",
+            "item_name",
+            "boost_type",
+            "boost_value",
+            "starts_at",
+            "expires_at",
+            "is_active",
+        ],
+        where_clause={
+            "user_id": user_id,
+            "is_active": True,
+        },
+    )
+
+    if not boosts_result["success"]:
+        message = str(boosts_result.get("message", ""))
+
+        if "No records found" in message:
+            return []
+
+        return []
+
+    active_boosts = []
+
+    for boost in boosts_result["data"] or []:
+        expires_at = boost["expires_at"]
+
+        if expires_at and expires_at <= now:
+            update_table(
+                table_name="user_active_boosts",
+                query_data={
+                    "is_active": False,
+                },
+                where_clause={
+                    "user_active_boost_id": boost["user_active_boost_id"],
+                },
+            )
+
+            continue
+
+        active_boosts.append(boost)
+
+    return active_boosts
+
+
+# Applies active boosts to the earned EXP and coins, returning the final values and applied boosts.
+def apply_boosts_to_reward(user_id: int, exp_earned: int, coins_earned: int):
+    active_boosts = get_active_reward_boosts(user_id)
+
+    final_exp = exp_earned
+    final_coins = coins_earned
+
+    applied_boosts = []
+
+    for boost in active_boosts:
+        boost_type = boost["boost_type"]
+        boost_value = float(boost["boost_value"] or 1)
+
+        if boost_type == "exp_multiplier":
+            final_exp = int(round(final_exp * boost_value))
+
+            applied_boosts.append(
+                {
+                    "item_key": boost["item_key"],
+                    "name": boost["item_name"],
+                    "boost_type": boost_type,
+                    "boost_value": boost_value,
+                }
+            )
+
+        if boost_type == "coins_multiplier":
+            final_coins = int(round(final_coins * boost_value))
+
+            applied_boosts.append(
+                {
+                    "item_key": boost["item_key"],
+                    "name": boost["item_name"],
+                    "boost_type": boost_type,
+                    "boost_value": boost_value,
+                }
+            )
+
+    return {
+        "exp_earned": final_exp,
+        "coins_earned": final_coins,
+        "applied_boosts": applied_boosts,
+    }
+
+
 # Applies a reward to the user and stores it in the reward history.
 def apply_reward(
     user_id: int,
@@ -63,6 +161,16 @@ def apply_reward(
         }
 
     profile = profile_result["data"]
+
+    boosted_reward = apply_boosts_to_reward(
+        user_id=user_id,
+        exp_earned=exp_earned,
+        coins_earned=coins_earned,
+    )
+
+    exp_earned = boosted_reward["exp_earned"]
+    coins_earned = boosted_reward["coins_earned"]
+    applied_boosts = boosted_reward["applied_boosts"]
 
     new_level, new_current_exp, leveled_up = calculate_level_progress(
         profile["level"],
@@ -146,10 +254,12 @@ def apply_reward(
             "required_exp": required_exp,
             "exp_percent": exp_percent,
             "leveled_up": leveled_up,
+            "applied_boosts": applied_boosts,
             "reward": {
                 "exp_earned": exp_earned,
                 "coins_earned": coins_earned,
                 "gems_earned": gems_earned,
+                "applied_boosts": applied_boosts,
             },
         },
     }
