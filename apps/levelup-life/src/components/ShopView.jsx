@@ -21,6 +21,8 @@ function ShopView({
 	const [shopSections, setShopSections] = useState([]);
     const [shopLoading, setShopLoading] = useState(false);
     const [shopError, setShopError] = useState("");
+    const [previewItem, setPreviewItem] = useState(null);
+    const [purchasingItemKey, setPurchasingItemKey] = useState(null);
 
     useEffect(() => {
         async function loadShopItems() {
@@ -116,6 +118,12 @@ function ShopView({
         };
     }
 
+    function closePreview() {
+        if (purchasingItemKey) return;
+
+        setPreviewItem(null);
+    }
+
     async function handlePurchaseItem(item) {
         if (!userId) {
             if (onPurchaseError) {
@@ -128,13 +136,21 @@ function ShopView({
             return;
         }
 
+        setPurchasingItemKey(item.item_key);
+
         try {
             const result = await purchaseShopItem(userId, item.item_key);
 
             if (!result.success) return;
 
+            setPreviewItem(null);
+
             if (onPurchaseSuccess) {
                 onPurchaseSuccess(result.data.game_profile, item);
+            }
+
+            if (onClose) {
+                onClose();
             }
         } catch (error) {
             const friendlyMessage = getFriendlyPurchaseErrorMessage(error.message);
@@ -147,6 +163,8 @@ function ShopView({
             }
 
             console.warn("Shop purchase blocked:", error.message);
+        } finally {
+            setPurchasingItemKey(null);
         }
     }
 
@@ -242,7 +260,7 @@ function ShopView({
                                                 type="button"
                                                 className="shop-item-card"
                                                 key={item.item_key}
-                                                onClick={() => handlePurchaseItem(item)}
+                                                onClick={() => setPreviewItem(item)}
                                             >
                                                 <div className="shop-item-visual">
                                                     {item.discount_label && (
@@ -285,6 +303,90 @@ function ShopView({
                         }
                     </div>
                 </div>
+
+                {previewItem && (
+                    <div className="shop-preview-backdrop" onClick={closePreview}>
+                        <div
+                            className="shop-preview-card"
+                            onClick={(event) => event.stopPropagation()}
+                        >
+                            <button
+                                type="button"
+                                className="shop-preview-close"
+                                onClick={closePreview}
+                                disabled={purchasingItemKey === previewItem.item_key}
+                                aria-label="Close product preview"
+                            >
+                                ×
+                            </button>
+
+                            {previewItem.discount_label && (
+                                <span className="shop-preview-discount">
+                                    {previewItem.discount_label}
+                                </span>
+                            )}
+
+                            <div className="shop-preview-icon">
+                                {previewItem.image_emoji || "🛒"}
+                            </div>
+
+                            <span className="shop-preview-category">
+                                {previewItem.currency === "gem" ? "Premium item" : "Shop item"}
+                            </span>
+
+                            <h3>{previewItem.name}</h3>
+
+                            <p>{previewItem.description}</p>
+
+                            <div className="shop-preview-info">
+                                <span>Precio</span>
+
+                                <strong>
+                                    {getCurrencyIcon(previewItem.currency)} {previewItem.price}
+                                </strong>
+                            </div>
+
+                            {previewItem.old_price && (
+                                <div className="shop-preview-info muted">
+                                    <span>Antes</span>
+                                    <strong>{previewItem.old_price}</strong>
+                                </div>
+                            )}
+
+                            <div className="shop-preview-info">
+                                <span>Tu balance</span>
+
+                                <strong>
+                                    {previewItem.currency === "gem"
+                                        ? `💎 ${player.gems}`
+                                        : `🪙 ${player.coins}`}
+                                </strong>
+                            </div>
+
+                            <div className="shop-preview-actions">
+                                <button
+                                    type="button"
+                                    className="shop-preview-cancel"
+                                    onClick={closePreview}
+                                    disabled={purchasingItemKey === previewItem.item_key}
+                                >
+                                    Cancelar
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="shop-preview-buy"
+                                    onClick={() => handlePurchaseItem(previewItem)}
+                                    disabled={purchasingItemKey === previewItem.item_key}
+                                >
+                                    {purchasingItemKey === previewItem.item_key
+                                        ? "Comprando..."
+                                        : "Comprar"}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </section>
         </div>
     );

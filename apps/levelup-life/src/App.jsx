@@ -75,6 +75,8 @@ function App() {
 	const [dailyGoals, setDailyGoals] = useState([]);
 	const [dailyGoalsLoading, setDailyGoalsLoading] = useState(false);
 	const [completingTaskId, setCompletingTaskId] = useState(null);
+
+	const [rewardAnimations, setRewardAnimations] = useState([]);
 	
 	const dailyGoalsPreviewRef = useRef(null);
 	const [selectedDailyGoalId, setSelectedDailyGoalId] = useState(null);
@@ -747,6 +749,62 @@ function App() {
 		setShowShopView(true);
 	}
 
+	function showRewardEvents(rewardEvents = []) {
+		if (!rewardEvents.length) return;
+
+		const animation = {
+			id: crypto.randomUUID(),
+			events: rewardEvents,
+		};
+
+		setRewardAnimations((currentAnimations) => [
+			...currentAnimations,
+			animation,
+		]);
+
+		setTimeout(() => {
+			setRewardAnimations((currentAnimations) =>
+			currentAnimations.filter((item) => item.id !== animation.id)
+			);
+		}, 3200);
+	}
+
+	// useEffect(() => {
+	// 	showRewardEvents([
+	// 		{
+	// 		type: "daily_goal_completed",
+	// 		title: "Hábito completado",
+	// 		message: "Completaste Prueba Animación",
+	// 		icon: "✅",
+	// 		animation_items: [
+	// 			{ text: "+10 EXP", type: "exp" },
+	// 			{ text: "+2 coins", type: "coins" },
+	// 		],
+	// 		},
+	// 		{
+	// 		type: "life_area_completed",
+	// 		title: "Área completada",
+	// 		message: "Completaste todos los hábitos de 💼 Carrera Profesional",
+	// 		icon: "💼",
+	// 		animation_items: [
+	// 			{ text: "+20 EXP", type: "exp" },
+	// 			{ text: "+5 coins", type: "coins" },
+	// 		],
+	// 		},
+	// 		{
+	// 		type: "balanced_perfect_day_completed",
+	// 		title: "Balanced Perfect Day",
+	// 		message: "Completaste todos tus hábitos y cubriste 3 áreas de vida",
+	// 		icon: "🏆",
+	// 		animation_items: [
+	// 			{ text: "+55 EXP", type: "exp" },
+	// 			{ text: "+15 coins", type: "coins" },
+	// 			{ text: "+1 gem", type: "gems" },
+	// 		],
+	// 		},
+	// 	]);
+	// }, []);
+
 	function showToast(title, message = "", type = "success") {
 		const newToast = {
 			id: crypto.randomUUID(),
@@ -1014,6 +1072,8 @@ function App() {
 				daily_goal_id: goal.daily_goal_id,
 			});
 
+			showRewardEvents(result.data?.reward_events || []);
+
 			if (!result.success) return;
 
 			const goalsResult = await getDailyGoals(authUser.user_id);
@@ -1028,11 +1088,14 @@ function App() {
 					...result.data.game_profile,
 				}));
 
+				const rewardEvents = result.data.reward_events || [];
+				const mainRewardEvent = rewardEvents[rewardEvents.length - 1];
+
 				showToast(
 					result.data.game_profile.leveled_up
-						? "¡Subiste de nivel!"
-						: "Hábito completado",
-					`+${goal.exp_reward || 0} EXP y +${goal.coins_reward || 0} coins`,
+					? "¡Subiste de nivel!"
+					: mainRewardEvent?.title || "Recompensa recibida",
+					mainRewardEvent?.message || "Tu progreso fue recompensado.",
 					"success"
 				);
 
@@ -1617,83 +1680,6 @@ function App() {
 											</button>
 										</div>
 
-										{/* <div className="daily-goal-task-list">
-											{selectedDailyGoal.tasks.map((task) => {
-												const isNumericTask = task.progress_type === "numeric";
-
-												return (
-													<div
-														className={`daily-goal-task-card ${
-															task.is_completed ? "completed" : ""
-														}`}
-														key={task.daily_goal_task_id}
-													>
-														<button
-															type="button"
-															className={`daily-goal-task ${
-																task.is_completed ? "completed" : ""
-															}`}
-															disabled={
-																task.is_completed ||
-																completingTaskId === task.daily_goal_task_id
-															}
-															onClick={() => {
-																if (isNumericTask) {
-																	handleProgressDailyGoalTask(
-																		selectedDailyGoal.daily_goal_id,
-																		task
-																	);
-																	return;
-																}
-
-																handleCompleteDailyGoalTask(
-																	selectedDailyGoal.daily_goal_id,
-																	task.daily_goal_task_id
-																);
-															}}
-														>
-															<span>{task.is_completed ? "✓" : "○"}</span>
-
-															<strong>{task.title}</strong>
-
-															<small>
-																{task.is_completed
-																	? "Completada"
-																	: completingTaskId === task.daily_goal_task_id
-																		? "Guardando..."
-																		: isNumericTask
-																			? `+${task.step_value} ${task.unit}`
-																			: "Completar"}
-															</small>
-														</button>
-
-														{isNumericTask && (
-															<div className="daily-goal-task-progress">
-																<div className="daily-goal-task-progress-info">
-																	<span>
-																		{task.task_progress_text ||
-																			`0/${task.target_value} ${task.unit}`}
-																	</span>
-
-																	<strong>
-																		{task.task_progress_percent || 0}%
-																	</strong>
-																</div>
-
-																<div className="daily-goal-task-progress-bar">
-																	<div
-																		style={{
-																			width: `${task.task_progress_percent || 0}%`,
-																		}}
-																	/>
-																</div>
-															</div>
-														)}
-													</div>
-												);
-											})}
-										</div> */}
-
 										<div className="daily-goal-task-list">
 											<div
 												className={`daily-goal-task-card ${
@@ -1792,6 +1778,46 @@ function App() {
 							>
 								<Shirt size={21} strokeWidth={1.9} />
 							</button>
+
+							<div className="reward-animation-layer">
+								{rewardAnimations.map((animation) => (
+									<div className="reward-pop" key={animation.id}>
+
+									<div className="reward-pop-sparkles">
+										<span className="reward-sparkle sparkle-1">✦</span>
+										<span className="reward-sparkle sparkle-2">✦</span>
+										<span className="reward-sparkle sparkle-3">✦</span>
+										<span className="reward-sparkle sparkle-4">✦</span>
+										<span className="reward-sparkle sparkle-5">✦</span>
+										<span className="reward-sparkle sparkle-6">✦</span>
+										<span className="reward-sparkle sparkle-7">✦</span>
+									</div>
+
+									{animation.events.map((event, eventIndex) => (
+										<div
+										className={`reward-event-pop reward-event-${event.type}`}
+										key={eventIndex}
+										>
+										<div className="reward-event-title">
+											<span className="reward-event-icon">{event.icon}</span>
+											<span>{event.title}</span>
+										</div>
+
+										<div className="reward-event-lines">
+											{(event.animation_items || []).map((item, itemIndex) => (
+											<span
+												className={`reward-pop-line reward-pop-line-${item.type}`}
+												key={itemIndex}
+											>
+												{item.text}
+											</span>
+											))}
+										</div>
+										</div>
+									))}
+									</div>
+								))}
+							</div>
 
 							<div className={`avatar-mood-card ${avatarMood.status}`}>{/*  estado del emijo */}
 								<span className="avatar-mood-emoji">{avatarMood.emoji}</span>
