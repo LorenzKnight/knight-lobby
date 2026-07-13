@@ -1121,25 +1121,21 @@ function App() {
 					...result.data.game_profile,
 				}));
 
-				const rewardEvents = result.data.reward_events || [];
-				const mainRewardEvent = rewardEvents[rewardEvents.length - 1];
+				// const rewardEvents = result.data.reward_events || [];
+				// const mainRewardEvent = rewardEvents[rewardEvents.length - 1];
 
-				showToast(
-					result.data.game_profile.leveled_up
-					? "¡Subiste de nivel!"
-					: mainRewardEvent?.title || "Recompensa recibida",
-					mainRewardEvent?.message || "Tu progreso fue recompensado.",
-					"success"
-				);
+				// showToast(
+				// 	result.data.game_profile.leveled_up
+				// 	? "¡Subiste de nivel!"
+				// 	: mainRewardEvent?.title || "Recompensa recibida",
+				// 	mainRewardEvent?.message || "Tu progreso fue recompensado.",
+				// 	"success"
+				// );
 
 				return;
 			}
 
-			showToast(
-				"Progreso actualizado",
-				`${result.data.progress_value}/${result.data.target_value} ${result.data.unit}`,
-				"success"
-			);
+			return;
 		} catch (error) {
 			console.error("Could not update daily goal:", error);
 
