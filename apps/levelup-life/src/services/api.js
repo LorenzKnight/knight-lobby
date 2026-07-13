@@ -326,3 +326,18 @@ export async function purchaseShopItem(userId, itemKey) {
 
 	return result;
 }
+
+// Get active effects
+export async function getActiveEffects(userId) {
+  const response = await fetch(
+    `${LEVELUP_API_URL}/api/shop/active-effects?user_id=${userId}`
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.detail || "Could not load active effects");
+  }
+
+  return result;
+}

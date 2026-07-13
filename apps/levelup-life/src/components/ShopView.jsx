@@ -124,6 +124,15 @@ function ShopView({
         setPreviewItem(null);
     }
 
+    function shouldCloseShopAfterPurchase(item) {
+        const closeShopDeliveryTypes = [
+            "instant",
+            "activation",
+        ];
+
+        return closeShopDeliveryTypes.includes(item.delivery_type);
+    }
+
     async function handlePurchaseItem(item) {
         if (!userId) {
             if (onPurchaseError) {
@@ -149,7 +158,7 @@ function ShopView({
                 onPurchaseSuccess(result.data.game_profile, item);
             }
 
-            if (onClose) {
+            if (shouldCloseShopAfterPurchase(item) && onClose) {
                 onClose();
             }
         } catch (error) {
@@ -167,6 +176,206 @@ function ShopView({
             setPurchasingItemKey(null);
         }
     }
+
+    function formatEffectValue(value) {
+        if (value === null || value === undefined) return null;
+
+        const numberValue = Number(value);
+
+        if (Number.isInteger(numberValue)) {
+            return numberValue;
+        }
+
+        return numberValue;
+    }
+
+    function getRarityLabel(rarity) {
+        if (rarity === "common") return "Común";
+        if (rarity === "uncommon") return "Poco común";
+        if (rarity === "rare") return "Raro";
+        if (rarity === "epic") return "Épico";
+
+        return "Item";
+    }
+
+    function getDeliveryLabel(deliveryType) {
+        if (deliveryType === "instant") return "Efecto inmediato";
+        if (deliveryType === "activation") return "Se activa al comprar";
+        if (deliveryType === "inventory") return "Se guarda en inventario";
+        if (deliveryType === "external_payment") return "Compra externa";
+
+        return "Entrega desconocida";
+    }
+
+    function getPreviewDetails(item) {
+        const effectValue = formatEffectValue(item.effect_value);
+
+        const baseDetails = {
+            eyebrow: getRarityLabel(item.rarity),
+            title: "Item de tienda",
+            effectLabel: "Efecto",
+            effectText: item.description,
+            rows: [
+                {
+                    label: "Entrega",
+                    value: getDeliveryLabel(item.delivery_type),
+                },
+                {
+                    label: "Rareza",
+                    value: getRarityLabel(item.rarity),
+                },
+            ],
+            note: "",
+            actionLabel: "Comprar",
+            tone: "default",
+        };
+
+        if (item.preview_type === "currency_pack") {
+            return {
+                ...baseDetails,
+                eyebrow: "Premium",
+                title: "Pack de gemas",
+                effectLabel: "Recibes",
+                effectText: `Obtienes ${effectValue} gemas premium para usar en items especiales.`,
+                rows: [
+                    {
+                        label: "Contenido",
+                        value: `💎 ${effectValue} gems`,
+                    },
+                    {
+                        label: "Entrega",
+                        value: getDeliveryLabel(item.delivery_type),
+                    },
+                ],
+                note: "Las compras con dinero real todavía no están disponibles.",
+                actionLabel: "Próximamente",
+                tone: "premium",
+            };
+        }
+
+        if (item.preview_type === "life_recovery") {
+            return {
+                ...baseDetails,
+                eyebrow: "Recuperación",
+                title: "Recuperar vida",
+                effectLabel: "Efecto",
+                effectText: `Recupera ${effectValue || 1} corazón de vida inmediatamente.`,
+                rows: [
+                    {
+                        label: "Vida recuperada",
+                        value: `❤️ +${effectValue || 1}`,
+                    },
+                    {
+                        label: "Entrega",
+                        value: getDeliveryLabel(item.delivery_type),
+                    },
+                ],
+                note: "Ideal cuando estás en riesgo y necesitas seguir jugando.",
+                actionLabel: "Usar ahora",
+                tone: "life",
+            };
+        }
+
+        if (item.preview_type === "full_life_recovery") {
+            return {
+                ...baseDetails,
+                eyebrow: "Recuperación rara",
+                title: "Vida completa",
+                effectLabel: "Efecto",
+                effectText: "Restaura todos tus corazones de vida inmediatamente.",
+                rows: [
+                    {
+                        label: "Vida recuperada",
+                        value: "❤️ Full life",
+                    },
+                    {
+                        label: "Entrega",
+                        value: getDeliveryLabel(item.delivery_type),
+                    },
+                ],
+                note: "Úsalo cuando tengas poca vida y quieras volver al máximo.",
+                actionLabel: "Restaurar vida",
+                tone: "life",
+            };
+        }
+
+        if (item.preview_type === "timed_boost") {
+            const isExpBoost = item.effect_type === "exp_multiplier";
+            const isCoinsBoost = item.effect_type === "coins_multiplier";
+
+            let boostText = item.description;
+
+            if (isExpBoost) {
+                boostText = `Multiplica tu EXP x${effectValue} durante ${item.duration_minutes} minutos.`;
+            }
+
+            if (isCoinsBoost) {
+                boostText = `Multiplica tus coins x${effectValue} durante ${item.duration_minutes} minutos.`;
+            }
+
+            return {
+                ...baseDetails,
+                eyebrow: "Boost temporal",
+                title: "Boost activable",
+                effectLabel: "Boost",
+                effectText: boostText,
+                rows: [
+                    {
+                        label: "Multiplicador",
+                        value: effectValue ? `x${effectValue}` : "Bonus activo",
+                    },
+                    {
+                        label: "Duración",
+                        value: `${item.duration_minutes} min`,
+                    },
+                    {
+                        label: "Entrega",
+                        value: getDeliveryLabel(item.delivery_type),
+                    },
+                ],
+                note: "Se activa inmediatamente después de comprarlo.",
+                actionLabel: "Activar boost",
+                tone: "boost",
+            };
+        }
+
+        if (item.preview_type === "protection") {
+            return {
+                ...baseDetails,
+                eyebrow: "Protección",
+                title: "Protección activa",
+                effectLabel: "Protección",
+                effectText: item.description,
+                rows: [
+                    {
+                        label: "Tipo",
+                        value: getDeliveryLabel(item.delivery_type),
+                    },
+                    {
+                        label: "Duración",
+                        value: item.duration_minutes
+                            ? `${item.duration_minutes} min`
+                            : "Uso único",
+                    },
+                ],
+                note:
+                    item.delivery_type === "inventory"
+                        ? "Este item se guardará para usarlo cuando lo necesites."
+                        : "Se activa al comprarlo para proteger tu progreso.",
+                actionLabel:
+                    item.delivery_type === "inventory"
+                        ? "Guardar item"
+                        : "Activar protección",
+                tone: "protection",
+            };
+        }
+
+        return baseDetails;
+    }
+
+    const previewDetails = previewItem
+        ? getPreviewDetails(previewItem)
+        : null;
 
 	return (
         <div className="shop-custom-overlay">
@@ -330,13 +539,13 @@ function ShopView({
                                 {previewItem.image_emoji || "🛒"}
                             </div>
 
-                            <span className="shop-preview-category">
-                                {previewItem.currency === "gem" ? "Premium item" : "Shop item"}
+                            <span className={`shop-preview-category ${previewDetails?.tone || "default"}`}>
+                                {previewDetails?.eyebrow}
                             </span>
 
                             <h3>{previewItem.name}</h3>
 
-                            <p>{previewItem.description}</p>
+                            <p>{previewDetails?.effectText || previewItem.description}</p>
 
                             <div className="shop-preview-info">
                                 <span>Precio</span>
@@ -359,9 +568,24 @@ function ShopView({
                                 <strong>
                                     {previewItem.currency === "gem"
                                         ? `💎 ${player.gems}`
-                                        : `🪙 ${player.coins}`}
+                                        : previewItem.currency === "coin"
+                                            ? `🪙 ${player.coins}`
+                                            : "Pago externo"}
                                 </strong>
                             </div>
+
+                            {previewDetails?.rows?.map((row) => (
+                                <div className="shop-preview-info" key={row.label}>
+                                    <span>{row.label}</span>
+                                    <strong>{row.value}</strong>
+                                </div>
+                            ))}
+
+                            {previewDetails?.note && (
+                                <div className={`shop-preview-note ${previewDetails.tone}`}>
+                                    {previewDetails.note}
+                                </div>
+                            )}
 
                             <div className="shop-preview-actions">
                                 <button
@@ -377,11 +601,14 @@ function ShopView({
                                     type="button"
                                     className="shop-preview-buy"
                                     onClick={() => handlePurchaseItem(previewItem)}
-                                    disabled={purchasingItemKey === previewItem.item_key}
+                                    disabled={
+                                        purchasingItemKey === previewItem.item_key ||
+                                        previewItem.delivery_type === "external_payment"
+                                    }
                                 >
                                     {purchasingItemKey === previewItem.item_key
                                         ? "Comprando..."
-                                        : "Comprar"}
+                                        : previewDetails?.actionLabel || "Comprar"}
                                 </button>
                             </div>
                         </div>

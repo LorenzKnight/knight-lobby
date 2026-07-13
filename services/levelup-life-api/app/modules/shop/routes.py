@@ -50,12 +50,17 @@ def get_shop_item_by_key(item_key: str):
             "old_price",
             "currency",
             "discount_label",
+            "discount_percent",
             "image_emoji",
             "image_url",
             "item_type",
             "effect_type",
             "effect_value",
             "duration_minutes",
+            "rarity",
+            "preview_type",
+            "delivery_type",
+            "is_consumable",
             "is_active",
         ],
         where_clause={
@@ -140,6 +145,12 @@ def ensure_user_can_pay(profile: dict, item: dict):
 
 
 def apply_immediate_life_effect(profile: dict, item: dict, wallet_update: dict):
+    if item["delivery_type"] != "instant":
+        return {
+            **wallet_update,
+            "updated_at": datetime.now(timezone.utc),
+        }
+
     effect_type = item["effect_type"]
 
     current_life = profile["current_life"]
@@ -318,6 +329,87 @@ def create_active_protection(user_id: int, item: dict):
             status_code=400,
             detail=insert_result.get("message", "Could not activate protection."),
         )
+    
+
+def get_now():
+    return datetime.now(timezone.utc)
+
+
+def format_remaining_time(expires_at):
+    if not expires_at:
+        return "Ready"
+
+    now = get_now()
+    remaining_seconds = int((expires_at - now).total_seconds())
+
+    if remaining_seconds <= 0:
+        return "Expired"
+
+    minutes = remaining_seconds // 60
+    hours = minutes // 60
+    days = hours // 24
+
+    if days > 0:
+        return f"{days}d"
+
+    if hours > 0:
+        return f"{hours}h"
+
+    return f"{max(1, minutes)}m"
+
+
+def get_boost_icon(boost_type):
+    if boost_type == "exp_multiplier":
+        return "⚡"
+
+    if boost_type == "coins_multiplier":
+        return "🪙"
+
+    if boost_type == "focus_bonus":
+        return "🔥"
+
+    return "✨"
+
+
+def get_boost_label(boost_type, boost_value):
+    boost_value = float(boost_value or 0)
+
+    if boost_type == "exp_multiplier":
+        return f"EXP x{boost_value:g}"
+
+    if boost_type == "coins_multiplier":
+        return f"Coins x{boost_value:g}"
+
+    if boost_type == "focus_bonus":
+        return "Focus boost"
+
+    return "Boost"
+
+
+def get_protection_icon(protection_type):
+    if protection_type == "daily_life_shield":
+        return "🛡️"
+
+    if protection_type == "second_chance":
+        return "🔁"
+
+    if protection_type == "avoid_level_drop":
+        return "🔮"
+
+    return "🛡️"
+
+
+def get_protection_label(protection_type):
+    if protection_type == "daily_life_shield":
+        return "Shield"
+
+    if protection_type == "second_chance":
+        return "Second chance"
+
+    if protection_type == "avoid_level_drop":
+        return "Anti-drop"
+
+    return "Protection"
 
 
 @router.get("/items")
@@ -351,12 +443,17 @@ def get_shop_items():
             "old_price",
             "currency",
             "discount_label",
+            "discount_percent",
             "image_emoji",
             "image_url",
             "item_type",
             "effect_type",
             "effect_value",
             "duration_minutes",
+            "rarity",
+            "preview_type",
+            "delivery_type",
+            "is_consumable",
             "sort_order",
         ],
         where_clause={
@@ -394,14 +491,21 @@ def get_shop_items():
                 "old_price": item["old_price"],
                 "currency": item["currency"],
                 "discount_label": item["discount_label"],
+                "discount_percent": item["discount_percent"],
                 "image_emoji": item["image_emoji"],
                 "image_url": item["image_url"],
                 "item_type": item["item_type"],
                 "effect_type": item["effect_type"],
-                "effect_value": float(item["effect_value"])
-                if item["effect_value"] is not None
-                else None,
+                "effect_value": (
+                    float(item["effect_value"])
+                    if item["effect_value"] is not None
+                    else None
+                ),
                 "duration_minutes": item["duration_minutes"],
+                "rarity": item["rarity"],
+                "preview_type": item["preview_type"],
+                "delivery_type": item["delivery_type"],
+                "is_consumable": item["is_consumable"],
                 "sort_order": item["sort_order"],
             }
         )
@@ -478,22 +582,46 @@ def purchase_shop_item(request: PurchaseShopItemRequest):
         item=item,
     )
 
-    if item["item_type"] == "boost":
-        create_active_boost(
-            user_id=request.user_id,
-            item=item,
-        )
+    delivery_type = item["delivery_type"]
 
-    if item["item_type"] == "protection":
-        create_active_protection(
-            user_id=request.user_id,
-            item=item,
-        )
+    if delivery_type == "activation":
+        if item["item_type"] == "boost":
+            create_active_boost(
+                user_id=request.user_id,
+                item=item,
+            )
 
-    if item["item_type"] not in ["consumable", "boost", "protection"]:
+        elif item["item_type"] == "protection":
+            create_active_protection(
+                user_id=request.user_id,
+                item=item,
+            )
+
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="Unsupported activation item type.",
+            )
+
+    elif delivery_type == "inventory":
         add_or_update_inventory_item(
             user_id=request.user_id,
             item=item,
+        )
+
+    elif delivery_type == "instant":
+        pass
+
+    elif delivery_type == "external_payment":
+        raise HTTPException(
+            status_code=400,
+            detail="External payment purchases are not available yet.",
+        )
+
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid item delivery type.",
         )
 
     updated_profile = get_user_game_profile(request.user_id)
@@ -508,7 +636,135 @@ def purchase_shop_item(request: PurchaseShopItemRequest):
                 "name": item["name"],
                 "item_type": item["item_type"],
                 "effect_type": item["effect_type"],
+                "preview_type": item["preview_type"],
+                "delivery_type": item["delivery_type"],
+                "rarity": item["rarity"],
             },
             "game_profile": updated_profile,
         },
+    }
+
+
+@router.get("/active-effects")
+def get_active_effects(user_id: int):
+    now = get_now()
+    active_effects = []
+
+    active_boosts_result = select_from(
+        table_name="user_active_boosts",
+        columns=[
+            "user_active_boost_id",
+            "user_id",
+            "shop_item_id",
+            "item_key",
+            "item_name",
+            "boost_type",
+            "boost_value",
+            "starts_at",
+            "expires_at",
+            "is_active",
+        ],
+        where_clause={
+            "user_id": user_id,
+            "is_active": True,
+        },
+    )
+
+    if active_boosts_result["success"]:
+        active_boosts = active_boosts_result["data"]
+
+        for boost in active_boosts:
+            expires_at = boost["expires_at"]
+
+            if expires_at <= now:
+                update_table(
+                    table_name="user_active_boosts",
+                    query_data={
+                        "is_active": False,
+                    },
+                    where_clause={
+                        "user_active_boost_id": boost["user_active_boost_id"],
+                    },
+                )
+
+                continue
+
+            active_effects.append({
+                "effect_key": boost["item_key"],
+                "effect_id": boost["user_active_boost_id"],
+                "type": "boost",
+                "icon": get_boost_icon(boost["boost_type"]),
+                "short_label": get_boost_label(
+                    boost["boost_type"],
+                    boost["boost_value"],
+                ),
+                "description": boost["item_name"],
+                "remaining_text": format_remaining_time(expires_at),
+                "starts_at": boost["starts_at"],
+                "expires_at": expires_at,
+                "is_temporary": True,
+            })
+
+    active_protections_result = select_from(
+        table_name="user_active_protections",
+        columns=[
+            "user_active_protection_id",
+            "user_id",
+            "shop_item_id",
+            "item_key",
+            "item_name",
+            "protection_type",
+            "protection_value",
+            "starts_at",
+            "expires_at",
+            "is_active",
+            "is_used",
+        ],
+        where_clause={
+            "user_id": user_id,
+            "is_active": True,
+            "is_used": False,
+        },
+    )
+
+    if active_protections_result["success"]:
+        active_protections = active_protections_result["data"]
+
+        for protection in active_protections:
+            expires_at = protection["expires_at"]
+
+            if expires_at and expires_at <= now:
+                update_table(
+                    table_name="user_active_protections",
+                    query_data={
+                        "is_active": False,
+                    },
+                    where_clause={
+                        "user_active_protection_id": protection["user_active_protection_id"],
+                    },
+                )
+
+                continue
+
+            active_effects.append({
+                "effect_key": protection["item_key"],
+                "effect_id": protection["user_active_protection_id"],
+                "type": "protection",
+                "icon": get_protection_icon(protection["protection_type"]),
+                "short_label": get_protection_label(protection["protection_type"]),
+                "description": protection["item_name"],
+                "remaining_text": (
+                    format_remaining_time(expires_at)
+                    if expires_at
+                    else "Ready"
+                ),
+                "starts_at": protection["starts_at"],
+                "expires_at": expires_at,
+                "is_temporary": expires_at is not None,
+            })
+
+    return {
+        "success": True,
+        "message": "Active effects loaded successfully.",
+        "data": active_effects,
     }

@@ -42,6 +42,7 @@ import {
 	getLifeAreas,
 	progressDailyGoal,
 	saveAvatarConfig,
+	getActiveEffects,
 } from "./services/api";
 import "./App.css";
 
@@ -77,6 +78,8 @@ function App() {
 	const [completingTaskId, setCompletingTaskId] = useState(null);
 
 	const [rewardAnimations, setRewardAnimations] = useState([]);
+
+	const [activeEffects, setActiveEffects] = useState([]);
 	
 	const dailyGoalsPreviewRef = useRef(null);
 	const [selectedDailyGoalId, setSelectedDailyGoalId] = useState(null);
@@ -253,6 +256,36 @@ function App() {
 
 		loadDailyGoals();
 	}, [authUser]);
+
+	const loadActiveEffects = useCallback(async () => {
+		if (!authUser?.user_id) return;
+
+		try {
+			const result = await getActiveEffects(authUser.user_id);
+
+			if (result.success) {
+				setActiveEffects(result.data || []);
+			}
+		} catch (error) {
+			console.error("Could not load active effects:", error);
+			setActiveEffects([]);
+		}
+	}, [authUser?.user_id]);
+
+	useEffect(() => {
+		const timeoutId = setTimeout(() => {
+			loadActiveEffects();
+		}, 0);
+
+		const intervalId = setInterval(() => {
+			loadActiveEffects();
+		}, 60000);
+
+		return () => {
+			clearTimeout(timeoutId);
+			clearInterval(intervalId);
+		};
+	}, [loadActiveEffects]);
 
 	useEffect(() => {
 		if (activeToast || toastQueue.length === 0) return;
@@ -1770,6 +1803,23 @@ function App() {
 								</p>
 							</div>
 
+							<div className="active-effects-row">
+								{activeEffects.map((effect) => (
+									<div
+										className={`active-effect-badge active-effect-${effect.type}`}
+										key={`${effect.type}-${effect.effect_id}`}
+										title={effect.description}
+									>
+										<span className="active-effect-icon">{effect.icon}</span>
+
+										<div className="active-effect-meta">
+											<strong>{effect.short_label}</strong>
+											<small>{effect.remaining_text}</small>
+										</div>
+									</div>
+								))}
+							</div>
+
 							<button
 								type="button"
 								className={`avatar-clothes-button ${showAvatarMenu ? "active" : ""}`}
@@ -2401,9 +2451,11 @@ function App() {
 
 						showToast(
 							"Compra realizada",
-							`As optenido ${item.name} correctamente.`,
+							`Has obtenido ${item.name} correctamente.`,
 							"success"
 						);
+
+						loadActiveEffects();
 					}}
 					onPurchaseError={(title, message) => {
 						showToast(
