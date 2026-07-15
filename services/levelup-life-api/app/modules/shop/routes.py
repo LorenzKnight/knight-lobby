@@ -13,6 +13,10 @@ class PurchaseShopItemRequest(BaseModel):
     user_id: int
     item_key: str
 
+class UseInventoryItemRequest(BaseModel):
+    user_id: int
+    inventory_item_id: int
+
 
 def get_data_or_empty(result):
     if result["success"]:
@@ -412,6 +416,113 @@ def get_protection_label(protection_type):
     return "Protection"
 
 
+def get_inventory_section_key(item_type: str, effect_type: str | None = None):
+    if item_type == "boost":
+        return "boosts"
+
+    if item_type == "protection":
+        return "protections"
+
+    if item_type == "avatar_item" or item_type == "cosmetic":
+        return "avatar"
+
+    if item_type == "consumable":
+        return "consumables"
+
+    return "others"
+
+
+def get_inventory_action_label(item_type: str, effect_type: str | None = None):
+    if item_type == "protection":
+        return "Usar"
+
+    if item_type == "boost":
+        return "Activar"
+
+    if item_type == "avatar_item" or item_type == "cosmetic":
+        return "Equipar"
+
+    if item_type == "consumable":
+        return "Usar"
+
+    return "Ver"
+
+
+def get_inventory_item_icon(item_key: str, item_type: str, effect_type: str | None = None):
+    if item_key == "anti_drop_charm":
+        return "🔮"
+
+    if effect_type == "avoid_level_drop":
+        return "🔮"
+
+    if effect_type == "second_chance":
+        return "🔁"
+
+    if effect_type == "daily_life_shield":
+        return "🛡️"
+
+    if item_type == "boost":
+        return "⚡"
+
+    if item_type == "protection":
+        return "🛡️"
+
+    if item_type == "avatar_item" or item_type == "cosmetic":
+        return "👕"
+
+    if item_type == "consumable":
+        return "🎒"
+
+    return "📦"
+
+
+def get_inventory_item_description(item):
+    effect_type = item.get("effect_type")
+
+    if effect_type == "avoid_level_drop":
+        return "Evita perder un nivel una vez."
+
+    if effect_type == "second_chance":
+        return "Te permite salvar un día fallido."
+
+    if effect_type == "daily_life_shield":
+        return "Protege tu vida contra una penalización."
+
+    return f"{item.get('item_name')} guardado en tu mochila."
+
+
+def consume_inventory_item(item):
+    current_quantity = int(item["quantity"] or 0)
+    now = get_now()
+
+    if current_quantity <= 1:
+        return update_table(
+            table_name="user_inventory_items",
+            where_clause={
+                "user_inventory_item_id": item["user_inventory_item_id"],
+                "user_id": item["user_id"],
+            },
+            query_data={
+                "quantity": 0,
+                "is_used": True,
+                "used_at": now,
+                "updated_at": now,
+            },
+        )
+
+    return update_table(
+        table_name="user_inventory_items",
+        where_clause={
+            "user_inventory_item_id": item["user_inventory_item_id"],
+            "user_id": item["user_id"],
+        },
+        query_data={
+            "quantity": current_quantity - 1,
+            "updated_at": now,
+        },
+    )
+
+
 @router.get("/items")
 def get_shop_items():
     categories_result = select_from(
@@ -768,3 +879,298 @@ def get_active_effects(user_id: int):
         "message": "Active effects loaded successfully.",
         "data": active_effects,
     }
+
+
+@router.get("/inventory")
+def get_inventory(user_id: int):
+    inventory_result = select_from(
+        table_name="user_inventory_items",
+        columns=[
+            "user_inventory_item_id",
+            "user_id",
+            "shop_item_id",
+            "item_key",
+            "item_name",
+            "quantity",
+            "item_type",
+            "effect_type",
+            "effect_value",
+            "duration_minutes",
+            "is_used",
+            "used_at",
+            "created_at",
+            "updated_at",
+        ],
+        where_clause={
+            "user_id": user_id,
+            "is_used": False,
+        },
+    )
+
+    inventory_items = []
+
+    if inventory_result["success"]:
+        inventory_items = inventory_result["data"] or []
+
+    sections_map = {
+        "boosts": {
+            "key": "boosts",
+            "title": "Boosts",
+            "description": "Efectos temporales para mejorar tus recompensas.",
+            "icon": "⚡",
+            "items": [],
+        },
+        "protections": {
+            "key": "protections",
+            "title": "Protecciones",
+            "description": "Objetos que protegen tu progreso.",
+            "icon": "🛡️",
+            "items": [],
+        },
+        "consumables": {
+            "key": "consumables",
+            "title": "Consumibles",
+            "description": "Objetos que puedes usar cuando los necesites.",
+            "icon": "🎒",
+            "items": [],
+        },
+        "avatar": {
+            "key": "avatar",
+            "title": "Avatar",
+            "description": "Ropa, accesorios y cosméticos desbloqueados.",
+            "icon": "👕",
+            "items": [],
+        },
+        "others": {
+            "key": "others",
+            "title": "Otros",
+            "description": "Objetos especiales guardados en tu mochila.",
+            "icon": "📦",
+            "items": [],
+        },
+    }
+
+    for item in inventory_items:
+        section_key = get_inventory_section_key(
+            item["item_type"],
+            item.get("effect_type"),
+        )
+
+        inventory_item = {
+            "inventory_item_id": item["user_inventory_item_id"],
+            "shop_item_id": item["shop_item_id"],
+            "item_key": item["item_key"],
+            "name": item["item_name"],
+            "description": get_inventory_item_description(item),
+            "image_emoji": get_inventory_item_icon(
+                item["item_key"],
+                item["item_type"],
+                item.get("effect_type"),
+            ),
+            "quantity": item["quantity"],
+            "item_type": item["item_type"],
+            "effect_type": item.get("effect_type"),
+            "effect_value": float(item["effect_value"]) if item.get("effect_value") is not None else None,
+            "duration_minutes": item.get("duration_minutes"),
+            "can_use": item["item_type"] in ["boost", "protection", "consumable"],
+            "can_equip": item["item_type"] in ["avatar_item", "cosmetic"],
+            "action_label": get_inventory_action_label(
+                item["item_type"],
+                item.get("effect_type"),
+            ),
+            "created_at": item["created_at"],
+            "updated_at": item["updated_at"],
+        }
+
+        sections_map[section_key]["items"].append(inventory_item)
+
+    sections = [
+        section
+        for section in sections_map.values()
+        if section["items"]
+    ]
+
+    return {
+        "success": True,
+        "message": "Inventory loaded successfully.",
+        "data": sections,
+    }
+
+
+# Use Inventory Item
+@router.post("/inventory/use")
+def use_inventory_item(payload: UseInventoryItemRequest):
+    inventory_result = select_from(
+        table_name="user_inventory_items",
+        columns=[
+            "user_inventory_item_id",
+            "user_id",
+            "shop_item_id",
+            "item_key",
+            "item_name",
+            "quantity",
+            "item_type",
+            "effect_type",
+            "effect_value",
+            "duration_minutes",
+            "is_used",
+        ],
+        where_clause={
+            "user_inventory_item_id": payload.inventory_item_id,
+            "user_id": payload.user_id,
+            "is_used": False,
+        },
+        options={
+            "fetch_first": True,
+        },
+    )
+
+    if not inventory_result["success"] or not inventory_result["data"]:
+        raise HTTPException(
+            status_code=404,
+            detail="Inventory item not found.",
+        )
+
+    item = inventory_result["data"]
+
+    if int(item["quantity"] or 0) <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="This inventory item has no quantity available.",
+        )
+
+    now = get_now()
+
+    if item["item_type"] == "protection":
+        expires_at = None
+
+        if item.get("duration_minutes"):
+            expires_at = now + timedelta(minutes=int(item["duration_minutes"]))
+
+        protection_result = insert_into(
+            table_name="user_active_protections",
+            query_data={
+                "user_id": payload.user_id,
+                "shop_item_id": item["shop_item_id"],
+                "item_key": item["item_key"],
+                "item_name": item["item_name"],
+                "protection_type": item["effect_type"],
+                "protection_value": item["effect_value"],
+                "starts_at": now,
+                "expires_at": expires_at,
+                "is_active": True,
+                "is_used": False,
+                "used_at": None,
+                "created_at": now,
+            },
+        )
+
+        if not protection_result["success"]:
+            raise HTTPException(
+                status_code=500,
+                detail="Could not activate protection.",
+            )
+
+        consume_result = consume_inventory_item(item)
+
+        if not consume_result["success"]:
+            raise HTTPException(
+                status_code=500,
+                detail="Could not consume inventory item.",
+            )
+
+        return {
+            "success": True,
+            "message": "Inventory item used successfully.",
+            "data": {
+                "used_item": {
+                    "inventory_item_id": item["user_inventory_item_id"],
+                    "item_key": item["item_key"],
+                    "name": item["item_name"],
+                    "item_type": item["item_type"],
+                    "effect_type": item["effect_type"],
+                    "icon": get_inventory_item_icon(
+                        item["item_key"],
+                        item["item_type"],
+                        item.get("effect_type"),
+                    ),
+                },
+                "activated_effect": {
+                    "type": "protection",
+                    "effect_type": item["effect_type"],
+                    "name": item["item_name"],
+                    "is_temporary": expires_at is not None,
+                    "expires_at": expires_at,
+                },
+            },
+        }
+
+    if item["item_type"] == "boost":
+        if not item.get("duration_minutes"):
+            raise HTTPException(
+                status_code=400,
+                detail="This boost has no duration configured.",
+            )
+
+        expires_at = now + timedelta(minutes=int(item["duration_minutes"]))
+
+        boost_result = insert_into(
+            table_name="user_active_boosts",
+            query_data={
+                "user_id": payload.user_id,
+                "shop_item_id": item["shop_item_id"],
+                "item_key": item["item_key"],
+                "item_name": item["item_name"],
+                "boost_type": item["effect_type"],
+                "boost_value": item["effect_value"],
+                "starts_at": now,
+                "expires_at": expires_at,
+                "is_active": True,
+                "created_at": now,
+            },
+        )
+
+        if not boost_result["success"]:
+            raise HTTPException(
+                status_code=500,
+                detail="Could not activate boost.",
+            )
+
+        consume_result = consume_inventory_item(item)
+
+        if not consume_result["success"]:
+            raise HTTPException(
+                status_code=500,
+                detail="Could not consume inventory item.",
+            )
+
+        return {
+            "success": True,
+            "message": "Inventory item used successfully.",
+            "data": {
+                "used_item": {
+                    "inventory_item_id": item["user_inventory_item_id"],
+                    "item_key": item["item_key"],
+                    "name": item["item_name"],
+                    "item_type": item["item_type"],
+                    "effect_type": item["effect_type"],
+                    "icon": get_inventory_item_icon(
+                        item["item_key"],
+                        item["item_type"],
+                        item.get("effect_type"),
+                    ),
+                },
+                "activated_effect": {
+                    "type": "boost",
+                    "effect_type": item["effect_type"],
+                    "name": item["item_name"],
+                    "is_temporary": True,
+                    "expires_at": expires_at,
+                },
+            },
+        }
+
+    raise HTTPException(
+        status_code=400,
+        detail="This inventory item cannot be used yet.",
+    )

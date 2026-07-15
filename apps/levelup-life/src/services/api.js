@@ -341,3 +341,46 @@ export async function getActiveEffects(userId) {
 
   return result;
 }
+
+// Get inventory items
+export async function getInventoryItems(userId) {
+  const response = await fetch(
+    `${LEVELUP_API_URL}/api/shop/inventory?user_id=${userId}`
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.detail || "Could not load inventory items");
+  }
+
+  return result;
+}
+
+// Use inventory item
+export async function activateInventoryItem({
+	user_id,
+	inventory_item_id,
+}) {
+	const response = await fetch(
+		`${LEVELUP_API_URL}/api/shop/inventory/use`,
+		{
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				user_id,
+				inventory_item_id,
+			}),
+		}
+	);
+
+	const result = await response.json();
+
+	if (!response.ok) {
+		throw new Error(result.detail || "Could not use inventory item");
+	}
+
+	return result;
+}

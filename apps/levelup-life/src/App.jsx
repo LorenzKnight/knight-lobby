@@ -29,6 +29,7 @@ import LifeAreaDetailView from "./components/LifeAreaDetailView";
 import PlayerAvatar from "./components/PlayerAvatar";
 import AvatarCustomizationView from "./components/AvatarCustomizationView";
 import ShopView from "./components/ShopView";
+import InventoryView from "./components/InventoryView";
 import {
 	addReward,
 	checkDailyGoalReminders,
@@ -72,6 +73,7 @@ function App() {
 	const [avatarCategory, setAvatarCategory] = useState("shirts");
 
 	const [showShopView, setShowShopView] = useState(false);
+	const [showInventoryView, setShowInventoryView] = useState(false);
 
 	const [dailyGoals, setDailyGoals] = useState([]);
 	const [dailyGoalsLoading, setDailyGoalsLoading] = useState(false);
@@ -421,6 +423,8 @@ function App() {
 		setShowAreaForm(false);
 		setShowDailyGoalForm(false);
 		setShowShopView(false);
+
+		setShowInventoryView(false);
 	}
 
 	async function handleLoginSubmit(event) {
@@ -462,6 +466,8 @@ function App() {
 		setActiveReminder(null);
 		setReminderQueue([]);
 		setShowShopView(false);
+
+		setShowInventoryView(false);
 	}
 
 	function createSlug(text) {
@@ -782,6 +788,18 @@ function App() {
 		setShowShopView(true);
 	}
 
+	function handleOpenInventoryView() {
+		setSelectedDailyGoalId(null);
+		setShowAreasMenu(false);
+		setShowQuickAddMenu(false);
+		setShowAvatarMenu(false);
+		setShowAreaForm(false);
+		setShowDailyGoalForm(false);
+		setShowShopView(false);
+
+		setShowInventoryView(true);
+	}
+
 	function showRewardEvents(rewardEvents = []) {
 		if (!rewardEvents.length) return;
 
@@ -1043,6 +1061,7 @@ function App() {
 	useEffect(() => {
 		const isOverlayOpen =
 			showShopView ||
+			showInventoryView ||
 			showAvatarMenu;
 
 		if (!isOverlayOpen) return;
@@ -1054,6 +1073,7 @@ function App() {
 		};
 	}, [
 		showShopView,
+		showInventoryView,
 		showAvatarMenu,
 	]);
 
@@ -1526,20 +1546,39 @@ function App() {
 	return (
 		<main className="levelup-shell">
 			<header className="levelup-topbar">
-				<button
-					type="button"
-					className="icon-button"
-					onClick={closeFloatingMenus}
-				>
-					<Menu size={27} strokeWidth={1.8} />
-				</button>
+				<div className="levelup-topbar-left">
+					<button
+						type="button"
+						className="topbar-menu-button"
+						onClick={closeFloatingMenus}
+						aria-label="Abrir menú"
+					>
+						<Menu size={27} strokeWidth={1.8} />
+					</button>
 
-				<h1>LevelUp Life</h1>
+					<h1>LevelUp Life</h1>
+				</div>
 
-				<button type="button" className="icon-button notification-button">
-					<Bell size={24} strokeWidth={1.8} />
-					<span />
-				</button>
+				<div className="levelup-topbar-right">
+					<div className="topbar-wallet-item coins">
+						<span className="topbar-wallet-icon">🪙</span>
+						<strong>{displayPlayer.coins}</strong>
+					</div>
+
+					<div className="topbar-wallet-item gems">
+						<span className="topbar-wallet-icon">💎</span>
+						<strong>{displayPlayer.gems}</strong>
+					</div>
+
+					<button
+						type="button"
+						className="topbar-notification-button"
+						aria-label="Notificaciones"
+					>
+						<Bell size={24} strokeWidth={1.8} />
+						<span />
+					</button>
+				</div>
 			</header>
 
 			{currentView === "dashboard" && (
@@ -1776,12 +1815,26 @@ function App() {
 						<div className="avatar-zone">
 							<div className="life-status-card">
 								<div className="level-badge">
-									<span>NIVEL</span>
+									<span>LV.</span>
 									<strong>{displayPlayer.level}</strong>
 								</div>
 
 								<div className="life-row">
-									<strong>Vida:</strong>
+									<div className="next-level">
+										<span>Next Level:</span>
+										<div className="exp-line">
+											<div style={{ width: `${expPercent}%` }} />
+										</div>
+										<small>
+											{gameProfileLoading
+												? "Cargando EXP..."
+												// : `${displayPlayer.nextLevelExp} EXP (${displayPlayer.exp}%)`
+												: `${displayPlayer.nextLevelExp} EXP`
+											}
+										</small>
+									</div>
+
+									{/* <strong>Vida:</strong> */}
 									<div className="heart-row">
 										{Array.from({ length: displayPlayer.maxLife }).map((_, index) => (
 											<Heart
@@ -1883,12 +1936,13 @@ function App() {
 							</div>
 
 							<div className="avatar-display">
+								<div className="avatar-light-ring" />
 								<PlayerAvatar avatarImages={getSelectedAvatarImages()} />
 							</div>
 
 							<h2>{displayName}</h2>
 
-							<div className="next-level">
+							{/* <div className="next-level">
 								<span>Nivel siguiente:</span>
 								<div className="exp-line">
 									<div style={{ width: `${expPercent}%` }} />
@@ -1899,12 +1953,7 @@ function App() {
 										: `${displayPlayer.nextLevelExp} EXP (${displayPlayer.exp}%)`
 									}
 								</small>
-							</div>
-
-							<div className="wallet-row">
-								<span>🪙 {displayPlayer.coins} Coins</span>
-								<span>💎 {displayPlayer.gems} Gems</span>
-							</div>
+							</div> */}
 
 							<button
 								type="button"
@@ -1980,10 +2029,14 @@ function App() {
 							<ChevronRight />
 						</button>
 
-						<button type="button" className="inventory-card">
+						<button
+							type="button"
+							className="inventory-card"
+							onClick={handleOpenInventoryView}
+						>
 							<Backpack size={38} strokeWidth={1.8} />
 							<span>
-								<strong>Inventario</strong>
+								<strong>Inventory</strong>
 								<small>Revisa objetos, boosts y recompensas</small>
 							</span>
 							<ChevronRight />
@@ -2459,6 +2512,18 @@ function App() {
 							message,
 							"error"
 						);
+					}}
+				/>
+			)}
+
+			{showInventoryView && (
+				<InventoryView
+					player={displayPlayer}
+					userId={authUser?.user_id}
+					onClose={() => setShowInventoryView(false)}
+					onToast={showToast}
+					onInventoryItemUsed={() => {
+						loadActiveEffects();
 					}}
 				/>
 			)}
