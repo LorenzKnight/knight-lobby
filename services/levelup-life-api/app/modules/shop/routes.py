@@ -279,60 +279,60 @@ def add_or_update_inventory_item(user_id: int, item: dict):
         )
 
 
-def create_active_boost(user_id: int, item: dict):
-    duration_minutes = item["duration_minutes"] or 30
+# def create_active_boost(user_id: int, item: dict):
+#     duration_minutes = item["duration_minutes"] or 30
 
-    insert_result = insert_into(
-        table_name="user_active_boosts",
-        query_data={
-            "user_id": user_id,
-            "shop_item_id": item["shop_item_id"],
-            "item_key": item["item_key"],
-            "item_name": item["name"],
-            "boost_type": item["effect_type"],
-            "boost_value": item["effect_value"] or 1,
-            "starts_at": datetime.now(timezone.utc),
-            "expires_at": datetime.now(timezone.utc) + timedelta(minutes=duration_minutes),
-            "is_active": True,
-        },
-    )
+#     insert_result = insert_into(
+#         table_name="user_active_boosts",
+#         query_data={
+#             "user_id": user_id,
+#             "shop_item_id": item["shop_item_id"],
+#             "item_key": item["item_key"],
+#             "item_name": item["name"],
+#             "boost_type": item["effect_type"],
+#             "boost_value": item["effect_value"] or 1,
+#             "starts_at": datetime.now(timezone.utc),
+#             "expires_at": datetime.now(timezone.utc) + timedelta(minutes=duration_minutes),
+#             "is_active": True,
+#         },
+#     )
 
-    if not insert_result["success"]:
-        raise HTTPException(
-            status_code=400,
-            detail=insert_result.get("message", "Could not activate boost."),
-        )
+#     if not insert_result["success"]:
+#         raise HTTPException(
+#             status_code=400,
+#             detail=insert_result.get("message", "Could not activate boost."),
+#         )
 
 
-def create_active_protection(user_id: int, item: dict):
-    duration_minutes = item["duration_minutes"]
+# def create_active_protection(user_id: int, item: dict):
+#     duration_minutes = item["duration_minutes"]
 
-    expires_at = None
+#     expires_at = None
 
-    if duration_minutes:
-        expires_at = datetime.now(timezone.utc) + timedelta(minutes=duration_minutes)
+#     if duration_minutes:
+#         expires_at = datetime.now(timezone.utc) + timedelta(minutes=duration_minutes)
 
-    insert_result = insert_into(
-        table_name="user_active_protections",
-        query_data={
-            "user_id": user_id,
-            "shop_item_id": item["shop_item_id"],
-            "item_key": item["item_key"],
-            "item_name": item["name"],
-            "protection_type": item["effect_type"],
-            "protection_value": item["effect_value"] or 1,
-            "starts_at": datetime.now(timezone.utc),
-            "expires_at": expires_at,
-            "is_active": True,
-            "is_used": False,
-        },
-    )
+#     insert_result = insert_into(
+#         table_name="user_active_protections",
+#         query_data={
+#             "user_id": user_id,
+#             "shop_item_id": item["shop_item_id"],
+#             "item_key": item["item_key"],
+#             "item_name": item["name"],
+#             "protection_type": item["effect_type"],
+#             "protection_value": item["effect_value"] or 1,
+#             "starts_at": datetime.now(timezone.utc),
+#             "expires_at": expires_at,
+#             "is_active": True,
+#             "is_used": False,
+#         },
+#     )
 
-    if not insert_result["success"]:
-        raise HTTPException(
-            status_code=400,
-            detail=insert_result.get("message", "Could not activate protection."),
-        )
+#     if not insert_result["success"]:
+#         raise HTTPException(
+#             status_code=400,
+#             detail=insert_result.get("message", "Could not activate protection."),
+#         )
     
 
 def get_now():
@@ -523,6 +523,239 @@ def consume_inventory_item(item):
     )
 
 
+def get_extended_expiration(current_expires_at, duration_minutes: int):
+    now = get_now()
+
+    if current_expires_at and current_expires_at > now:
+        return current_expires_at + timedelta(minutes=duration_minutes)
+
+    return now + timedelta(minutes=duration_minutes)
+
+
+def activate_or_extend_boost(user_id: int, item):
+    now = get_now()
+
+    duration_minutes = item.get("duration_minutes")
+
+    if not duration_minutes:
+        return {
+            "success": False,
+            "message": "Boost duration is missing.",
+        }
+
+    active_boost_result = select_from(
+        table_name="user_active_boosts",
+        columns=[
+            "user_active_boost_id",
+            "user_id",
+            "shop_item_id",
+            "item_key",
+            "item_name",
+            "boost_type",
+            "boost_value",
+            "starts_at",
+            "expires_at",
+            "is_active",
+        ],
+        where_clause={
+            "user_id": user_id,
+            "item_key": item["item_key"],
+            "boost_type": item["effect_type"],
+            "is_active": True,
+        },
+        options={
+            "fetch_first": True,
+        },
+    )
+
+    if active_boost_result["success"] and active_boost_result["data"]:
+        active_boost = active_boost_result["data"]
+
+        new_expires_at = get_extended_expiration(
+            active_boost["expires_at"],
+            int(duration_minutes),
+        )
+
+        update_result = update_table(
+            table_name="user_active_boosts",
+            where_clause={
+                "user_active_boost_id": active_boost["user_active_boost_id"],
+                "user_id": user_id,
+            },
+            query_data={
+                "expires_at": new_expires_at,
+                "is_active": True,
+            },
+        )
+
+        if not update_result["success"]:
+            return {
+                "success": False,
+                "message": "Could not extend active boost.",
+            }
+
+        return {
+            "success": True,
+            "action": "extended",
+            "effect": {
+                "type": "boost",
+                "effect_type": item["effect_type"],
+                "name": item["name"],
+                "expires_at": new_expires_at,
+            },
+        }
+
+    expires_at = now + timedelta(minutes=int(duration_minutes))
+
+    insert_result = insert_into(
+        table_name="user_active_boosts",
+        query_data={
+            "user_id": user_id,
+            "shop_item_id": item["shop_item_id"],
+            "item_key": item["item_key"],
+            "item_name": item["name"],
+            "boost_type": item["effect_type"],
+            "boost_value": item["effect_value"],
+            "starts_at": now,
+            "expires_at": expires_at,
+            "is_active": True,
+            "created_at": now,
+        },
+    )
+
+    if not insert_result["success"]:
+        return {
+            "success": False,
+            "message": "Could not activate boost.",
+        }
+
+    return {
+        "success": True,
+        "action": "created",
+        "effect": {
+            "type": "boost",
+            "effect_type": item["effect_type"],
+            "name": item["name"],
+            "expires_at": expires_at,
+        },
+    }
+
+
+def activate_or_extend_protection(user_id: int, item):
+    now = get_now()
+
+    duration_minutes = item.get("duration_minutes")
+
+    if not duration_minutes:
+        return {
+            "success": False,
+            "message": "Protection duration is missing.",
+        }
+
+    active_protection_result = select_from(
+        table_name="user_active_protections",
+        columns=[
+            "user_active_protection_id",
+            "user_id",
+            "shop_item_id",
+            "item_key",
+            "item_name",
+            "protection_type",
+            "protection_value",
+            "starts_at",
+            "expires_at",
+            "is_active",
+            "is_used",
+        ],
+        where_clause={
+            "user_id": user_id,
+            "item_key": item["item_key"],
+            "protection_type": item["effect_type"],
+            "is_active": True,
+            "is_used": False,
+        },
+        options={
+            "fetch_first": True,
+        },
+    )
+
+    if active_protection_result["success"] and active_protection_result["data"]:
+        active_protection = active_protection_result["data"]
+
+        new_expires_at = get_extended_expiration(
+            active_protection["expires_at"],
+            int(duration_minutes),
+        )
+
+        update_result = update_table(
+            table_name="user_active_protections",
+            where_clause={
+                "user_active_protection_id": active_protection["user_active_protection_id"],
+                "user_id": user_id,
+            },
+            query_data={
+                "expires_at": new_expires_at,
+                "is_active": True,
+                "is_used": False,
+            },
+        )
+
+        if not update_result["success"]:
+            return {
+                "success": False,
+                "message": "Could not extend active protection.",
+            }
+
+        return {
+            "success": True,
+            "action": "extended",
+            "effect": {
+                "type": "protection",
+                "effect_type": item["effect_type"],
+                "name": item["name"],
+                "expires_at": new_expires_at,
+            },
+        }
+
+    expires_at = now + timedelta(minutes=int(duration_minutes))
+
+    insert_result = insert_into(
+        table_name="user_active_protections",
+        query_data={
+            "user_id": user_id,
+            "shop_item_id": item["shop_item_id"],
+            "item_key": item["item_key"],
+            "item_name": item["name"],
+            "protection_type": item["effect_type"],
+            "protection_value": item["effect_value"],
+            "starts_at": now,
+            "expires_at": expires_at,
+            "is_active": True,
+            "is_used": False,
+            "used_at": None,
+            "created_at": now,
+        },
+    )
+
+    if not insert_result["success"]:
+        return {
+            "success": False,
+            "message": "Could not activate protection.",
+        }
+
+    return {
+        "success": True,
+        "action": "created",
+        "effect": {
+            "type": "protection",
+            "effect_type": item["effect_type"],
+            "name": item["name"],
+            "expires_at": expires_at,
+        },
+    }
+
+
+
 @router.get("/items")
 def get_shop_items():
     categories_result = select_from(
@@ -696,14 +929,16 @@ def purchase_shop_item(request: PurchaseShopItemRequest):
     delivery_type = item["delivery_type"]
 
     if delivery_type == "activation":
+        activation_result = None
+
         if item["item_type"] == "boost":
-            create_active_boost(
+            activation_result = activate_or_extend_boost(
                 user_id=request.user_id,
                 item=item,
             )
 
         elif item["item_type"] == "protection":
-            create_active_protection(
+            activation_result = activate_or_extend_protection(
                 user_id=request.user_id,
                 item=item,
             )
@@ -712,6 +947,12 @@ def purchase_shop_item(request: PurchaseShopItemRequest):
             raise HTTPException(
                 status_code=400,
                 detail="Unsupported activation item type.",
+            )
+
+        if not activation_result["success"]:
+            raise HTTPException(
+                status_code=500,
+                detail=activation_result["message"],
             )
 
     elif delivery_type == "inventory":
@@ -752,6 +993,16 @@ def purchase_shop_item(request: PurchaseShopItemRequest):
                 "rarity": item["rarity"],
             },
             "game_profile": updated_profile,
+            "activated_effect": (
+                activation_result["effect"]
+                if activation_result
+                else None
+            ),
+            "activation_action": (
+                activation_result["action"]
+                if activation_result
+                else None
+            ),
         },
     }
 
