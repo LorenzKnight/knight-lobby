@@ -1936,7 +1936,6 @@ function App() {
 							</div>
 
 							<div className="avatar-display">
-								<div className="avatar-light-ring" />
 								<PlayerAvatar avatarImages={getSelectedAvatarImages()} />
 							</div>
 
