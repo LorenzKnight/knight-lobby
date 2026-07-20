@@ -634,6 +634,8 @@ button {
 		AVATAR EYES
 	============================== */
 	.avatar-eyes {
+		--eyes-scale: 1; /* AQUI CAMBIAS EL TAMANO DE LOS OJOS EN GENERAL */
+
 		--eye-color: #9b4e12;
 		--eye-color-dark: #3d1908;
 		--eye-color-light: #ffad22;
@@ -677,7 +679,11 @@ button {
 		width: max-content;
 		height: max-content;
 
-		transform: translateX(-50%);
+		transform:
+			translateX(-50%)
+			scale(var(--eyes-scale));
+
+		transform-origin: center center;
 
 		pointer-events: none;
 
@@ -1796,13 +1802,17 @@ button {
 		place-items: center;
 		justify-content: center;
 		pointer-events: none;
-		/* background-color: red; */
+		background-color: red;
 	}
 
 	.avatar-custom-preview .player-avatar {
-		width: 170px;
-		height: 300px;
+		width: 250px;
+		height: 100%;
 		filter: drop-shadow(0 22px 28px rgba(40, 70, 70, 0.18));
+	}
+
+	.avatar-custom-preview .avatar-light-ring {
+		display: none;
 	}
 
 	.avatar-shop-panel {
@@ -1810,7 +1820,7 @@ button {
 		left: 0;
 		right: 0;
 		bottom: 0;
-		height: 53vh;
+		height: 55%;
 		padding: 12px 20px 0;
 		border-radius: 32px 32px 0 0;
 		background: rgba(255, 255, 255, 0.98);
@@ -6364,6 +6374,8 @@ button {
 		AVATAR EYES
 	============================== */
 	.avatar-eyes {
+		--eyes-scale: 1; /* AQUI CAMBIAS EL TAMANO DE LOS OJOS EN GENERAL */
+
 		--eye-color: #9b4e12;
 		--eye-color-dark: #3d1908;
 		--eye-color-light: #ffad22;
@@ -6407,7 +6419,11 @@ button {
 		width: max-content;
 		height: max-content;
 
-		transform: translateX(-50%);
+		transform:
+			translateX(-50%)
+			scale(var(--eyes-scale));
+
+		transform-origin: center center;
 
 		pointer-events: none;
 
@@ -7396,7 +7412,9 @@ button {
 
 
 
-	/*avatar customization menu */
+	/* ==============================
+		avatar customization menu
+	============================== */
 	.avatar-clothes-button {
 		position: absolute;
 		top: 0px;
@@ -7483,8 +7501,6 @@ button {
 			transform: translateY(0);
 		}
 	}
-
-
 
 	.avatar-custom-top {
 		position: absolute;
@@ -12791,6 +12807,11 @@ button {
 		background: transparent !important;
 	}
 
+
+
+	/* ==============================
+		avatar customization menu
+	============================== */
 	.avatar-clothes-button {
 		position: absolute;
 		top: 93px;
@@ -12802,6 +12823,9 @@ button {
 		border: 0;
 		border-radius: 18px;
 
+		display: grid;
+		place-items: center;
+
 		background: rgba(255, 255, 255, 0.78);
 		color: var(--purple);
 
@@ -12810,6 +12834,335 @@ button {
 			inset 0 1px 0 rgba(255, 255, 255, 0.88);
 
 		backdrop-filter: blur(12px);
+
+		z-index: 10;
+	}
+
+	.avatar-custom-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 40;
+		background:
+			radial-gradient(
+				circle at top,
+				rgba(255, 194, 106, 0.32),
+				transparent 38%
+			),
+			rgba(28, 23, 35, 0.38);
+
+		backdrop-filter: blur(14px);
+
+		overflow: hidden;
+	}
+
+	.avatar-custom-shell {
+		position: relative;
+		width: 1126px;
+		max-width: 100%;
+		margin: 0 auto;
+		text-align: center;
+		height: 100vh;
+		border-radius: 34px;
+		background:
+			radial-gradient(
+				circle at 22% 20%,
+				rgba(255, 243, 215, 0.65),
+				transparent 34%
+			),
+			linear-gradient(
+				135deg,
+				#f6c47f,
+				#f8d7a6 54%,
+				#f4bf78
+			);
+
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+		box-shadow:
+			0 12px 28px rgba(58, 50, 72, 0.14),
+			inset 0 1px 0 rgba(255, 255, 255, 0.88);
+
+		animation: viewFadeUp 0.28s ease-out both;
+	}
+
+	@keyframes viewFadeUp {
+		0% {
+			opacity: 0;
+			transform: translateY(12px);
+		}
+
+		100% {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.avatar-custom-top {
+		position: absolute;
+		top: 22px;
+		left: 18px;
+		right: 18px;
+		z-index: 5;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.avatar-custom-top button {
+		width: 42px;
+		height: 42px;
+		border: 0;
+		border-radius: 15px;
+		background: rgba(122, 88, 180, 0.1);
+		color: var(--purple);
+		font-size: 22px;
+		font-weight: 900;
+		display: grid;
+		place-items: center;
+	}
+
+	.avatar-clothes-button.active {
+		background: linear-gradient(145deg, #9b72d2, #6c4aa7);
+		color: #ffffff;
+		transform: scale(1.04);
+	}
+
+	.avatar-coins-pill {
+		min-width: 120px;
+		padding: 10px 10px;
+		border-radius: 20px;
+		background: rgba(39, 64, 61, 0.548);
+		color: #ffe16b;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+		font-size: 24px;
+		font-weight: 400;
+	}
+
+	.avatar-custom-preview {
+		position: absolute;
+		top: 0px;
+		left: 50%;
+		transform: translateX(-50%);
+		height: 56vh;
+		display: flex;
+		place-items: center;
+		justify-content: center;
+		pointer-events: none;
+		background-color: red;
+	}
+
+	.avatar-custom-preview .player-avatar {
+		width: 350px;
+		height: 100%;
+		filter: drop-shadow(0 22px 28px rgba(40, 70, 70, 0.18));
+	}
+
+	.avatar-custom-preview .avatar-light-ring {
+		display: none;
+	}
+
+	.avatar-shop-panel {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0px;
+		height: 46vh;
+		padding: 12px 20px 0;
+		border-radius: 32px 32px 0 0;
+		background: rgba(255, 255, 255, 0.98);
+		box-shadow:
+			0 12px 28px rgba(58, 50, 72, 0.14),
+			inset 0 1px 0 rgba(255, 255, 255, 0.88);
+	}
+
+	.avatar-shop-panel ::-webkit-scrollbar {
+		width: 5px;
+	}
+
+	.avatar-shop-panel ::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.avatar-shop-panel ::-webkit-scrollbar-thumb {
+		border-radius: 999px;
+		background: rgba(122, 88, 180, 0.28);
+	}
+
+	.avatar-shop-panel ::-webkit-scrollbar-thumb:hover {
+		background-color: #7858a2;
+		transition: all 1.0s ease;
+	}
+
+	.avatar-shop-handle {
+		width: 86px;
+		height: 8px;
+		border-radius: 999px;
+		background: rgba(70, 70, 70, 0.28);
+		margin: 0 auto 14px;
+	}
+
+	.avatar-shop-tabs {
+		display: flex;
+		align-items: center;
+		gap: 22px;
+		padding: 0 22px;
+		overflow-x: auto;
+		border-bottom: 1px solid rgba(20, 126, 135, 0.12);
+		scrollbar-width: none;
+	}
+
+	.avatar-shop-tabs::-webkit-scrollbar {
+		display: none;
+	}
+
+	.avatar-shop-tabs button {
+		position: relative;
+		min-width: 76px;
+		border: 0;
+		background: transparent;
+		color: rgba(28, 80, 83, 0.76);
+		font-size: 12px;
+		font-weight: 800;
+		text-transform: uppercase;
+		display: grid;
+		place-items: center;
+		gap: 5px;
+		padding: 0 0 10px;
+		white-space: nowrap;
+	}
+
+	.avatar-shop-tabs button span {
+		font-size: 28px;
+		line-height: 1;
+	}
+
+	.avatar-shop-tabs button.active {
+		color: var(--purple);
+	}
+
+	.avatar-shop-tabs button.active::after {
+		content: "";
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 5px;
+		border-radius: 999px 999px 0 0;
+		background: var(--purple);
+	}
+
+	.avatar-shop-content {
+		overflow-y: auto;
+		height: 100%;
+	}
+
+	.avatar-shop-filters {
+		display: flex;
+		gap: 10px;
+		padding: 5px 22px;
+		overflow-x: auto;
+	}
+
+	.avatar-shop-filters button {
+		height: 35px;
+		padding: 0 18px;
+		border-radius: 12px;
+		border: 1px solid rgba(225, 218, 208, 0.95);
+		background: #ffffff;
+		color: rgba(61, 93, 96, 0.62);
+		font-size: 13px;
+		font-weight: 950;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+
+	.avatar-shop-filters button.active {
+		border-color: transparent;
+		background: #e9f8de;
+		color: #54715c;
+	}
+
+	.avatar-shop-grid {
+		height: 60%;
+		line-height: 8px;
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 20px 16px;
+		padding: 10px 22px 20px;
+		overflow-y: auto;
+	}
+
+	.avatar-shop-item {
+		position: relative;
+		width: 100%;
+		min-width: 0;
+		padding: 0;
+		margin: 0;
+		border: 0;
+		background: transparent;
+		display: grid;
+		grid-template-rows: auto auto auto;
+		justify-items: center;
+		align-content: start;
+		gap: 8px;
+		color: #31575a;
+		font-weight: 950;
+		cursor: pointer;
+	}
+
+	.avatar-shop-thumb {
+		width: 100%;
+		aspect-ratio: 1;
+		border-radius: 4px;
+		background: #f7f7f9;
+		display: grid;
+		place-items: center;
+		overflow: hidden;
+		font-size: 58px;
+		box-shadow: inset 0 0 0 1px rgba(35, 70, 75, 0.03);
+	}
+
+	.avatar-shop-thumb img {
+		width: 80%;
+		height: 80%;
+		object-fit: contain;
+		display: block;
+	}
+
+	.avatar-shop-item span {
+		font-size: 13px;
+	}
+
+	.avatar-shop-item small {
+		color: #45696b;
+		font-size: 12px;
+		font-weight: 950;
+	}
+
+	.avatar-shop-item.active .avatar-shop-thumb {
+		outline: 4px solid rgba(20, 144, 154, 0.28);
+		background: #eefdf7;
+	}
+
+	.avatar-shop-item.locked::after {
+		content: "🔒";
+		position: absolute;
+		top: 26%;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 54px;
+		height: 54px;
+		border-radius: 999px;
+		background: rgba(12, 125, 137, 0.78);
+		color: #70f5ff;
+		display: grid;
+		place-items: center;
+		font-size: 26px;
 	}
 
 
@@ -12935,6 +13288,8 @@ button {
 		AVATAR EYES
 	============================== */
 	.avatar-eyes {
+		--eyes-scale: 1.1; /* AQUI CAMBIAS EL TAMANO DE LOS OJOS EN GENERAL */
+
 		--eye-color: #9b4e12;
 		--eye-color-dark: #3d1908;
 		--eye-color-light: #ffad22;
@@ -12978,7 +13333,11 @@ button {
 		width: max-content;
 		height: max-content;
 
-		transform: translateX(-50%);
+		transform:
+			translateX(-50%)
+			scale(var(--eyes-scale));
+
+		transform-origin: center center;
 
 		pointer-events: none;
 
@@ -13274,181 +13633,6 @@ button {
 		top: 159px;
 		left: -5px;
 		z-index: 1;
-	}
-
-
-
-	.avatar-shop-panel {
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 0px;
-		height: 46vh;
-		padding: 12px 20px 0;
-		border-radius: 32px 32px 0 0;
-		background: rgba(255, 255, 255, 0.98);
-		box-shadow:
-			0 12px 28px rgba(58, 50, 72, 0.14),
-			inset 0 1px 0 rgba(255, 255, 255, 0.88);
-	}
-
-	.avatar-shop-tabs {
-		display: flex;
-		align-items: center;
-		gap: 22px;
-		padding: 0 22px;
-		overflow-x: auto;
-		border-bottom: 1px solid rgba(20, 126, 135, 0.12);
-		scrollbar-width: none;
-	}
-
-	.avatar-shop-tabs::-webkit-scrollbar {
-		display: none;
-	}
-
-	.avatar-shop-tabs button {
-		position: relative;
-		min-width: 76px;
-		border: 0;
-		background: transparent;
-		color: rgba(28, 80, 83, 0.76);
-		font-size: 12px;
-		font-weight: 800;
-		text-transform: uppercase;
-		display: grid;
-		place-items: center;
-		gap: 5px;
-		padding: 0 0 10px;
-		white-space: nowrap;
-	}
-
-	.avatar-shop-tabs button span {
-		font-size: 28px;
-		line-height: 1;
-	}
-
-	.avatar-shop-tabs button.active {
-		color: var(--purple);
-	}
-
-	.avatar-shop-tabs button.active::after {
-		content: "";
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		height: 5px;
-		border-radius: 999px 999px 0 0;
-		background: var(--purple);
-	}
-
-	.avatar-shop-content {
-		overflow-y: auto;
-		height: 100%;
-	}
-
-	.avatar-shop-filters {
-		display: flex;
-		gap: 10px;
-		padding: 5px 22px;
-		overflow-x: auto;
-	}
-
-	.avatar-shop-filters button {
-		height: 35px;
-		padding: 0 18px;
-		border-radius: 12px;
-		border: 1px solid rgba(225, 218, 208, 0.95);
-		background: #ffffff;
-		color: rgba(61, 93, 96, 0.62);
-		font-size: 13px;
-		font-weight: 950;
-		text-transform: uppercase;
-		white-space: nowrap;
-	}
-
-	.avatar-shop-filters button.active {
-		border-color: transparent;
-		background: #e9f8de;
-		color: #54715c;
-	}
-
-	.avatar-shop-grid {
-		height: 60%;
-		line-height: 8px;
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 20px 16px;
-		padding: 10px 22px 20px;
-		overflow-y: auto;
-	}
-
-	.avatar-shop-item {
-		position: relative;
-		width: 100%;
-		min-width: 0;
-		padding: 0;
-		margin: 0;
-		border: 0;
-		background: transparent;
-		display: grid;
-		grid-template-rows: auto auto auto;
-		justify-items: center;
-		align-content: start;
-		gap: 8px;
-		color: #31575a;
-		font-weight: 950;
-		cursor: pointer;
-	}
-
-	.avatar-shop-thumb {
-		width: 100%;
-		aspect-ratio: 1;
-		border-radius: 4px;
-		background: #f7f7f9;
-		display: grid;
-		place-items: center;
-		overflow: hidden;
-		font-size: 58px;
-		box-shadow: inset 0 0 0 1px rgba(35, 70, 75, 0.03);
-	}
-
-	.avatar-shop-thumb img {
-		width: 80%;
-		height: 80%;
-		object-fit: contain;
-		display: block;
-	}
-
-	.avatar-shop-item span {
-		font-size: 13px;
-	}
-
-	.avatar-shop-item small {
-		color: #45696b;
-		font-size: 12px;
-		font-weight: 950;
-	}
-
-	.avatar-shop-item.active .avatar-shop-thumb {
-		outline: 4px solid rgba(20, 144, 154, 0.28);
-		background: #eefdf7;
-	}
-
-	.avatar-shop-item.locked::after {
-		content: "🔒";
-		position: absolute;
-		top: 26%;
-		left: 50%;
-		transform: translateX(-50%);
-		width: 54px;
-		height: 54px;
-		border-radius: 999px;
-		background: rgba(12, 125, 137, 0.78);
-		color: #70f5ff;
-		display: grid;
-		place-items: center;
-		font-size: 26px;
 	}
 
 
