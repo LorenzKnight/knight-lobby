@@ -80,6 +80,62 @@ function App() {
 	const [completingTaskId, setCompletingTaskId] = useState(null);
 
 	const [rewardAnimations, setRewardAnimations] = useState([]);
+	// const [rewardAnimations, setRewardAnimations] = useState([
+	// 	{
+	// 		id: "test-reward-animation",
+	// 		events: [
+	// 			{
+	// 				type: "daily_goal_completed",
+	// 				icon: "🔥",
+	// 				title: "Hábito completado",
+	// 				animation_items: [
+	// 					{
+	// 						type: "exp",
+	// 						text: "+15 EXP",
+	// 					},
+	// 					{
+	// 						type: "coins",
+	// 						text: "+5 coins",
+	// 					},
+	// 				],
+	// 			},
+	// 			{
+	// 				type: "life_area_completed",
+	// 				icon: "🌱",
+	// 				title: "Área fortalecida",
+	// 				animation_items: [
+	// 					{
+	// 						type: "exp",
+	// 						text: "+20 EXP",
+	// 					},
+	// 					{
+	// 						type: "coins",
+	// 						text: "+5 coins",
+	// 					},
+	// 				],
+	// 			},
+	// 			{
+	// 				type: "perfect_day_completed",
+	// 				icon: "🏆",
+	// 				title: "Perfect Day",
+	// 				animation_items: [
+	// 					{
+	// 						type: "exp",
+	// 						text: "+50 EXP",
+	// 					},
+	// 					{
+	// 						type: "coins",
+	// 						text: "+15 coins",
+	// 					},
+	// 					{
+	// 						type: "gems",
+	// 						text: "+1 gem",
+	// 					},
+	// 				],
+	// 			},
+	// 		],
+	// 	},
+	// ]);
 
 	const [activeEffects, setActiveEffects] = useState([]);
 	
@@ -1940,19 +1996,6 @@ function App() {
 							</div>
 
 							<h2>{displayName}</h2>
-
-							{/* <div className="next-level">
-								<span>Nivel siguiente:</span>
-								<div className="exp-line">
-									<div style={{ width: `${expPercent}%` }} />
-								</div>
-								<small>
-									{gameProfileLoading
-										? "Cargando EXP..."
-										: `${displayPlayer.nextLevelExp} EXP (${displayPlayer.exp}%)`
-									}
-								</small>
-							</div> */}
 
 							<button
 								type="button"
