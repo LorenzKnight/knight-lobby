@@ -23,14 +23,6 @@ function PlayerAvatar({
 				/>
 			)} */}
 
-			{/* {avatarImages?.shirt && (
-				<img
-					src={avatarImages.shirt}
-					alt="Camiseta del personaje"
-					className="avatar-layer avatar-shirt"
-				/>
-			)} */}
-
 			<div
 				className={[
 					"avatar-eyes",
@@ -58,6 +50,14 @@ function PlayerAvatar({
 				alt="Cuerpo fijo del personaje"
 				className="avatar-body"
 			/>
+
+			{avatarImages?.shirt && (
+				<img
+					src={avatarImages.shirt}
+					alt="Shirt"
+					className="avatar-layer avatar-shirt"
+				/>
+			)}
 
 			{/* {avatarImages?.legs && (
 				<img

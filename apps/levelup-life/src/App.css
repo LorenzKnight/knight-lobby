@@ -954,19 +954,12 @@ button {
 	}
 
 	/* avatar parts */
-	.avatar-hair {
+	/* .avatar-hair {
 		width: 110px;
 		top: -142px;
-		left: 24px; /* aqui */
+		left: 24px;
 		z-index: 5;
-	}
-
-	.avatar-shirt {
-		width: 160px;
-		top: -48px;
-		left: 3px;
-		z-index: 5;
-	}
+	} */
 
 	.avatar-body,
 	.avatar-layer {
@@ -985,6 +978,25 @@ button {
 
 		pointer-events: none;
 		user-select: none;
+	}
+
+	.player-avatar .avatar-shirt {
+		inset: auto;
+
+		top: 28.5%;
+		left: 50%;
+
+		width: 38cqw;
+		height: auto;
+
+		max-width: none;
+		max-height: none;
+
+		transform: translateX(-50%);
+
+		object-fit: contain;
+
+		z-index: 3;
 	}
 
 	.avatar-legs {
@@ -6727,12 +6739,12 @@ button {
 		z-index: 5;
 	}
 
-	.avatar-shirt {
+	/* .avatar-shirt {
 		width: 160px;
 		top: -48px;
 		left: 3px;
 		z-index: 5;
-	}
+	} */
 
 	.avatar-body,
 	.avatar-layer {
@@ -15095,12 +15107,12 @@ button {
 		z-index: 5;
 	}
 
-	.avatar-shirt {
+	/* .avatar-shirt {
 		width: 196px;
 		top: -76px;
 		left: -17px;
 		z-index: 5;
-	}
+	} */
 
 	.avatar-body,
 	.avatar-layer {
