@@ -106,7 +106,7 @@ export default function AvatarCustomizationView({
                                 <button
                                     type="button"
                                     key={item.item_key}
-                                    className={`avatar-shop-item ${
+                                    className={`avatar-shop-item avatar-shop-item-${avatarCategory} ${
                                         avatarConfig[getAvatarConfigKey(avatarCategory)] === item.item_key
                                             ? "active"
                                             : ""
@@ -118,7 +118,7 @@ export default function AvatarCustomizationView({
                                         )
                                     }
                                 >
-                                    <div className="avatar-shop-thumb">
+                                    <div className={`avatar-shop-thumb avatar-shop-thumb-${avatarCategory}`}>
                                         <img
                                             src={item.thumbnail_url || item.image_url}
                                             alt={item.name}

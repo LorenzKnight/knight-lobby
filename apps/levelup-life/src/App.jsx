@@ -172,7 +172,7 @@ function App() {
 	const [avatarConfig, setAvatarConfig] = useState({
 		cap: "cap_01",
 		shirt: "default_tshirt",
-		legs: "legs_01",
+		legs: "default_legs",
 		feets: "feets_01",
 		bag: null,
 	});

@@ -59,18 +59,18 @@ function PlayerAvatar({
 				/>
 			)}
 
-			{/* {avatarImages?.legs && (
+			{avatarImages?.legs && (
 				<img
 					src={avatarImages.legs}
-					alt="Piernas del personaje"
+					alt="Pants"
 					className="avatar-layer avatar-legs"
 				/>
-			)} */}
+			)}
 
 			{/* {avatarImages?.feets && (
 				<img
 					src={avatarImages.feets}
-					alt="Pies del personaje"
+					alt="Feets"
 					className="avatar-layer avatar-feets"
 				/>
 			)} */}

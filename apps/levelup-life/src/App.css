@@ -999,11 +999,23 @@ button {
 		z-index: 3;
 	}
 
-	.avatar-legs {
-		width: 127px;
-		top: 74px;
-		left: 21px;
-		z-index: 3;
+	.player-avatar .avatar-legs {
+		inset: auto;
+
+		top: 49%;
+		left: 49.3%;
+
+		width: 27.3cqw;
+		height: auto;
+
+		max-width: none;
+		max-height: none;
+
+		transform: translateX(-50%);
+
+		object-fit: contain;
+
+		z-index: 2;
 	}
 
 	.avatar-feets {
@@ -1867,7 +1879,7 @@ button {
 		left: 0;
 		right: 0;
 		bottom: 0;
-		height: 55%;
+		height: 57.5%;
 		padding: 12px 20px 0;
 		border-radius: 32px 32px 0 0;
 		background: rgba(255, 255, 255, 0.98);
@@ -2005,17 +2017,18 @@ button {
 		grid-template-rows: auto auto auto;
 		justify-items: center;
 		align-content: start;
-		gap: 8px;
+		gap: 6px;
 		color: #31575a;
 		font-weight: 950;
 		cursor: pointer;
 	}
 
 	.avatar-shop-thumb {
+		position: relative;
 		width: 100%;
 		aspect-ratio: 1;
 		border-radius: 4px;
-		background: #f7f7f9;
+		background: #eaf5f8;
 		display: grid;
 		place-items: center;
 		overflow: hidden;
@@ -2030,14 +2043,57 @@ button {
 		display: block;
 	}
 
+
+	/* Avatar shop thumbnails by category */
+
+	/* Shirts: dejamos igual porque ya está perfecto */
+	.avatar-shop-thumb-shirts img {
+		width: 80%;
+		height: 80%;
+		object-fit: contain;
+	}
+
+	/* Caps: normalmente necesitan verse más grandes y arriba */
+	.avatar-shop-thumb-caps img {
+		width: 92%;
+		height: 92%;
+		object-fit: contain;
+		transform: translateY(-4%);
+	}
+
+	/* Legs / pants: necesitan más alto */
+	.avatar-shop-thumb-legs img {
+		width: 42%;
+		height: 66%;
+		object-fit: contain;
+		transform: translateY(2%);
+	}
+
+	/* Feets / shoes: necesitan más ancho y menos alto */
+	.avatar-shop-thumb-feets img {
+		width: 94%;
+		height: 62%;
+		object-fit: contain;
+		transform: translateY(10%);
+	}
+
+	/* Bags: normalmente necesitan tamaño medio */
+	.avatar-shop-thumb-bags img {
+		width: 84%;
+		height: 84%;
+		object-fit: contain;
+		transform: translateY(0);
+	}
+
+
 	.avatar-shop-item span {
-		font-size: 13px;
+		font-size: 12px;
 	}
 
 	.avatar-shop-item small {
 		color: #45696b;
-		font-size: 17px;
-		font-weight: 950;
+		font-size: 12px;
+		font-weight: 850;
 	}
 
 	.avatar-shop-item.active .avatar-shop-thumb {
@@ -6739,13 +6795,6 @@ button {
 		z-index: 5;
 	}
 
-	/* .avatar-shirt {
-		width: 160px;
-		top: -48px;
-		left: 3px;
-		z-index: 5;
-	} */
-
 	.avatar-body,
 	.avatar-layer {
 		position: absolute;
@@ -6763,11 +6812,42 @@ button {
 		user-select: none;
 	}
 
-	.avatar-legs {
-		width: 127px;
-		top: 74px;
-		left: 21px;
+	.player-avatar .avatar-shirt {
+		inset: auto;
+
+		top: 28.5%;
+		left: 50%;
+
+		width: 38cqw;
+		height: auto;
+
+		max-width: none;
+		max-height: none;
+
+		transform: translateX(-50%);
+
+		object-fit: contain;
+
 		z-index: 3;
+	}
+
+	.player-avatar .avatar-legs {
+		inset: auto;
+
+		top: 49%;
+		left: 49.3%;
+
+		width: 27.3cqw;
+		height: auto;
+
+		max-width: none;
+		max-height: none;
+
+		transform: translateX(-50%);
+
+		object-fit: contain;
+
+		z-index: 2;
 	}
 
 	.avatar-feets {
@@ -7737,7 +7817,7 @@ button {
 
 	.avatar-shop-content {
 		overflow-y: auto;
-		height: 100%;
+		height: 90%;
 	}
 
 	.avatar-shop-filters {
@@ -7772,7 +7852,7 @@ button {
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
 		gap: 20px 50px;
-		padding: 10px 22px;
+		padding: 10px 22px 20px;
 		overflow-y: auto;
 	}
 
@@ -7795,6 +7875,7 @@ button {
 	}
 
 	.avatar-shop-thumb {
+		position: relative;
 		width: 100%;
 		aspect-ratio: 1;
 		border-radius: 4px;
@@ -7812,6 +7893,49 @@ button {
 		object-fit: contain;
 		display: block;
 	}
+
+	/* Avatar shop thumbnails by category */
+
+	/* Shirts: dejamos igual porque ya está perfecto */
+	.avatar-shop-thumb-shirts img {
+		width: 80%;
+		height: 80%;
+		object-fit: contain;
+	}
+
+
+	/* Caps: normalmente necesitan verse más grandes y arriba */
+	.avatar-shop-thumb-caps img {
+		width: 92%;
+		height: 92%;
+		object-fit: contain;
+		transform: translateY(-4%);
+	}
+
+	/* Legs / pants: necesitan más alto */
+	.avatar-shop-thumb-legs img {
+		width: 42%;
+		height: 66%;
+		object-fit: contain;
+		transform: translateY(2%);
+	}
+
+	/* Feets / shoes: necesitan más ancho y menos alto */
+	.avatar-shop-thumb-feets img {
+		width: 94%;
+		height: 62%;
+		object-fit: contain;
+		transform: translateY(10%);
+	}
+
+	/* Bags: normalmente necesitan tamaño medio */
+	.avatar-shop-thumb-bags img {
+		width: 84%;
+		height: 84%;
+		object-fit: contain;
+		transform: translateY(0);
+	}
+
 
 	.avatar-shop-item span {
 		font-size: 13px;
@@ -14692,7 +14816,7 @@ button {
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
 		gap: 20px 16px;
-		padding: 10px 22px 20px;
+		padding: 10px 22px 30px;
 		overflow-y: auto;
 	}
 
@@ -14715,6 +14839,7 @@ button {
 	}
 
 	.avatar-shop-thumb {
+		position: relative;
 		width: 100%;
 		aspect-ratio: 1;
 		border-radius: 4px;
@@ -14732,6 +14857,49 @@ button {
 		object-fit: contain;
 		display: block;
 	}
+
+
+	/* Avatar shop thumbnails by category */
+
+	/* Shirts: dejamos igual porque ya está perfecto */
+	.avatar-shop-thumb-shirts img {
+		width: 80%;
+		height: 80%;
+		object-fit: contain;
+	}
+
+	/* Caps: normalmente necesitan verse más grandes y arriba */
+	.avatar-shop-thumb-caps img {
+		width: 92%;
+		height: 92%;
+		object-fit: contain;
+		transform: translateY(-4%);
+	}
+
+	/* Legs / pants: necesitan más alto */
+	.avatar-shop-thumb-legs img {
+		width: 42%;
+		height: 66%;
+		object-fit: contain;
+		transform: translateY(2%);
+	}
+
+	/* Feets / shoes: necesitan más ancho y menos alto */
+	.avatar-shop-thumb-feets img {
+		width: 94%;
+		height: 62%;
+		object-fit: contain;
+		transform: translateY(10%);
+	}
+
+	/* Bags: normalmente necesitan tamaño medio */
+	.avatar-shop-thumb-bags img {
+		width: 84%;
+		height: 84%;
+		object-fit: contain;
+		transform: translateY(0);
+	}
+
 
 	.avatar-shop-item span {
 		font-size: 13px;
@@ -15107,13 +15275,6 @@ button {
 		z-index: 5;
 	}
 
-	/* .avatar-shirt {
-		width: 196px;
-		top: -76px;
-		left: -17px;
-		z-index: 5;
-	} */
-
 	.avatar-body,
 	.avatar-layer {
 		position: absolute;
@@ -15131,10 +15292,42 @@ button {
 		user-select: none;
 	}
 
-	.avatar-legs {
-		width: 158px;
-		top: 70px;
-		left: 3px;
+
+	.player-avatar .avatar-shirt {
+		inset: auto;
+
+		top: 28.5%;
+		left: 50%;
+
+		width: 38cqw;
+		height: auto;
+
+		max-width: none;
+		max-height: none;
+
+		transform: translateX(-50%);
+
+		object-fit: contain;
+
+		z-index: 3;
+	}
+
+	.player-avatar .avatar-legs {
+		inset: auto;
+
+		top: 49%;
+		left: 49.3%;
+
+		width: 27.3cqw;
+		height: auto;
+
+		max-width: none;
+		max-height: none;
+
+		transform: translateX(-50%);
+
+		object-fit: contain;
+
 		z-index: 2;
 	}
 
