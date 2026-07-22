@@ -24,7 +24,7 @@ def avatar_category_to_config_key(category: str) -> str:
 
 
 @router.get("/items")
-def get_avatar_items():
+def get_avatar_items(user_id: int = Query(None)):
     result = select_from(
         table_name="avatar_items",
         columns=[
@@ -56,10 +56,35 @@ def get_avatar_items():
             "data": {},
         }
 
+    unlocked_item_keys = set()
+
+    if user_id:
+        unlocked_result = select_from(
+            table_name="user_avatar_unlocked_items",
+            columns=[
+                "item_key",
+            ],
+            where_clause={
+                "user_id": user_id,
+            },
+        )
+
+        if unlocked_result["success"]:
+            unlocked_item_keys = {
+                item["item_key"]
+                for item in unlocked_result["data"]
+            }
+
     grouped_items = {}
 
     for item in result["data"]:
         category = item["category"]
+        price_coins = int(item.get("price_coins") or 0)
+
+        item["is_unlocked"] = (
+            price_coins == 0
+            or item["item_key"] in unlocked_item_keys
+        )
 
         if category not in grouped_items:
             grouped_items[category] = []

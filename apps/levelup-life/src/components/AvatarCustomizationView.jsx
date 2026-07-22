@@ -34,6 +34,51 @@ export default function AvatarCustomizationView({
         return avatarConfig[configKey] === item.item_key;
     }
 
+    function isItemUnlocked(item) {
+        const priceCoins = Number(item.price_coins || 0);
+
+        return priceCoins === 0 || item.is_unlocked;
+    }
+
+    function canAffordItem(item) {
+        const priceCoins = Number(item.price_coins || 0);
+        const playerCoins = Number(player.coins || 0);
+
+        return playerCoins >= priceCoins;
+    }
+
+    function getPreviewPrimaryButtonLabel(item) {
+        if (!item) return "Aplicar";
+
+        if (isItemEquipped(item)) {
+            return "Ya equipado";
+        }
+
+        if (isItemUnlocked(item)) {
+            return "Aplicar";
+        }
+
+        if (!canAffordItem(item)) {
+            return "Coins insuficientes";
+        }
+
+        return "Comprar y aplicar";
+    }
+
+    function isPreviewPrimaryButtonDisabled(item) {
+        if (!item) return true;
+
+        if (isItemEquipped(item)) {
+            return true;
+        }
+
+        if (!isItemUnlocked(item) && !canAffordItem(item)) {
+            return true;
+        }
+
+        return false;
+    }
+
     function handleApplyPreviewItem() {
         if (!previewItem) return;
 
@@ -200,8 +245,14 @@ export default function AvatarCustomizationView({
                             <div>
                                 <span>Estado</span>
                                 <strong>
-                                    {isItemEquipped(previewItem) ? "Equipado" : "Disponible"}
-                                </strong>
+									{isItemEquipped(previewItem)
+										? "Equipado"
+										: isItemUnlocked(previewItem)
+											? "Disponible"
+											: canAffordItem(previewItem)
+												? "No comprado"
+												: "Sin coins"}
+								</strong>
                             </div>
                         </div>
 
@@ -218,8 +269,9 @@ export default function AvatarCustomizationView({
                                 type="button"
                                 className="avatar-item-preview-primary"
                                 onClick={handleApplyPreviewItem}
+                                disabled={isPreviewPrimaryButtonDisabled(previewItem)}
                             >
-                                {isItemEquipped(previewItem) ? "Ya equipado" : "Aplicar"}
+                                {getPreviewPrimaryButtonLabel(previewItem)}
                             </button>
                         </div>
                     </div>

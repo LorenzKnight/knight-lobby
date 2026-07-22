@@ -529,11 +529,11 @@ button {
 	/* avatar light ring */
 	.avatar-light-ring {
 		position: absolute;
-		bottom: 14px; /* ajusta según los pies */
+		bottom: 11px; /* ajusta según los pies */
 		left: 50%;
 		transform: translateX(-50%);
 		width: 220px;
-		height: 42px;
+		height: 47px;
 		border-radius: 50%;
 		pointer-events: none;
 

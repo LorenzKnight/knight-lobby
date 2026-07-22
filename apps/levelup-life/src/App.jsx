@@ -80,63 +80,6 @@ function App() {
 	const [completingTaskId, setCompletingTaskId] = useState(null);
 
 	const [rewardAnimations, setRewardAnimations] = useState([]);
-	// const [rewardAnimations, setRewardAnimations] = useState([
-	// 	{
-	// 		id: "test-reward-animation",
-	// 		events: [
-	// 			{
-	// 				type: "daily_goal_completed",
-	// 				icon: "🔥",
-	// 				title: "Hábito completado",
-	// 				animation_items: [
-	// 					{
-	// 						type: "exp",
-	// 						text: "+15 EXP",
-	// 					},
-	// 					{
-	// 						type: "coins",
-	// 						text: "+5 coins",
-	// 					},
-	// 				],
-	// 			},
-	// 			{
-	// 				type: "life_area_completed",
-	// 				icon: "🌱",
-	// 				title: "Área fortalecida",
-	// 				animation_items: [
-	// 					{
-	// 						type: "exp",
-	// 						text: "+20 EXP",
-	// 					},
-	// 					{
-	// 						type: "coins",
-	// 						text: "+5 coins",
-	// 					},
-	// 				],
-	// 			},
-	// 			{
-	// 				type: "perfect_day_completed",
-	// 				icon: "🏆",
-	// 				title: "Perfect Day",
-	// 				animation_items: [
-	// 					{
-	// 						type: "exp",
-	// 						text: "+50 EXP",
-	// 					},
-	// 					{
-	// 						type: "coins",
-	// 						text: "+15 coins",
-	// 					},
-	// 					{
-	// 						type: "gems",
-	// 						text: "+1 gem",
-	// 					},
-	// 				],
-	// 			},
-	// 		],
-	// 	},
-	// ]);
-
 	const [activeEffects, setActiveEffects] = useState([]);
 	
 	const dailyGoalsPreviewRef = useRef(null);
@@ -416,7 +359,7 @@ function App() {
 			if (!authUser?.user_id) return;
 
 			try {
-				const result = await getAvatarItems();
+				const result = await getAvatarItems(authUser.user_id);
 
 				if (result.success) {
 					setAvatarItems({
@@ -830,6 +773,26 @@ function App() {
 					...currentProfile,
 					...result.data.game_profile,
 				}));
+			}
+
+			if (result.success && result.data?.was_unlocked_now) {
+				setAvatarItems((currentItems) => {
+					const updatedItems = { ...currentItems };
+					const category = result.data.category;
+
+					updatedItems[category] = (updatedItems[category] || []).map((item) => {
+						if (item.item_key !== result.data.item_key) {
+							return item;
+						}
+
+						return {
+							...item,
+							is_unlocked: true,
+						};
+					});
+
+					return updatedItems;
+				});
 			}
 
 			if (result.data?.was_purchased_now) {

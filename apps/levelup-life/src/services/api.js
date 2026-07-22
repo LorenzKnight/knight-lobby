@@ -40,12 +40,17 @@ export async function createLifeArea(areaData) {
 	return data;
 }
 
-export async function getAvatarItems() {
-	const response = await fetch(`${LEVELUP_API_URL}/api/avatar/items`);
+export async function getAvatarItems(userId) {
+	const url = userId
+		? `${LEVELUP_API_URL}/api/avatar/items?user_id=${userId}`
+		: `${LEVELUP_API_URL}/api/avatar/items`;
+
+	const response = await fetch(url);
+
 	const data = await response.json();
 
 	if (!response.ok) {
-		throw new Error(data.detail || data.message || "Could not load avatar items");
+		throw new Error(data.detail || "Could not load avatar items");
 	}
 
 	return data;
