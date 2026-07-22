@@ -816,7 +816,41 @@ function App() {
 		}));
 
 		try {
-			await saveAvatarConfig(authUser.user_id, value);
+			const result = await saveAvatarConfig(authUser.user_id, value);
+
+			if (result.success && result.data?.avatar_config) {
+				setAvatarConfig((currentConfig) => ({
+					...currentConfig,
+					...result.data.avatar_config,
+				}));
+			}
+
+			if (result.success && result.data?.game_profile) {
+				setGameProfile((currentProfile) => ({
+					...currentProfile,
+					...result.data.game_profile,
+				}));
+			}
+
+			if (result.data?.was_purchased_now) {
+				showToast(
+					"Item comprado",
+					`${result.data.item_key} fue comprado y aplicado correctamente.`,
+					"success"
+				);
+
+				return;
+			}
+
+			if (result.data?.was_unlocked_now && result.data?.price_coins === 0) {
+				showToast(
+					"Item desbloqueado",
+					"El item gratis fue aplicado correctamente.",
+					"success"
+				);
+
+				return;
+			}
 		} catch (error) {
 			console.error("Could not save avatar config:", error);
 
@@ -825,9 +859,13 @@ function App() {
 				[part]: previousValue,
 			}));
 
+			const isNotEnoughCoins = error.message === "Not enough coins";
+
 			showToast(
-				"No se pudo guardar",
-				"El cambio del avatar no se pudo guardar.",
+				isNotEnoughCoins ? "Coins insuficientes" : "No se pudo guardar",
+				isNotEnoughCoins
+					? "No tienes coins suficientes para comprar este item."
+					: "El cambio del avatar no se pudo guardar.",
 				"error"
 			);
 		}

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import PlayerAvatar from "./PlayerAvatar";
 
 export default function AvatarCustomizationView({
@@ -10,16 +11,38 @@ export default function AvatarCustomizationView({
 	handleChangeAvatarPart,
 	onClose,
 }) {
+    const [previewItem, setPreviewItem] = useState(null);
+
     function getAvatarConfigKey(category) {
         const map = {
             caps: "cap",
             shirts: "shirt",
             legs: "legs",
             feets: "feets",
-            shoes: "feets",
+            // shoes: "feets",
+            bags: "bag",
         };
 
         return map[category];
+    }
+
+    function isItemEquipped(item) {
+        const configKey = getAvatarConfigKey(avatarCategory);
+
+        if (!configKey) return false;
+
+        return avatarConfig[configKey] === item.item_key;
+    }
+
+    function handleApplyPreviewItem() {
+        if (!previewItem) return;
+
+        const configKey = getAvatarConfigKey(avatarCategory);
+
+        if (!configKey) return;
+
+        handleChangeAvatarPart(configKey, previewItem.item_key);
+        setPreviewItem(null);
     }
 
 	return (
@@ -107,16 +130,9 @@ export default function AvatarCustomizationView({
                                     type="button"
                                     key={item.item_key}
                                     className={`avatar-shop-item avatar-shop-item-${avatarCategory} ${
-                                        avatarConfig[getAvatarConfigKey(avatarCategory)] === item.item_key
-                                            ? "active"
-                                            : ""
+                                        isItemEquipped(item) ? "active" : ""
                                     }`}
-                                    onClick={() =>
-                                        handleChangeAvatarPart(
-                                            getAvatarConfigKey(avatarCategory),
-                                            item.item_key
-                                        )
-                                    }
+                                    onClick={() => setPreviewItem(item)}
                                 >
                                     <div className={`avatar-shop-thumb avatar-shop-thumb-${avatarCategory}`}>
                                         <img
@@ -136,6 +152,79 @@ export default function AvatarCustomizationView({
                     </div>
                 </div>
             </div>
+
+            {previewItem && (
+                <div className="avatar-item-preview-backdrop">
+                    <div className={`avatar-item-preview-card avatar-item-preview-${avatarCategory}`}>
+                        <button
+                            type="button"
+                            className="avatar-item-preview-close"
+                            onClick={() => setPreviewItem(null)}
+                            aria-label="Cerrar vista previa"
+                        >
+                            ×
+                        </button>
+
+                        <div className="avatar-item-preview-visual">
+                            <img
+                                src={previewItem.image_url || previewItem.thumbnail_url}
+                                alt={previewItem.name}
+                            />
+                        </div>
+
+                        <span className="avatar-item-preview-category">
+                            {avatarCategory === "caps" && "Gorra"}
+                            {avatarCategory === "shirts" && "Camisa"}
+                            {avatarCategory === "legs" && "Pantalón"}
+                            {avatarCategory === "feets" && "Zapatos"}
+                            {avatarCategory === "bags" && "Mochila"}
+                        </span>
+
+                        <h3>{previewItem.name}</h3>
+
+                        <p>
+                            {previewItem.description ||
+                                "Prueba este objeto en tu avatar antes de aplicarlo."}
+                        </p>
+
+                        <div className="avatar-item-preview-details">
+                            <div>
+                                <span>Precio</span>
+                                <strong>
+                                    {previewItem.price_coins > 0
+                                        ? `🪙 ${previewItem.price_coins}`
+                                        : "Gratis"}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Estado</span>
+                                <strong>
+                                    {isItemEquipped(previewItem) ? "Equipado" : "Disponible"}
+                                </strong>
+                            </div>
+                        </div>
+
+                        <div className="avatar-item-preview-actions">
+                            <button
+                                type="button"
+                                className="avatar-item-preview-secondary"
+                                onClick={() => setPreviewItem(null)}
+                            >
+                                Cancelar
+                            </button>
+
+                            <button
+                                type="button"
+                                className="avatar-item-preview-primary"
+                                onClick={handleApplyPreviewItem}
+                            >
+                                {isItemEquipped(previewItem) ? "Ya equipado" : "Aplicar"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
 	);
 }

@@ -67,13 +67,13 @@ function PlayerAvatar({
 				/>
 			)}
 
-			{/* {avatarImages?.feets && (
+			{avatarImages?.feets && (
 				<img
 					src={avatarImages.feets}
 					alt="Feets"
 					className="avatar-layer avatar-feets"
 				/>
-			)} */}
+			)}
 		</div>
 	);
 }
