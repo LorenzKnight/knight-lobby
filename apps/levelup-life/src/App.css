@@ -2050,6 +2050,39 @@ button {
 		box-shadow: inset 0 0 0 1px rgba(35, 70, 75, 0.03);
 	}
 
+	.avatar-shop-status-badge {
+		position: absolute;
+		top: 7px;
+		right: 7px;
+
+		width: 24px;
+		height: 24px;
+
+		display: grid;
+		place-items: center;
+
+		border-radius: 999px;
+
+		font-size: 13px;
+		font-weight: 950;
+		line-height: 1;
+
+		box-shadow:
+			0 8px 16px rgba(28, 45, 48, 0.16),
+			inset 0 1px 0 rgba(255, 255, 255, 0.45);
+	}
+
+	.avatar-shop-status-badge.owned {
+		color: #ffffff;
+		background: linear-gradient(135deg, #14909a, #35bdf5);
+	}
+
+	.avatar-shop-status-badge.locked {
+		color: #ffffff;
+		background: rgba(49, 87, 90, 0.72);
+		font-size: 12px;
+	}
+
 	.avatar-shop-thumb img {
 		width: 80%;
 		height: 80%;
@@ -2108,6 +2141,21 @@ button {
 		color: #45696b;
 		font-size: 12px;
 		font-weight: 850;
+	}
+
+	/* Comprado/desbloqueado: precio muy apagado */
+	.avatar-shop-item small.unlocked-price {
+		color: rgba(74, 107, 108, 0.297);
+	}
+
+	/* No tiene coins: precio ligeramente apagado */
+	.avatar-shop-item small.not-affordable-price {
+		color: rgba(74, 107, 108, 0.642);
+	}
+
+	/* Bloqueado: precio visible normal, el candado hace la diferencia */
+	.avatar-shop-item small.locked-price {
+		color: #45696b;
 	}
 
 	.avatar-shop-item.active .avatar-shop-thumb {

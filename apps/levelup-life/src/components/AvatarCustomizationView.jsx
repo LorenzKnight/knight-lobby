@@ -47,6 +47,22 @@ export default function AvatarCustomizationView({
         return playerCoins >= priceCoins;
     }
 
+	function getItemPriceClass(item) {
+		if (item.is_locked) {
+			return "locked-price";
+		}
+
+		if (isItemUnlocked(item)) {
+			return "unlocked-price";
+		}
+
+		if (!canAffordItem(item)) {
+			return "not-affordable-price";
+		}
+
+		return "";
+	}
+
     function getPreviewPrimaryButtonLabel(item) {
         if (!item) return "Aplicar";
 
@@ -172,26 +188,36 @@ export default function AvatarCustomizationView({
                         <div className="avatar-shop-grid">
                             {avatarItems[avatarCategory]?.map((item) => (
                                 <button
-                                    type="button"
-                                    key={item.item_key}
-                                    className={`avatar-shop-item avatar-shop-item-${avatarCategory} ${
-                                        isItemEquipped(item) ? "active" : ""
-                                    }`}
-                                    onClick={() => setPreviewItem(item)}
-                                >
-                                    <div className={`avatar-shop-thumb avatar-shop-thumb-${avatarCategory}`}>
-                                        <img
-                                            src={item.thumbnail_url || item.image_url}
-                                            alt={item.name}
-                                        />
-                                    </div>
+									type="button"
+									key={item.item_key}
+									className={`avatar-shop-item avatar-shop-item-${avatarCategory} ${
+										isItemEquipped(item) ? "active" : ""
+									}`}
+									onClick={() => setPreviewItem(item)}
+								>
+									<div className={`avatar-shop-thumb avatar-shop-thumb-${avatarCategory}`}>
+										<img
+											src={item.thumbnail_url || item.image_url}
+											alt={item.name}
+										/>
 
-                                    <span>{item.name}</span>
+										{(isItemEquipped(item) || isItemUnlocked(item)) && (
+											<span className="avatar-shop-status-badge owned">✓</span>
+										)}
 
-                                    {item.price_coins > 0 && (
-                                        <small>🪙 {item.price_coins}</small>
-                                    )}
-                                </button>
+										{item.is_locked && (
+											<span className="avatar-shop-status-badge locked">🔒</span>
+										)}
+									</div>
+
+									<span>{item.name}</span>
+
+									{item.price_coins > 0 && (
+										<small className={getItemPriceClass(item)}>
+											🪙 {item.price_coins}
+										</small>
+									)}
+								</button>
                             ))}
                         </div>
                     </div>
