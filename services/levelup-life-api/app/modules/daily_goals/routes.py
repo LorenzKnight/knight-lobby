@@ -1865,6 +1865,87 @@ def check_daily_goal_reminders(payload: CheckDailyGoalRemindersRequest):
         "count": len(notifications),
     }
 
+def is_daily_goal_completed_for_date(user_id: int, goal, target_date):
+    log_result = select_from(
+        table_name="daily_goal_completion_logs",
+        columns=[
+            "daily_goal_completion_log_id",
+            "daily_goal_id",
+            "user_id",
+            "completed_date",
+            "progress_value",
+            "is_completed",
+        ],
+        where_clause={
+            "user_id": user_id,
+            "daily_goal_id": goal["daily_goal_id"],
+            "completed_date": target_date,
+        },
+        options={
+            "fetch_first": True,
+        },
+    )
+
+    if not log_result["success"] or not log_result["data"]:
+        return False
+
+    log = log_result["data"]
+
+    if log.get("is_completed"):
+        return True
+
+    progress_value = float(log.get("progress_value") or 0)
+    target_value = float(goal.get("target_value") or 1)
+
+    return progress_value >= target_value
+
+def consume_anti_drop_protection(user_id: int):
+    protection_result = select_from(
+        table_name="user_active_protections",
+        columns=[
+            "user_active_protection_id",
+            "user_id",
+            "item_key",
+            "item_name",
+            "protection_type",
+            "is_active",
+            "is_used",
+        ],
+        where_clause={
+            "user_id": user_id,
+            "protection_type": "avoid_level_drop",
+            "is_active": True,
+            "is_used": False,
+        },
+        options={
+            "fetch_first": True,
+        },
+    )
+
+    if not protection_result["success"] or not protection_result["data"]:
+        return None
+
+    protection = protection_result["data"]
+
+    update_result = update_table(
+        table_name="user_active_protections",
+        query_data={
+            "is_active": False,
+            "is_used": True,
+            "used_at": datetime.now(timezone.utc),
+        },
+        where_clause={
+            "user_active_protection_id": protection["user_active_protection_id"],
+            "user_id": user_id,
+        },
+    )
+
+    if not update_result["success"]:
+        return None
+
+    return protection
+
+
 # Close the previous day and apply penalties for missed tasks and goals.
 @router.post("/day/close")
 def close_previous_daily_goals_day(payload: ClosePreviousDayRequest):
@@ -1909,6 +1990,8 @@ def close_previous_daily_goals_day(payload: ClosePreviousDayRequest):
             "user_id",
             "title",
             "is_active",
+            "progress_type",
+            "target_value",
             "created_at",
         ],
         where_clause={
@@ -1937,62 +2020,23 @@ def close_previous_daily_goals_day(payload: ClosePreviousDayRequest):
         if not goal_existed_on_penalty_date:
             continue
 
-        tasks_result = select_from(
-            table_name="daily_goal_tasks",
-            columns=[
-                "daily_goal_task_id",
-                "daily_goal_id",
-                "title",
-                "progress_type",
-                "target_value",
-                "created_at",
-            ],
-            where_clause={
-                "daily_goal_id": goal["daily_goal_id"],
-            },
-            options={
-                "order_by": "sort_order",
-                "order_direction": "ASC",
-            },
+        checked_goals += 1
+        checked_tasks += 1
+
+        goal_completed = is_daily_goal_completed_for_date(
+            user_id=payload.user_id,
+            goal=goal,
+            target_date=penalty_date,
         )
 
-        tasks = get_data_or_empty(tasks_result)
-
-        goal_has_missed_tasks = False
-        goal_had_tasks_that_day = False
-
-        for task in tasks:
-            task_existed_on_penalty_date = was_created_on_or_before_date(
-                task["created_at"],
-                penalty_date,
-            )
-
-            if not task_existed_on_penalty_date:
-                continue
-
-            goal_had_tasks_that_day = True
-            checked_tasks += 1
-
-            task_completed = is_task_completed_for_date(
-                user_id=payload.user_id,
-                task=task,
-                target_date=penalty_date,
-            )
-
-            if not task_completed:
-                missed_tasks += 1
-                goal_has_missed_tasks = True
-
-        if goal_had_tasks_that_day:
-            checked_goals += 1
-
-        if goal_has_missed_tasks:
+        if not goal_completed:
+            missed_tasks += 1
             missed_goals += 1
 
     if checked_tasks == 0:
         return {
             "success": True,
-            "message": "There were no daily tasks to close for previous day.",
+            "message": "There were no daily goals to close for previous day.",
             "data": {
                 "penalty_date": penalty_date,
                 "penalty_applied": False,
@@ -2070,16 +2114,30 @@ def close_previous_daily_goals_day(payload: ClosePreviousDayRequest):
 
     level_lost = 0
     life_lost = 1
+    level_drop_blocked = False
+    protection_used = None
 
     if current_life > 1:
         new_life = current_life - 1
         new_level = current_level
+
     else:
         new_life = max_life
-        new_level = max(1, current_level - 1)
+        new_level = current_level
 
         if current_level > 1:
-            level_lost = 1
+            anti_drop_protection = consume_anti_drop_protection(payload.user_id)
+
+            if anti_drop_protection:
+                level_drop_blocked = True
+                protection_used = {
+                    "item_key": anti_drop_protection["item_key"],
+                    "item_name": anti_drop_protection["item_name"],
+                    "protection_type": anti_drop_protection["protection_type"],
+                }
+            else:
+                new_level = max(1, current_level - 1)
+                level_lost = 1
 
     update_profile_result = update_table(
         table_name="user_game_profiles",
@@ -2117,7 +2175,9 @@ def close_previous_daily_goals_day(payload: ClosePreviousDayRequest):
             detail=insert_penalty_result["message"],
         )
 
-    if level_lost:
+    if level_drop_blocked:
+        message = "Anti-Drop Charm evitó que perdieras un nivel. Recuperaste tus corazones."
+    elif level_lost:
         message = "No completaste tus tareas diarias. Perdiste un nivel y recuperaste tus corazones."
     else:
         message = "No completaste tus tareas diarias. Perdiste un corazón."
@@ -2135,6 +2195,8 @@ def close_previous_daily_goals_day(payload: ClosePreviousDayRequest):
             "missed_goals": missed_goals,
             "life_lost": life_lost,
             "level_lost": level_lost,
+            "level_drop_blocked": level_drop_blocked,
+            "protection_used": protection_used,
             "message": message,
             "game_profile": {
                 "user_id": payload.user_id,
