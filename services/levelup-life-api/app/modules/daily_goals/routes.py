@@ -801,7 +801,7 @@ def get_daily_goals(user_id: int):
 # Completes one task and rewards the user when all daily goals are completed.
 @router.post("/tasks/complete") # LEGACY 
 def complete_daily_goal_task(payload: CompleteDailyGoalTaskRequest):
-    today = date.today()
+    today = get_today()
 
     # Validate the daily goal.
     goal_result = select_from(
@@ -1646,92 +1646,58 @@ def progress_daily_goal(payload: ProgressDailyGoalRequest):
 # Este helper busca las tareas de un daily goal y revisa los logs
 # del día actual. Devuelve la primera tarea que todavía no está
 # completada, incluyendo su progreso actual si es numérica.
-def get_first_pending_task_for_daily_goal(
-    user_id: int,
-    daily_goal_id: int,
-    today,
-):
-    tasks_result = select_from(
-        table_name="daily_goal_tasks",
+def get_pending_daily_goal_for_reminder(user_id: int, goal: dict, today):
+    log_result = select_from(
+        table_name="daily_goal_completion_logs",
         columns=[
-            "daily_goal_task_id",
-            "daily_goal_id",
-            "title",
-            "description",
-            "progress_type",
-            "target_value",
-            "step_value",
-            "unit",
-            "sort_order",
+            "daily_goal_completion_log_id",
+            "progress_value",
+            "is_completed",
         ],
         where_clause={
-            "daily_goal_id": daily_goal_id,
+            "user_id": user_id,
+            "daily_goal_id": goal["daily_goal_id"],
+            "completed_date": today,
         },
         options={
-            "order_by": "sort_order",
-            "order_direction": "ASC",
+            "fetch_first": True,
         },
     )
 
-    if not tasks_result["success"]:
+    progress_type = goal["progress_type"] or "checkbox"
+    target_value = float(goal["target_value"] or 1)
+    unit = goal["unit"] or "task"
+
+    progress_value = 0
+    is_completed = False
+
+    if log_result["success"] and log_result["data"]:
+        log = log_result["data"]
+        progress_value = float(log["progress_value"] or 0)
+        is_completed = bool(log["is_completed"])
+
+    if progress_type == "checkbox":
+        if is_completed:
+            return None
+
+        return {
+            **goal,
+            "progress_value": 0,
+            "target_value": 1,
+            "unit": "task",
+            "progress_text": "",
+        }
+
+    if progress_value >= target_value or is_completed:
         return None
 
-    for task in tasks_result["data"]:
-        log_result = select_from(
-            table_name="daily_goal_task_logs",
-            columns=[
-                "daily_goal_task_log_id",
-                "progress_value",
-                "is_completed",
-            ],
-            where_clause={
-                "user_id": user_id,
-                "daily_goal_task_id": task["daily_goal_task_id"],
-                "completed_date": today,
-            },
-        )
-
-        task_log = None
-
-        task_logs = get_data_or_empty(log_result)
-
-        if len(task_logs) > 0:
-            task_log = task_logs[0]
-
-        progress_value = 0
-
-        if task_log and task_log["progress_value"] is not None:
-            progress_value = float(task_log["progress_value"])
-
-        target_value = float(task["target_value"] or 1)
-        unit = task["unit"] or "task"
-        progress_type = task["progress_type"] or "checkbox"
-
-        if progress_type == "numeric":
-            is_completed = progress_value >= target_value
-
-            if not is_completed:
-                return {
-                    **task,
-                    "progress_value": progress_value,
-                    "target_value": target_value,
-                    "unit": unit,
-                    "task_progress_text": f"{progress_value:g}/{target_value:g} {unit}",
-                }
-
-        else:
-            is_completed = bool(task_log and task_log["is_completed"])
-
-            if not is_completed:
-                return {
-                    **task,
-                    "progress_value": progress_value,
-                    "target_value": target_value,
-                    "unit": unit,
-                    "task_progress_text": "",
-                }
-
-    return None
+    return {
+        **goal,
+        "progress_value": progress_value,
+        "target_value": target_value,
+        "unit": unit,
+        "progress_text": f"{progress_value:g}/{target_value:g} {unit}",
+    }
 
 # Den upptäcker pågående vanor och meddelar dig.
 @router.post("/reminders/check")
@@ -1748,6 +1714,10 @@ def check_daily_goal_reminders(payload: CheckDailyGoalRemindersRequest):
             "user_id",
             "title",
             "description",
+            "progress_type",
+            "target_value",
+            "step_value",
+            "unit",
             "reminder_enabled",
             "reminder_interval_minutes",
             "reminder_start_time",
@@ -1790,13 +1760,13 @@ def check_daily_goal_reminders(payload: CheckDailyGoalRemindersRequest):
         if not is_inside_window:
             continue
 
-        pending_task = get_first_pending_task_for_daily_goal(
+        pending_goal = get_pending_daily_goal_for_reminder(
             user_id=payload.user_id,
-            daily_goal_id=goal["daily_goal_id"],
+            goal=goal,
             today=today,
         )
 
-        if not pending_task:
+        if not pending_goal:
             continue
 
         last_reminder_at = goal["last_reminder_at"]
@@ -1814,30 +1784,33 @@ def check_daily_goal_reminders(payload: CheckDailyGoalRemindersRequest):
             if minutes_since_last_reminder < reminder_interval_minutes:
                 continue
 
-        task_title = pending_task["title"]
-        task_description = pending_task["description"]
-        goal_description = goal["description"]
-        task_progress_type = pending_task["progress_type"]
+        goal_title = pending_goal["title"]
+        goal_description = pending_goal["description"]
+        goal_progress_type = pending_goal["progress_type"]
 
-        base_message = task_description or goal_description or task_title
+        base_message = goal_description or goal_title
 
-        if task_progress_type == "numeric":
+        if goal_progress_type == "numeric":
             reminder_message = (
                 f"{base_message} "
-                f"Progreso actual: {pending_task['task_progress_text']}."
+                f"Progreso actual: {pending_goal['progress_text']}."
             ).strip()
         else:
             reminder_message = base_message
 
         notification = {
             "daily_goal_id": goal["daily_goal_id"],
-            "daily_goal_task_id": pending_task["daily_goal_task_id"],
+            "daily_goal_task_id": None,
             "title": "Tu avatar te necesita",
             "message": reminder_message,
             "type": "reminder",
             "icon": "🥺",
-            "daily_goal_title": goal["title"],
-            "task_title": task_title,
+            "daily_goal_title": goal_title,
+            "task_title": None,
+            "progress_type": goal_progress_type,
+            "progress_value": pending_goal["progress_value"],
+            "target_value": pending_goal["target_value"],
+            "unit": pending_goal["unit"],
         }
             
         notifications.append(notification)
