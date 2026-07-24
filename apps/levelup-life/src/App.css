@@ -15857,6 +15857,27 @@ button {
 		gap: 10px;
 		padding: 5px 22px;
 		overflow-x: auto;
+		scroll-behavior: smooth;
+		scrollbar-width: thin;
+		scrollbar-color: rgba(166, 136, 205, 0.45) transparent;
+	}
+
+	.avatar-shop-filters ::-webkit-scrollbar {
+		width: 5px;
+	}
+
+	.avatar-shop-filters ::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.avatar-shop-filters ::-webkit-scrollbar-thumb {
+		border-radius: 999px;
+		background: rgba(122, 88, 180, 0.28);
+	}
+
+	.avatar-shop-filters ::-webkit-scrollbar-thumb:hover {
+		background-color: #7858a2;
+		transition: all 1.0s ease;
 	}
 
 	.avatar-shop-filters button {
