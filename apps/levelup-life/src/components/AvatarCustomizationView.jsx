@@ -34,11 +34,17 @@ export default function AvatarCustomizationView({
         return avatarConfig[configKey] === item.item_key;
     }
 
-    function isItemUnlocked(item) {
-        const priceCoins = Number(item.price_coins || 0);
+	function isItemLocked(item) {
+		return Boolean(item?.is_locked);
+	}
 
-        return priceCoins === 0 || item.is_unlocked;
-    }
+    function isItemUnlocked(item) {
+		if (isItemLocked(item)) return false;
+
+		const priceCoins = Number(item.price_coins || 0);
+
+		return priceCoins === 0 || item.is_unlocked;
+	}
 
     function canAffordItem(item) {
         const priceCoins = Number(item.price_coins || 0);
@@ -64,36 +70,44 @@ export default function AvatarCustomizationView({
 	}
 
     function getPreviewPrimaryButtonLabel(item) {
-        if (!item) return "Aplicar";
+		if (!item) return "Aplicar";
 
-        if (isItemEquipped(item)) {
-            return "Ya equipado";
-        }
+		if (isItemLocked(item)) {
+			return "Bloqueado";
+		}
 
-        if (isItemUnlocked(item)) {
-            return "Aplicar";
-        }
+		if (isItemEquipped(item)) {
+			return "Ya equipado";
+		}
 
-        if (!canAffordItem(item)) {
-            return "Coins insuficientes";
-        }
+		if (isItemUnlocked(item)) {
+			return "Aplicar";
+		}
 
-        return "Comprar y aplicar";
-    }
+		if (!canAffordItem(item)) {
+			return "Coins insuficientes";
+		}
+
+		return "Comprar y aplicar";
+	}
 
     function isPreviewPrimaryButtonDisabled(item) {
-        if (!item) return true;
+		if (!item) return true;
 
-        if (isItemEquipped(item)) {
-            return true;
-        }
+		if (isItemLocked(item)) {
+			return true;
+		}
 
-        if (!isItemUnlocked(item) && !canAffordItem(item)) {
-            return true;
-        }
+		if (isItemEquipped(item)) {
+			return true;
+		}
 
-        return false;
-    }
+		if (!isItemUnlocked(item) && !canAffordItem(item)) {
+			return true;
+		}
+
+		return false;
+	}
 
     function handleApplyPreviewItem() {
         if (!previewItem) return;
@@ -236,12 +250,22 @@ export default function AvatarCustomizationView({
                             ×
                         </button>
 
-                        <div className="avatar-item-preview-visual">
-                            <img
-                                src={previewItem.image_url || previewItem.thumbnail_url}
-                                alt={previewItem.name}
-                            />
-                        </div>
+                        <div
+							className={`avatar-item-preview-visual ${
+								isItemLocked(previewItem) ? "locked" : ""
+							}`}
+						>
+							<img
+								src={previewItem.image_url || previewItem.thumbnail_url}
+								alt={previewItem.name}
+							/>
+
+							{isItemLocked(previewItem) && (
+								<div className="avatar-item-preview-lock">
+									<span>🔒</span>
+								</div>
+							)}
+						</div>
 
                         <span className="avatar-item-preview-category">
                             {avatarCategory === "caps" && "Gorra"}
@@ -254,9 +278,11 @@ export default function AvatarCustomizationView({
                         <h3>{previewItem.name}</h3>
 
                         <p>
-                            {previewItem.description ||
-                                "Prueba este objeto en tu avatar antes de aplicarlo."}
-                        </p>
+							{isItemLocked(previewItem)
+								? previewItem.description || "Este item todavía no está disponible."
+								: previewItem.description ||
+									"Prueba este objeto en tu avatar antes de aplicarlo."}
+						</p>
 
                         <div className="avatar-item-preview-details">
                             <div>
@@ -271,13 +297,15 @@ export default function AvatarCustomizationView({
                             <div>
                                 <span>Estado</span>
                                 <strong>
-									{isItemEquipped(previewItem)
-										? "Equipado"
-										: isItemUnlocked(previewItem)
-											? "Disponible"
-											: canAffordItem(previewItem)
-												? "No comprado"
-												: "Sin coins"}
+									{isItemLocked(previewItem)
+										? "Bloqueado"
+										: isItemEquipped(previewItem)
+											? "Equipado"
+											: isItemUnlocked(previewItem)
+												? "Disponible"
+												: canAffordItem(previewItem)
+													? "No comprado"
+													: "Sin coins"}
 								</strong>
                             </div>
                         </div>
@@ -288,7 +316,7 @@ export default function AvatarCustomizationView({
                                 className="avatar-item-preview-secondary"
                                 onClick={() => setPreviewItem(null)}
                             >
-                                Cancelar
+                                {isItemLocked(previewItem) ? "Cerrar" : "Cancelar"}
                             </button>
 
                             <button
