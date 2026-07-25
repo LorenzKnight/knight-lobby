@@ -1547,8 +1547,6 @@ function App() {
 		},
 	];
 
-	const isAreasActive = currentView === "life-area-detail";
-
 	const selectedDailyGoal = dailyGoals.find(
 		(goal) => goal.daily_goal_id === selectedDailyGoalId
 	);
@@ -1997,12 +1995,12 @@ function App() {
 
 								<div className="life-areas-card-list">
 									{lifeAreasLoading && (
-										<p className="areas-floating-message">Cargando áreas...</p>
+										<p className="life-area-card-message">Areas Loading...</p>
 									)}
 
 									{!lifeAreasLoading && lifeAreas.length === 0 && (
-										<p className="areas-floating-message">
-											Todavía no tienes áreas creadas.
+										<p className="life-area-card-message">
+											You don't have any areas created yet.
 										</p>
 									)}
 
@@ -2010,12 +2008,15 @@ function App() {
 										lifeAreas.map((area) => (
 											<button
 												type="button"
-												className="areas-floating-item life-area-card-item"
+												className="life-area-card-item"
+												style={{
+													"--life-area-color": area.color || "#7a58b4",
+												}}
 												key={area.life_area_id}
 												onClick={() => handleSelectArea(area)}
 											>
-												<span className="areas-floating-icon">{area.icon}</span>
-												<span>{area.name}</span>
+												<span className="life-area-card-icon">{area.icon}</span>
+												<span className="life-area-card-name">{area.name}</span>
 												<ChevronRight size={20} strokeWidth={1.8} />
 											</button>
 										))
@@ -2555,9 +2556,11 @@ function App() {
 
 				<button
 					type="button"
+					className={showInventoryView ? "active" : ""}
+					onClick={handleOpenInventoryView}
 				>
-					<BarChart3 size={24} strokeWidth={1.8} />
-					<span>Áreas</span>
+					<Backpack size={24} strokeWidth={1.8} />
+					<span>Inventario</span>
 				</button>
 
 				<button

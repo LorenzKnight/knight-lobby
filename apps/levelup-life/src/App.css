@@ -3561,15 +3561,19 @@ button {
 		width: 100%;
 		min-height: 48px;
 		padding: 10px 12px;
-		border: 1px solid rgba(225, 218, 208, 0.9);
+		border: 1px solid color-mix(
+			in srgb,
+			var(--life-area-color, #7a58b4) 24%,
+			rgba(225, 218, 208, 0.9)
+		);
 		border-radius: 15px;
 		display: grid;
-		grid-template-columns: 20px 1fr 20px;
+		grid-template-columns: 32px 1fr 20px;
 		align-items: center;
 		gap: 10px;
 		background: linear-gradient(
 			135deg,
-			rgba(124, 86, 170, 0.07),
+			color-mix(in srgb, var(--life-area-color, #7a58b4) 15%, #ffffff),
 			rgba(255, 255, 255, 0.94)
 		);
 		color: var(--text);
@@ -3588,10 +3592,14 @@ button {
 		transform: translateY(-1px);
 		background: linear-gradient(
 			135deg,
-			rgba(124, 86, 170, 0.11),
+			color-mix(in srgb, var(--life-area-color, #7a58b4) 26%, #ffffff),
 			rgba(255, 255, 255, 0.98)
 		);
-		box-shadow: 0 10px 20px rgba(65, 45, 95, 0.08);
+		box-shadow: 0 10px 20px color-mix(
+			in srgb,
+			var(--life-area-color, #7a58b4) 18%,
+			transparent
+		);
 	}
 
 	.life-area-card-icon {
@@ -9582,15 +9590,19 @@ button {
 		width: 100%;
 		min-height: 48px;
 		padding: 10px 12px;
-		border: 1px solid rgba(225, 218, 208, 0.9);
+		border: 1px solid color-mix(
+			in srgb,
+			var(--life-area-color, #7a58b4) 24%,
+			rgba(225, 218, 208, 0.9)
+		);
 		border-radius: 15px;
 		display: grid;
-		grid-template-columns: 20px 1fr 20px;
+		grid-template-columns: 32px 1fr 20px;
 		align-items: center;
 		gap: 10px;
 		background: linear-gradient(
 			135deg,
-			rgba(124, 86, 170, 0.07),
+			color-mix(in srgb, var(--life-area-color, #7a58b4) 15%, #ffffff),
 			rgba(255, 255, 255, 0.94)
 		);
 		color: var(--text);
@@ -9609,10 +9621,14 @@ button {
 		transform: translateY(-1px);
 		background: linear-gradient(
 			135deg,
-			rgba(124, 86, 170, 0.11),
+			color-mix(in srgb, var(--life-area-color, #7a58b4) 26%, #ffffff),
 			rgba(255, 255, 255, 0.98)
 		);
-		box-shadow: 0 10px 20px rgba(65, 45, 95, 0.08);
+		box-shadow: 0 10px 20px color-mix(
+			in srgb,
+			var(--life-area-color, #7a58b4) 18%,
+			transparent
+		);
 	}
 
 	.life-area-card-icon {
@@ -14277,15 +14293,19 @@ button {
 		width: 100%;
 		min-height: 48px;
 		padding: 10px 12px;
-		border: 1px solid rgba(225, 218, 208, 0.9);
+		border: 1px solid color-mix(
+			in srgb,
+			var(--life-area-color, #7a58b4) 24%,
+			rgba(225, 218, 208, 0.9)
+		);
 		border-radius: 15px;
 		display: grid;
-		grid-template-columns: 20px 1fr 20px;
+		grid-template-columns: 32px 1fr 20px;
 		align-items: center;
 		gap: 10px;
 		background: linear-gradient(
 			135deg,
-			rgba(124, 86, 170, 0.07),
+			color-mix(in srgb, var(--life-area-color, #7a58b4) 15%, #ffffff),
 			rgba(255, 255, 255, 0.94)
 		);
 		color: var(--text);
@@ -14304,10 +14324,14 @@ button {
 		transform: translateY(-1px);
 		background: linear-gradient(
 			135deg,
-			rgba(124, 86, 170, 0.11),
+			color-mix(in srgb, var(--life-area-color, #7a58b4) 26%, #ffffff),
 			rgba(255, 255, 255, 0.98)
 		);
-		box-shadow: 0 10px 20px rgba(65, 45, 95, 0.08);
+		box-shadow: 0 10px 20px color-mix(
+			in srgb,
+			var(--life-area-color, #7a58b4) 18%,
+			transparent
+		);
 	}
 
 	.life-area-card-icon {
