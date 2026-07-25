@@ -1259,7 +1259,7 @@ def create_daily_goal(payload: CreateDailyGoalRequest):
 # Add partial progress
 @router.post("/tasks/progress") # LEGACY
 def progress_daily_goal_task(payload: ProgressDailyGoalTaskRequest):
-    today = date.today()
+    today = get_today()
 
     if payload.progress_amount <= 0:
         raise HTTPException(
@@ -1420,7 +1420,7 @@ def progress_daily_goal_task(payload: ProgressDailyGoalTaskRequest):
 
 @router.post("/progress")
 def progress_daily_goal(payload: ProgressDailyGoalRequest):
-    today = date.today()
+    today = get_today()
 
     goal_result = select_from(
         table_name="daily_goals",
@@ -2081,9 +2081,11 @@ def close_previous_daily_goals_day(payload: ClosePreviousDayRequest):
 
     profile = profiles[0]
 
-    current_level = int(profile["level"] or 1)
+    current_level = max(1, int(profile["level"] or 1))
+    max_life = max(1, int(profile["max_life"] or 5))
+
     current_life = int(profile["current_life"] or 0)
-    max_life = int(profile["max_life"] or 5)
+    current_life = min(max(current_life, 0), max_life)
 
     level_lost = 0
     life_lost = 1

@@ -3443,28 +3443,6 @@ button {
 	/* ================================
 		Section title
 	================================ */
-	.section-title-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0 8px 18px;
-	}
-
-	.section-title-row h2 {
-		margin: 0;
-		font-size: 23px;
-		font-weight: 950;
-		letter-spacing: -0.035em;
-		color: var(--text);
-	}
-
-	.section-title-row h2::before {
-		content: "✦";
-		color: var(--purple);
-		margin-right: 10px;
-	}
-
-	.section-title-row button,
 	.text-link {
 		border: 0;
 		background: transparent;
@@ -3473,74 +3451,6 @@ button {
 		display: inline-flex;
 		align-items: center;
 		gap: 4px;
-	}
-
-	.life-areas-grid {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 14px 16px;
-	}
-
-	.life-area-item {
-		min-height: 94px;
-		border: 1px solid var(--border);
-		border-radius: 16px;
-		background:
-			linear-gradient(135deg, rgba(124, 86, 170, 0.07), rgba(255, 255, 255, 0.92));
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
-		display: grid;
-		grid-template-columns: 104px 1fr 34px;
-		align-items: center;
-		text-align: left;
-		padding: 14px 18px;
-		color: var(--text);
-		transition:
-			transform 160ms ease,
-			box-shadow 160ms ease,
-			border-color 160ms ease;
-	}
-
-	.life-area-item:nth-child(2) {
-		background: linear-gradient(135deg, rgba(224, 180, 85, 0.1), rgba(255, 255, 255, 0.92));
-	}
-
-	.life-area-item:nth-child(3) {
-		background: linear-gradient(135deg, rgba(96, 155, 103, 0.1), rgba(255, 255, 255, 0.92));
-	}
-
-	.life-area-item:nth-child(4) {
-		background: linear-gradient(135deg, rgba(231, 151, 100, 0.12), rgba(255, 255, 255, 0.92));
-	}
-
-	.life-area-item:nth-child(5) {
-		background: linear-gradient(135deg, rgba(82, 127, 176, 0.1), rgba(255, 255, 255, 0.92));
-	}
-
-	.life-area-item:nth-child(6) {
-		background: linear-gradient(135deg, rgba(119, 156, 83, 0.1), rgba(255, 255, 255, 0.92));
-	}
-
-	.life-area-item:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 16px 30px rgba(66, 56, 80, 0.09);
-		border-color: rgba(115, 83, 170, 0.22);
-	}
-
-	.life-area-icon {
-		width: 72px;
-		height: 62px;
-		display: grid;
-		place-items: center;
-		font-size: 42px;
-		border-radius: 18px;
-		background: rgba(255, 255, 255, 0.45);
-		filter: drop-shadow(0 10px 10px rgba(72, 62, 94, 0.08));
-	}
-
-	.life-area-item strong {
-		font-size: 20px;
-		font-weight: 950;
-		letter-spacing: -0.02em;
 	}
 
 
@@ -3583,14 +3493,14 @@ button {
 
 
 
-	/* ================================
-		Priorities card
-	================================ */
-	.priorities-card {
+	/* =====================================
+		Life areas card / Priorities slot
+	===================================== */
+	.life-areas-card {
 		width: 100%;
 		max-width: 100%;
 		min-height: 238px;
-		padding: 20px 26px;
+		padding: 20px 10px;
 		background: rgba(255, 255, 255, 0.88);
 		border-radius: 22px;
 		border: 1px solid rgba(225, 218, 208, 0.9);
@@ -3598,19 +3508,19 @@ button {
 		overflow: hidden;
 	}
 
-	.priorities-card .card-title {
+	.life-areas-card .card-title {
 		display: flex;
 		align-items: center;
 		gap: 12px;
 		margin-bottom: 14px;
 	}
 
-	.priorities-card .card-title span {
+	.life-areas-card .card-title span {
 		font-size: 20px;
 		line-height: 1;
 	}
 
-	.priorities-card .card-title h2 {
+	.life-areas-card .card-title h2 {
 		margin: 0;
 		color: var(--purple);
 		font-size: 14px;
@@ -3619,60 +3529,103 @@ button {
 		letter-spacing: 0.01em;
 	}
 
-	
-
-	.priorities-card ol {
-		counter-reset: priority;
-		list-style: none;
-		padding-left: 0;
-		margin: 8px 0 18px;
-		color: #57535e;
-		font-weight: 750;
+	.life-areas-card-list {
+		display: grid;
+		gap: 10px;
+		width: 100%;
+		max-height: 178px;
+		overflow-y: auto;
+		padding-right: 4px;
+		scrollbar-width: thin;
+		scrollbar-color: rgba(122, 88, 180, 0.38) transparent;
 	}
 
-	.priorities-card li {
-		counter-increment: priority;
-		display: flex;
+	.life-areas-card-list::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	.life-areas-card-list::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.life-areas-card-list::-webkit-scrollbar-thumb {
+		background: rgba(122, 88, 180, 0.32);
+		border-radius: 999px;
+	}
+
+	.life-areas-card-list::-webkit-scrollbar-thumb:hover {
+		background: rgba(122, 88, 180, 0.52);
+	}
+
+	.life-area-card-item {
+		width: 100%;
+		min-height: 48px;
+		padding: 10px 12px;
+		border: 1px solid rgba(225, 218, 208, 0.9);
+		border-radius: 15px;
+		display: grid;
+		grid-template-columns: 20px 1fr 20px;
 		align-items: center;
 		gap: 10px;
-		line-height: 1.35;
-		font-size: 12px;
+		background: linear-gradient(
+			135deg,
+			rgba(124, 86, 170, 0.07),
+			rgba(255, 255, 255, 0.94)
+		);
+		color: var(--text);
+		font-size: 13px;
+		font-weight: 900;
+		cursor: pointer;
+		text-align: left;
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+		transition:
+			transform 0.18s ease,
+			background 0.18s ease,
+			box-shadow 0.18s ease;
 	}
 
-	.priorities-card li::before {
-		content: counter(priority);
-		width: 20px;
-		height: 20px;
-		border-radius: 6px;
-		margin-bottom: 4px;
+	.life-area-card-item:hover {
+		transform: translateY(-1px);
+		background: linear-gradient(
+			135deg,
+			rgba(124, 86, 170, 0.11),
+			rgba(255, 255, 255, 0.98)
+		);
+		box-shadow: 0 10px 20px rgba(65, 45, 95, 0.08);
+	}
+
+	.life-area-card-icon {
+		width: 32px;
+		height: 32px;
+		border-radius: 11px;
 		display: grid;
 		place-items: center;
-		background: rgba(224, 150, 73, 0.24);
-		color: #795a35;
-		font-size: 8px;
-		font-weight: 950;
+		background: rgba(255, 255, 255, 0.65);
+		font-size: 18px;
 	}
 
-	.priorities-card li:nth-child(3)::before {
-		background: rgba(94, 153, 101, 0.23);
+	.life-area-card-name {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
-	.priorities-card li:nth-child(4)::before {
-		background: rgba(80, 132, 181, 0.22);
+	.life-area-card-item svg {
+		color: rgba(122, 88, 180, 0.72);
 	}
 
-	.priorities-card li:nth-child(5)::before {
-		background: rgba(218, 180, 82, 0.28);
+	.life-area-card-message {
+		margin: 0;
+		padding: 14px;
+		border-radius: 16px;
+		background: rgba(255, 255, 255, 0.65);
+		color: var(--muted);
+		font-size: 13px;
+		font-weight: 800;
+		text-align: center;
 	}
 
-	.priorities-card .text-link {
-		width: 100%;
-		justify-content: center;
-		margin-top: 2px;
-		color: var(--purple);
-		font-size: 15px;
-		font-weight: 950;
-	}
 
 
 	/* ================================
@@ -3755,7 +3708,7 @@ button {
 
 	.assistant-actions button {
 		min-height: 42px;
-		padding: 8px 6px;
+		padding: 8px 5px;
 		border: 1px solid rgba(225, 218, 208, 0.95);
 		border-radius: 10px;
 		background: rgba(255, 255, 255, 0.72);
@@ -3765,7 +3718,7 @@ button {
 		display: flex;
 		align-items: center;
 		justify-content: flex-start;
-		gap: 11px;
+		gap: 4px;
 		box-shadow:
 			inset 0 1px 0 rgba(255, 255, 255, 0.95),
 			0 6px 14px rgba(58, 50, 72, 0.035);
@@ -3930,183 +3883,10 @@ button {
 	}
 
 
-	/* ===============================
-	Floating areas menu from bottom nav
-	================================ */
-	.areas-floating-menu {
-		position: fixed;
-		left: 50%;
-		bottom: 110px;
-		transform: translateX(-50%);
-		z-index: 28;
-		width: calc(100% - 20px);
-		max-width: 430px;
-		max-height: 58vh;
-		padding: 14px;
-		border-radius: 26px;
-		background:
-			linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.9));
-		border: 1px solid var(--border);
-		box-shadow:
-			0 24px 70px rgba(58, 50, 72, 0.16),
-			inset 0 1px 0 rgba(255, 255, 255, 0.95);
-		backdrop-filter: blur(18px);
-		overflow: hidden;
-		animation: areasMenuUp 0.28s cubic-bezier(0.2, 1.2, 0.35, 1);
-	}
 
-	.areas-floating-menu::after {
-		content: "";
-		position: absolute;
-		left: 30%;
-		bottom: -7px;
-		width: 14px;
-		height: 14px;
-		background: rgba(255, 255, 255, 0.92);
-		border-right: 1px solid var(--border);
-		border-bottom: 1px solid var(--border);
-		transform: rotate(45deg);
-	}
-
-	.areas-floating-menu ::-webkit-scrollbar {
-		width: 5px;
-	}
-
-	.areas-floating-menu ::-webkit-scrollbar-track {
-		background: transparent;
-	}
-
-	.areas-floating-menu ::-webkit-scrollbar-thumb {
-		border-radius: 999px;
-		background: rgba(122, 88, 180, 0.28);
-	}
-
-	.areas-floating-menu ::-webkit-scrollbar-thumb:hover {
-		background-color: #7858a2;
-		transition: all 1.0s ease;
-	}
-
-	.areas-floating-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		margin-bottom: 12px;
-		padding: 0 4px;
-	}
-
-	.areas-floating-header strong {
-		font-size: 19px;
-		font-weight: 950;
-		letter-spacing: -0.03em;
-		color: var(--text);
-	}
-
-	.areas-floating-header strong::before {
-		content: "✦";
-		color: var(--purple);
-		margin-right: 8px;
-	}
-
-	.areas-floating-header button {
-		width: 32px;
-		height: 32px;
-		padding-bottom: 5px;
-		border: 0;
-		border-radius: 999px;
-		background: rgba(122, 88, 180, 0.1);
-		color: var(--purple);
-		font-size: 24px;
-		line-height: 1;
-		display: grid;
-		place-items: center;
-	}
-
-	.areas-floating-list {
-		display: grid;
-		gap: 10px;
-		max-height: calc(58vh - 64px);
-		overflow-y: auto;
-		padding-right: 2px;
-		padding-bottom: 10px;
-	}
-
-	.areas-floating-item {
-		min-height: 68px;
-		border: 1px solid var(--border);
-		border-radius: 18px;
-		background: linear-gradient(135deg, rgba(124, 86, 170, 0.07), rgba(255, 255, 255, 0.94));
-		display: grid;
-		grid-template-columns: 52px 1fr 24px;
-		align-items: center;
-		gap: 10px;
-		padding: 10px 12px;
-		text-align: left;
-		color: var(--text);
-		font-weight: 900;
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
-	}
-
-	.areas-floating-item:nth-child(2) {
-		background: linear-gradient(135deg, rgba(224, 180, 85, 0.1), rgba(255, 255, 255, 0.94));
-	}
-
-	.areas-floating-item:nth-child(3) {
-		background: linear-gradient(135deg, rgba(96, 155, 103, 0.1), rgba(255, 255, 255, 0.94));
-	}
-
-	.areas-floating-item:nth-child(4) {
-		background: linear-gradient(135deg, rgba(231, 151, 100, 0.12), rgba(255, 255, 255, 0.94));
-	}
-
-	.areas-floating-item:nth-child(5) {
-		background: linear-gradient(135deg, rgba(82, 127, 176, 0.1), rgba(255, 255, 255, 0.94));
-	}
-
-	.areas-floating-item:nth-child(6) {
-		background: linear-gradient(135deg, rgba(119, 156, 83, 0.1), rgba(255, 255, 255, 0.94));
-	}
-
-	.areas-floating-icon {
-		width: 46px;
-		height: 46px;
-		border-radius: 15px;
-		display: grid;
-		place-items: center;
-		font-size: 27px;
-		background: rgba(255, 255, 255, 0.58);
-	}
-
-	@keyframes areasMenuUp {
-		0% {
-			opacity: 0;
-			transform: translate(-50%, 18px) scale(0.96);
-		}
-
-		70% {
-			opacity: 1;
-			transform: translate(-50%, -4px) scale(1.02);
-		}
-
-		100% {
-			opacity: 1;
-			transform: translate(-50%, 0) scale(1);
-		}
-	}
-
-	.areas-floating-message {
-		margin: 0;
-		padding: 14px;
-		border-radius: 16px;
-		background: rgba(255, 255, 255, 0.65);
-		color: var(--muted);
-		font-size: 14px;
-		font-weight: 800;
-		text-align: center;
-	}
-
-
-	/* Quick Add floating menu - mobile first */
+	/* ==================
+		Quick Add menu
+	================== */
 	.quick-add-menu {
 		position: fixed;
 		left: 50%;
@@ -9696,28 +9476,6 @@ button {
 	/* ================================
 		Section title
 	================================ */
-	.section-title-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0 8px 18px;
-	}
-
-	.section-title-row h2 {
-		margin: 0;
-		font-size: 23px;
-		font-weight: 950;
-		letter-spacing: -0.035em;
-		color: var(--text);
-	}
-
-	.section-title-row h2::before {
-		content: "✦";
-		color: var(--purple);
-		margin-right: 10px;
-	}
-
-	.section-title-row button,
 	.text-link {
 		border: 0;
 		background: transparent;
@@ -9726,74 +9484,6 @@ button {
 		display: inline-flex;
 		align-items: center;
 		gap: 4px;
-	}
-
-	.life-areas-grid {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 14px 16px;
-	}
-
-	.life-area-item {
-		min-height: 94px;
-		border: 1px solid var(--border);
-		border-radius: 16px;
-		background:
-			linear-gradient(135deg, rgba(124, 86, 170, 0.07), rgba(255, 255, 255, 0.92));
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
-		display: grid;
-		grid-template-columns: 104px 1fr 34px;
-		align-items: center;
-		text-align: left;
-		padding: 14px 18px;
-		color: var(--text);
-		transition:
-			transform 160ms ease,
-			box-shadow 160ms ease,
-			border-color 160ms ease;
-	}
-
-	.life-area-item:nth-child(2) {
-		background: linear-gradient(135deg, rgba(224, 180, 85, 0.1), rgba(255, 255, 255, 0.92));
-	}
-
-	.life-area-item:nth-child(3) {
-		background: linear-gradient(135deg, rgba(96, 155, 103, 0.1), rgba(255, 255, 255, 0.92));
-	}
-
-	.life-area-item:nth-child(4) {
-		background: linear-gradient(135deg, rgba(231, 151, 100, 0.12), rgba(255, 255, 255, 0.92));
-	}
-
-	.life-area-item:nth-child(5) {
-		background: linear-gradient(135deg, rgba(82, 127, 176, 0.1), rgba(255, 255, 255, 0.92));
-	}
-
-	.life-area-item:nth-child(6) {
-		background: linear-gradient(135deg, rgba(119, 156, 83, 0.1), rgba(255, 255, 255, 0.92));
-	}
-
-	.life-area-item:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 16px 30px rgba(66, 56, 80, 0.09);
-		border-color: rgba(115, 83, 170, 0.22);
-	}
-
-	.life-area-icon {
-		width: 72px;
-		height: 62px;
-		display: grid;
-		place-items: center;
-		font-size: 42px;
-		border-radius: 18px;
-		background: rgba(255, 255, 255, 0.45);
-		filter: drop-shadow(0 10px 10px rgba(72, 62, 94, 0.08));
-	}
-
-	.life-area-item strong {
-		font-size: 20px;
-		font-weight: 950;
-		letter-spacing: -0.02em;
 	}
 
 
@@ -9823,32 +9513,35 @@ button {
 
 
 
-	/* ================================
-		Priorities card
-	================================ */
-	.priorities-card {
+	/* =====================================
+		Life areas card / Priorities slot
+	===================================== */
+	.life-areas-card {
 		width: 100%;
+		max-width: 100%;
 		min-height: 238px;
-		margin-bottom: 18px;
-		padding: 20px 26px;
+		margin-bottom: 20px;
+		padding: 20px 10px;
 		background: rgba(255, 255, 255, 0.88);
 		border-radius: 22px;
 		border: 1px solid rgba(225, 218, 208, 0.9);
+		box-sizing: border-box;
+		overflow: hidden;
 	}
 
-	.priorities-card .card-title {
+	.life-areas-card .card-title {
 		display: flex;
 		align-items: center;
 		gap: 12px;
 		margin-bottom: 14px;
 	}
 
-	.priorities-card .card-title span {
+	.life-areas-card .card-title span {
 		font-size: 20px;
 		line-height: 1;
 	}
 
-	.priorities-card .card-title h2 {
+	.life-areas-card .card-title h2 {
 		margin: 0;
 		color: var(--purple);
 		font-size: 14px;
@@ -9857,57 +9550,101 @@ button {
 		letter-spacing: 0.01em;
 	}
 
-	.priorities-card ol {
-		counter-reset: priority;
-		list-style: none;
-		padding-left: 0;
-		margin: 8px 0 18px;
-		color: #57535e;
-		font-weight: 750;
+	.life-areas-card-list {
+		display: grid;
+		gap: 10px;
+		width: 100%;
+		max-height: 178px;
+		overflow-y: auto;
+		padding-right: 4px;
+		scrollbar-width: thin;
+		scrollbar-color: rgba(122, 88, 180, 0.38) transparent;
 	}
 
-	.priorities-card li {
-		counter-increment: priority;
-		display: flex;
+	.life-areas-card-list::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	.life-areas-card-list::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.life-areas-card-list::-webkit-scrollbar-thumb {
+		background: rgba(122, 88, 180, 0.32);
+		border-radius: 999px;
+	}
+
+	.life-areas-card-list::-webkit-scrollbar-thumb:hover {
+		background: rgba(122, 88, 180, 0.52);
+	}
+
+	.life-area-card-item {
+		width: 100%;
+		min-height: 48px;
+		padding: 10px 12px;
+		border: 1px solid rgba(225, 218, 208, 0.9);
+		border-radius: 15px;
+		display: grid;
+		grid-template-columns: 20px 1fr 20px;
 		align-items: center;
 		gap: 10px;
-		line-height: 1.35;
-		font-size: 12px;
+		background: linear-gradient(
+			135deg,
+			rgba(124, 86, 170, 0.07),
+			rgba(255, 255, 255, 0.94)
+		);
+		color: var(--text);
+		font-size: 13px;
+		font-weight: 900;
+		cursor: pointer;
+		text-align: left;
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+		transition:
+			transform 0.18s ease,
+			background 0.18s ease,
+			box-shadow 0.18s ease;
 	}
 
-	.priorities-card li::before {
-		content: counter(priority);
-		width: 20px;
-		height: 20px;
-		border-radius: 6px;
-		margin-bottom: 4px;
+	.life-area-card-item:hover {
+		transform: translateY(-1px);
+		background: linear-gradient(
+			135deg,
+			rgba(124, 86, 170, 0.11),
+			rgba(255, 255, 255, 0.98)
+		);
+		box-shadow: 0 10px 20px rgba(65, 45, 95, 0.08);
+	}
+
+	.life-area-card-icon {
+		width: 32px;
+		height: 32px;
+		border-radius: 11px;
 		display: grid;
 		place-items: center;
-		background: rgba(224, 150, 73, 0.24);
-		color: #795a35;
-		font-size: 8px;
-		font-weight: 950;
+		background: rgba(255, 255, 255, 0.65);
+		font-size: 18px;
 	}
 
-	.priorities-card li:nth-child(3)::before {
-		background: rgba(94, 153, 101, 0.23);
+	.life-area-card-name {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
-	.priorities-card li:nth-child(4)::before {
-		background: rgba(80, 132, 181, 0.22);
+	.life-area-card-item svg {
+		color: rgba(122, 88, 180, 0.72);
 	}
 
-	.priorities-card li:nth-child(5)::before {
-		background: rgba(218, 180, 82, 0.28);
-	}
-
-	.priorities-card .text-link {
-		width: 100%;
-		justify-content: center;
-		margin-top: 2px;
-		color: var(--purple);
-		font-size: 15px;
-		font-weight: 950;
+	.life-area-card-message {
+		margin: 0;
+		padding: 14px;
+		border-radius: 16px;
+		background: rgba(255, 255, 255, 0.65);
+		color: var(--muted);
+		font-size: 13px;
+		font-weight: 800;
+		text-align: center;
 	}
 
 
@@ -10167,184 +9904,9 @@ button {
 
 
 
-	/* ===============================
-		Floating areas menu from bottom nav
-	================================ */
-	.areas-floating-menu {
-		position: fixed;
-		left: 50%;
-		bottom: 110px;
-		transform: translateX(-50%);
-		z-index: 28;
-		width: calc(100% - 20px);
-		max-width: 430px;
-		max-height: 58vh;
-		padding: 14px;
-		border-radius: 26px;
-		background:
-			linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.9));
-		border: 1px solid var(--border);
-		box-shadow:
-			0 24px 70px rgba(58, 50, 72, 0.16),
-			inset 0 1px 0 rgba(255, 255, 255, 0.95);
-		backdrop-filter: blur(18px);
-		overflow: hidden;
-		animation: areasMenuUp 0.28s cubic-bezier(0.2, 1.2, 0.35, 1);
-	}
-
-	.areas-floating-menu::after {
-		content: "";
-		position: absolute;
-		left: 30%;
-		bottom: -7px;
-		width: 14px;
-		height: 14px;
-		background: rgba(255, 255, 255, 0.92);
-		border-right: 1px solid var(--border);
-		border-bottom: 1px solid var(--border);
-		transform: rotate(45deg);
-	}
-
-	.areas-floating-menu ::-webkit-scrollbar {
-		width: 5px;
-	}
-
-	.areas-floating-menu ::-webkit-scrollbar-track {
-		background: transparent;
-	}
-
-	.areas-floating-menu ::-webkit-scrollbar-thumb {
-		border-radius: 999px;
-		background: rgba(122, 88, 180, 0.28);
-	}
-
-	.areas-floating-menu ::-webkit-scrollbar-thumb:hover {
-		background-color: #7858a2;
-		transition: all 1.0s ease;
-	}
-
-	.areas-floating-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		margin-bottom: 12px;
-		padding: 0 4px;
-	}
-
-	.areas-floating-header strong {
-		font-size: 19px;
-		font-weight: 950;
-		letter-spacing: -0.03em;
-		color: var(--text);
-	}
-
-	.areas-floating-header strong::before {
-		content: "✦";
-		color: var(--purple);
-		margin-right: 8px;
-	}
-
-	.areas-floating-header button {
-		width: 32px;
-		height: 32px;
-		padding-bottom: 5px;
-		border: 0;
-		border-radius: 999px;
-		background: rgba(122, 88, 180, 0.1);
-		color: var(--purple);
-		font-size: 24px;
-		line-height: 1;
-		display: grid;
-		place-items: center;
-	}
-
-	.areas-floating-list {
-		display: grid;
-		gap: 10px;
-		max-height: calc(58vh - 64px);
-		overflow-y: auto;
-		padding-right: 2px;
-		padding-bottom: 10px;
-	}
-
-	.areas-floating-item {
-		min-height: 68px;
-		border: 1px solid var(--border);
-		border-radius: 18px;
-		background: linear-gradient(135deg, rgba(124, 86, 170, 0.07), rgba(255, 255, 255, 0.94));
-		display: grid;
-		grid-template-columns: 52px 1fr 24px;
-		align-items: center;
-		gap: 10px;
-		padding: 10px 12px;
-		text-align: left;
-		color: var(--text);
-		font-weight: 900;
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
-	}
-
-	.areas-floating-item:nth-child(2) {
-		background: linear-gradient(135deg, rgba(224, 180, 85, 0.1), rgba(255, 255, 255, 0.94));
-	}
-
-	.areas-floating-item:nth-child(3) {
-		background: linear-gradient(135deg, rgba(96, 155, 103, 0.1), rgba(255, 255, 255, 0.94));
-	}
-
-	.areas-floating-item:nth-child(4) {
-		background: linear-gradient(135deg, rgba(231, 151, 100, 0.12), rgba(255, 255, 255, 0.94));
-	}
-
-	.areas-floating-item:nth-child(5) {
-		background: linear-gradient(135deg, rgba(82, 127, 176, 0.1), rgba(255, 255, 255, 0.94));
-	}
-
-	.areas-floating-item:nth-child(6) {
-		background: linear-gradient(135deg, rgba(119, 156, 83, 0.1), rgba(255, 255, 255, 0.94));
-	}
-
-	.areas-floating-icon {
-		width: 46px;
-		height: 46px;
-		border-radius: 15px;
-		display: grid;
-		place-items: center;
-		font-size: 27px;
-		background: rgba(255, 255, 255, 0.58);
-	}
-
-	@keyframes areasMenuUp {
-		0% {
-			opacity: 0;
-			transform: translate(-50%, 18px) scale(0.96);
-		}
-
-		70% {
-			opacity: 1;
-			transform: translate(-50%, -4px) scale(1.02);
-		}
-
-		100% {
-			opacity: 1;
-			transform: translate(-50%, 0) scale(1);
-		}
-	}
-
-	.areas-floating-message {
-		margin: 0;
-		padding: 14px;
-		border-radius: 16px;
-		background: rgba(255, 255, 255, 0.65);
-		color: var(--muted);
-		font-size: 14px;
-		font-weight: 800;
-		text-align: center;
-	}
-
-
-
-	/* Quick Add floating menu - mobile first */
+	/* ===================
+		Quick Add menu
+	=================== */
 	.quick-add-menu {
 		position: fixed;
 		left: 50%;
@@ -14464,28 +14026,6 @@ button {
 	/* ================================
 		Section title
 	================================ */
-	.section-title-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 0 8px 18px;
-	}
-
-	.section-title-row h2 {
-		margin: 0;
-		font-size: 23px;
-		font-weight: 950;
-		letter-spacing: -0.035em;
-		color: var(--text);
-	}
-
-	.section-title-row h2::before {
-		content: "✦";
-		color: var(--purple);
-		margin-right: 10px;
-	}
-
-	.section-title-row button,
 	.text-link {
 		border: 0;
 		background: transparent;
@@ -14494,74 +14034,6 @@ button {
 		display: inline-flex;
 		align-items: center;
 		gap: 4px;
-	}
-
-	.life-areas-grid {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 14px 16px;
-	}
-
-	.life-area-item {
-		min-height: 94px;
-		border: 1px solid var(--border);
-		border-radius: 16px;
-		background:
-			linear-gradient(135deg, rgba(124, 86, 170, 0.07), rgba(255, 255, 255, 0.92));
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
-		display: grid;
-		grid-template-columns: 104px 1fr 34px;
-		align-items: center;
-		text-align: left;
-		padding: 14px 18px;
-		color: var(--text);
-		transition:
-			transform 160ms ease,
-			box-shadow 160ms ease,
-			border-color 160ms ease;
-	}
-
-	.life-area-item:nth-child(2) {
-		background: linear-gradient(135deg, rgba(224, 180, 85, 0.1), rgba(255, 255, 255, 0.92));
-	}
-
-	.life-area-item:nth-child(3) {
-		background: linear-gradient(135deg, rgba(96, 155, 103, 0.1), rgba(255, 255, 255, 0.92));
-	}
-
-	.life-area-item:nth-child(4) {
-		background: linear-gradient(135deg, rgba(231, 151, 100, 0.12), rgba(255, 255, 255, 0.92));
-	}
-
-	.life-area-item:nth-child(5) {
-		background: linear-gradient(135deg, rgba(82, 127, 176, 0.1), rgba(255, 255, 255, 0.92));
-	}
-
-	.life-area-item:nth-child(6) {
-		background: linear-gradient(135deg, rgba(119, 156, 83, 0.1), rgba(255, 255, 255, 0.92));
-	}
-
-	.life-area-item:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 16px 30px rgba(66, 56, 80, 0.09);
-		border-color: rgba(115, 83, 170, 0.22);
-	}
-
-	.life-area-icon {
-		width: 72px;
-		height: 62px;
-		display: grid;
-		place-items: center;
-		font-size: 42px;
-		border-radius: 18px;
-		background: rgba(255, 255, 255, 0.45);
-		filter: drop-shadow(0 10px 10px rgba(72, 62, 94, 0.08));
-	}
-
-	.life-area-item strong {
-		font-size: 20px;
-		font-weight: 950;
-		letter-spacing: -0.02em;
 	}
 
 
@@ -14737,36 +14209,34 @@ button {
 
 
 
-	
-
-
-
-	/* ================================
-		Priorities card
-	================================ */
-	.priorities-card {
-		padding: 18px 14px;
-		margin: 0;
+	/* =====================================
+		Life areas card / Priorities slot
+	===================================== */
+	.life-areas-card {
+		width: 100%;
+		max-width: 100%;
+		min-height: 238px;
+		padding: 20px 15px;
 		background: rgba(255, 255, 255, 0.88);
 		border-radius: 22px;
-		box-shadow:
-			0 16px 40px rgba(58, 50, 72, 0.08),
-			inset 0 1px 0 rgba(255, 255, 255, 0.9);
+		border: 1px solid rgba(225, 218, 208, 0.9);
+		box-sizing: border-box;
+		overflow: hidden;
 	}
 
-	.priorities-card .card-title {
+	.life-areas-card .card-title {
 		display: flex;
 		align-items: center;
 		gap: 12px;
 		margin-bottom: 14px;
 	}
 
-	.priorities-card .card-title span {
+	.life-areas-card .card-title span {
 		font-size: 20px;
 		line-height: 1;
 	}
 
-	.priorities-card .card-title h2 {
+	.life-areas-card .card-title h2 {
 		margin: 0;
 		color: var(--purple);
 		font-size: 14px;
@@ -14775,57 +14245,101 @@ button {
 		letter-spacing: 0.01em;
 	}
 
-	.priorities-card ol {
-		counter-reset: priority;
-		list-style: none;
-		padding-left: 0;
-		margin: 8px 0 18px;
-		color: #57535e;
-		font-weight: 750;
+	.life-areas-card-list {
+		display: grid;
+		gap: 10px;
+		width: 100%;
+		max-height: 178px;
+		overflow-y: auto;
+		padding-right: 4px;
+		scrollbar-width: thin;
+		scrollbar-color: rgba(122, 88, 180, 0.38) transparent;
 	}
 
-	.priorities-card li {
-		counter-increment: priority;
-		display: flex;
+	.life-areas-card-list::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	.life-areas-card-list::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	.life-areas-card-list::-webkit-scrollbar-thumb {
+		background: rgba(122, 88, 180, 0.32);
+		border-radius: 999px;
+	}
+
+	.life-areas-card-list::-webkit-scrollbar-thumb:hover {
+		background: rgba(122, 88, 180, 0.52);
+	}
+
+	.life-area-card-item {
+		width: 100%;
+		min-height: 48px;
+		padding: 10px 12px;
+		border: 1px solid rgba(225, 218, 208, 0.9);
+		border-radius: 15px;
+		display: grid;
+		grid-template-columns: 20px 1fr 20px;
 		align-items: center;
 		gap: 10px;
-		line-height: 1.35;
-		font-size: 14px;
+		background: linear-gradient(
+			135deg,
+			rgba(124, 86, 170, 0.07),
+			rgba(255, 255, 255, 0.94)
+		);
+		color: var(--text);
+		font-size: 13px;
+		font-weight: 900;
+		cursor: pointer;
+		text-align: left;
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+		transition:
+			transform 0.18s ease,
+			background 0.18s ease,
+			box-shadow 0.18s ease;
 	}
 
-	.priorities-card li::before {
-		content: counter(priority);
-		width: 20px;
-		height: 20px;
-		border-radius: 6px;
-		margin-bottom: 4px;
+	.life-area-card-item:hover {
+		transform: translateY(-1px);
+		background: linear-gradient(
+			135deg,
+			rgba(124, 86, 170, 0.11),
+			rgba(255, 255, 255, 0.98)
+		);
+		box-shadow: 0 10px 20px rgba(65, 45, 95, 0.08);
+	}
+
+	.life-area-card-icon {
+		width: 32px;
+		height: 32px;
+		border-radius: 11px;
 		display: grid;
 		place-items: center;
-		background: rgba(224, 150, 73, 0.24);
-		color: #795a35;
-		font-size: 8px;
-		font-weight: 950;
+		background: rgba(255, 255, 255, 0.65);
+		font-size: 18px;
 	}
 
-	.priorities-card li:nth-child(3)::before {
-		background: rgba(94, 153, 101, 0.23);
+	.life-area-card-name {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
-	.priorities-card li:nth-child(4)::before {
-		background: rgba(80, 132, 181, 0.22);
+	.life-area-card-item svg {
+		color: rgba(122, 88, 180, 0.72);
 	}
 
-	.priorities-card li:nth-child(5)::before {
-		background: rgba(218, 180, 82, 0.28);
-	}
-
-	.priorities-card .text-link {
-		width: 100%;
-		justify-content: center;
-		margin-top: 2px;
-		color: var(--purple);
-		font-size: 15px;
-		font-weight: 950;
+	.life-area-card-message {
+		margin: 0;
+		padding: 14px;
+		border-radius: 16px;
+		background: rgba(255, 255, 255, 0.65);
+		color: var(--muted);
+		font-size: 13px;
+		font-weight: 800;
+		text-align: center;
 	}
 
 
@@ -14834,9 +14348,6 @@ button {
 		AI Card - compact redesign
 	================================ */
 	.ai-card {
-		/* display: flex;
-		flex-direction: column; */
-		/* align-items: center; */
 		width: 100%;
 		min-height: auto;
 		padding: 18px 10px 16px;
@@ -15101,184 +14612,9 @@ button {
 
 
 
-	/* ===============================
-		Floating areas menu from bottom nav
-	================================ */
-	.areas-floating-menu {
-		position: fixed;
-		left: 50%;
-		bottom: 110px;
-		transform: translateX(-50%);
-		z-index: 28;
-		width: calc(100% - 20px);
-		max-width: 430px;
-		max-height: 58vh;
-		padding: 14px;
-		border-radius: 26px;
-		background:
-			linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.9));
-		border: 1px solid var(--border);
-		box-shadow:
-			0 24px 70px rgba(58, 50, 72, 0.16),
-			inset 0 1px 0 rgba(255, 255, 255, 0.95);
-		backdrop-filter: blur(18px);
-		overflow: hidden;
-		animation: areasMenuUp 0.28s cubic-bezier(0.2, 1.2, 0.35, 1);
-	}
-
-	.areas-floating-menu::after {
-		content: "";
-		position: absolute;
-		left: 30%;
-		bottom: -7px;
-		width: 14px;
-		height: 14px;
-		background: rgba(255, 255, 255, 0.92);
-		border-right: 1px solid var(--border);
-		border-bottom: 1px solid var(--border);
-		transform: rotate(45deg);
-	}
-
-	.areas-floating-menu ::-webkit-scrollbar {
-		width: 5px;
-	}
-
-	.areas-floating-menu ::-webkit-scrollbar-track {
-		background: transparent;
-	}
-
-	.areas-floating-menu ::-webkit-scrollbar-thumb {
-		border-radius: 999px;
-		background: rgba(122, 88, 180, 0.28);
-	}
-
-	.areas-floating-menu ::-webkit-scrollbar-thumb:hover {
-		background-color: #7858a2;
-		transition: all 1.0s ease;
-	}
-
-	.areas-floating-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		margin-bottom: 12px;
-		padding: 0 4px;
-	}
-
-	.areas-floating-header strong {
-		font-size: 19px;
-		font-weight: 950;
-		letter-spacing: -0.03em;
-		color: var(--text);
-	}
-
-	.areas-floating-header strong::before {
-		content: "✦";
-		color: var(--purple);
-		margin-right: 8px;
-	}
-
-	.areas-floating-header button {
-		width: 32px;
-		height: 32px;
-		padding-bottom: 5px;
-		border: 0;
-		border-radius: 999px;
-		background: rgba(122, 88, 180, 0.1);
-		color: var(--purple);
-		font-size: 24px;
-		line-height: 1;
-		display: grid;
-		place-items: center;
-	}
-
-	.areas-floating-list {
-		display: grid;
-		gap: 10px;
-		max-height: calc(58vh - 64px);
-		overflow-y: auto;
-		padding-right: 2px;
-		padding-bottom: 10px;
-	}
-
-	.areas-floating-item {
-		min-height: 68px;
-		border: 1px solid var(--border);
-		border-radius: 18px;
-		background: linear-gradient(135deg, rgba(124, 86, 170, 0.07), rgba(255, 255, 255, 0.94));
-		display: grid;
-		grid-template-columns: 52px 1fr 24px;
-		align-items: center;
-		gap: 10px;
-		padding: 10px 12px;
-		text-align: left;
-		color: var(--text);
-		font-weight: 900;
-		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
-	}
-
-	.areas-floating-item:nth-child(2) {
-		background: linear-gradient(135deg, rgba(224, 180, 85, 0.1), rgba(255, 255, 255, 0.94));
-	}
-
-	.areas-floating-item:nth-child(3) {
-		background: linear-gradient(135deg, rgba(96, 155, 103, 0.1), rgba(255, 255, 255, 0.94));
-	}
-
-	.areas-floating-item:nth-child(4) {
-		background: linear-gradient(135deg, rgba(231, 151, 100, 0.12), rgba(255, 255, 255, 0.94));
-	}
-
-	.areas-floating-item:nth-child(5) {
-		background: linear-gradient(135deg, rgba(82, 127, 176, 0.1), rgba(255, 255, 255, 0.94));
-	}
-
-	.areas-floating-item:nth-child(6) {
-		background: linear-gradient(135deg, rgba(119, 156, 83, 0.1), rgba(255, 255, 255, 0.94));
-	}
-
-	.areas-floating-icon {
-		width: 46px;
-		height: 46px;
-		border-radius: 15px;
-		display: grid;
-		place-items: center;
-		font-size: 27px;
-		background: rgba(255, 255, 255, 0.58);
-	}
-
-	@keyframes areasMenuUp {
-		0% {
-			opacity: 0;
-			transform: translate(-50%, 18px) scale(0.96);
-		}
-
-		70% {
-			opacity: 1;
-			transform: translate(-50%, -4px) scale(1.02);
-		}
-
-		100% {
-			opacity: 1;
-			transform: translate(-50%, 0) scale(1);
-		}
-	}
-
-	.areas-floating-message {
-		margin: 0;
-		padding: 14px;
-		border-radius: 16px;
-		background: rgba(255, 255, 255, 0.65);
-		color: var(--muted);
-		font-size: 14px;
-		font-weight: 800;
-		text-align: center;
-	}
-
-
-
-	/* Life status card */
+	/* ======================
+		Life status card
+	====================== */
 	.life-status-card {
 		position: absolute;
 		top: 95px;

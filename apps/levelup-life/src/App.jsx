@@ -21,7 +21,7 @@ import {
 import { getMe, loginUser } from "./api/authApi";
 import {
 	player,
-	priorities,
+	// priorities,
 } from "./data/mockLevelupData";
 import Toast from "./components/Toast";
 import TamagotchiReminder from "./components/TamagotchiReminder";
@@ -119,8 +119,7 @@ function App() {
 		feets: "feets_01",
 		bag: null,
 	});
-
-	const [showAreasMenu, setShowAreasMenu] = useState(false);
+	
 	const [showQuickAddMenu, setShowQuickAddMenu] = useState(false);
 
 	const [showAreaForm, setShowAreaForm] = useState(false);
@@ -417,7 +416,6 @@ function App() {
 	function closeFloatingMenus() {
 		setSelectedDailyGoalId(null);
 		setShowQuickAddMenu(false);
-		setShowAreasMenu(false);
 		setShowAvatarMenu(false);
 		setShowAreaForm(false);
 		setShowDailyGoalForm(false);
@@ -455,7 +453,6 @@ function App() {
 		setGameProfile(null);
 		setDailyGoals([]);
 		setSelectedDailyGoalId(null);
-		setShowAreasMenu(false);
 		setShowQuickAddMenu(false);
 		setShowAreaForm(false);
 		setShowDailyGoalForm(false);
@@ -479,17 +476,8 @@ function App() {
 			.replace(/^-+|-+$/g, "");
 	}
 
-	function handleToggleAreasMenu() {
-		setSelectedDailyGoalId(null);
-		setShowQuickAddMenu(false);
-		setShowAvatarMenu(false);
-
-		setShowAreasMenu((currentValue) => !currentValue);
-	}
-
 	function handleToggleQuickAddMenu() {
 		setSelectedDailyGoalId(null);
-		setShowAreasMenu(false);
 		setShowAvatarMenu(false);
 
 		setShowQuickAddMenu((currentValue) => !currentValue);
@@ -498,7 +486,6 @@ function App() {
 	function handleQuickAddAction(action) {
 		setSelectedDailyGoalId(null);
 		setShowQuickAddMenu(false);
-		setShowAreasMenu(false);
 		setShowAvatarMenu(false);
 
 		if (action === "area") {
@@ -542,7 +529,6 @@ function App() {
 		setSelectedDailyGoalId(null);
 		setSelectedLifeArea(area);
 		setCurrentView("life-area-detail");
-		setShowAreasMenu(false);
 		setShowQuickAddMenu(false);
 		setShowAvatarMenu(false);
 	}
@@ -742,7 +728,6 @@ function App() {
 
 	function handleToggleAvatarMenu() {
 		setSelectedDailyGoalId(null);
-		setShowAreasMenu(false);
 		setShowQuickAddMenu(false);
 
 		setShowAvatarMenu((currentValue) => !currentValue);
@@ -836,7 +821,6 @@ function App() {
 
 	function handleOpenShopView() {
 		setSelectedDailyGoalId(null);
-		setShowAreasMenu(false);
 		setShowQuickAddMenu(false);
 		setShowAvatarMenu(false);
 		setShowAreaForm(false);
@@ -847,7 +831,6 @@ function App() {
 
 	function handleOpenInventoryView() {
 		setSelectedDailyGoalId(null);
-		setShowAreasMenu(false);
 		setShowQuickAddMenu(false);
 		setShowAvatarMenu(false);
 		setShowAreaForm(false);
@@ -1228,7 +1211,6 @@ function App() {
 
 	function handleOpenDailyGoalMenu(goalId, event) {
 		setShowQuickAddMenu(false);
-		setShowAreasMenu(false);
 		setShowAvatarMenu(false);
 
 		const previewElement = dailyGoalsPreviewRef.current;
@@ -1255,7 +1237,6 @@ function App() {
 		setCurrentView("dashboard");
 		setSelectedLifeArea(null);
 		setSelectedDailyGoalId(null);
-		setShowAreasMenu(false);
 		setShowQuickAddMenu(false);
 		setShowAvatarMenu(false);
 	}
@@ -1566,7 +1547,7 @@ function App() {
 		},
 	];
 
-	const isAreasActive = showAreasMenu || currentView === "life-area-detail";
+	const isAreasActive = currentView === "life-area-detail";
 
 	const selectedDailyGoal = dailyGoals.find(
 		(goal) => goal.daily_goal_id === selectedDailyGoalId
@@ -2008,21 +1989,38 @@ function App() {
 						</div>
 
 						<div className="player-info">
-							<article className="priorities-card">
+							<article className="life-areas-card">
 								<div className="card-title">
-									<span>🏆</span>
-									<h2>Prioridades</h2>
+									<span>🌍</span>
+									<h2>Áreas de Vida</h2>
 								</div>
 
-								<ol>
-									{priorities.map((priority) => (
-										<li key={priority}>{priority}</li>
-									))}
-								</ol>
+								<div className="life-areas-card-list">
+									{lifeAreasLoading && (
+										<p className="areas-floating-message">Cargando áreas...</p>
+									)}
 
-								<button type="button" className="text-link">
-									Ver todas <ChevronRight size={17} />
-								</button>
+									{!lifeAreasLoading && lifeAreas.length === 0 && (
+										<p className="areas-floating-message">
+											Todavía no tienes áreas creadas.
+										</p>
+									)}
+
+									{!lifeAreasLoading &&
+										lifeAreas.map((area) => (
+											<button
+												type="button"
+												className="areas-floating-item life-area-card-item"
+												key={area.life_area_id}
+												onClick={() => handleSelectArea(area)}
+											>
+												<span className="areas-floating-icon">{area.icon}</span>
+												<span>{area.name}</span>
+												<ChevronRight size={20} strokeWidth={1.8} />
+											</button>
+										))
+									}
+								</div>
 							</article>
 
 							<div className="ai-card">
@@ -2051,7 +2049,7 @@ function App() {
 									</button>
 									<button type="button">
 										<BriefcaseBusiness size={22} />
-										Manejo de deudas
+										Debt management
 									</button>
 								</div>
 
@@ -2093,44 +2091,6 @@ function App() {
 					area={selectedLifeArea}
 					onBack={handleBackToDashboard}
 				/>
-			)}
-
-			{showAreasMenu && (
-				<div className="areas-floating-menu">
-					<div className="areas-floating-header">
-						<strong>Áreas de Vida</strong>
-						<button type="button" onClick={() => setShowAreasMenu(false)}>
-							×
-						</button>
-					</div>
-
-					<div className="areas-floating-list">
-						{lifeAreasLoading && (
-							<p className="areas-floating-message">Cargando áreas...</p>
-						)}
-
-						{!lifeAreasLoading && lifeAreas.length === 0 && (
-							<p className="areas-floating-message">
-								Todavía no tienes áreas creadas.
-							</p>
-						)}
-
-						{!lifeAreasLoading &&
-							lifeAreas.map((area) => (
-								<button
-									type="button"
-									className="areas-floating-item"
-									key={area.life_area_id}
-									onClick={() => handleSelectArea(area)}
-								>
-									<span className="areas-floating-icon">{area.icon}</span>
-									<span>{area.name}</span>
-									<ChevronRight size={20} strokeWidth={1.8} />
-								</button>
-							))
-						}
-					</div>
-				</div>
 			)}
 
 			{showQuickAddMenu && (
@@ -2595,8 +2555,6 @@ function App() {
 
 				<button
 					type="button"
-					className={isAreasActive ? "active" : ""}
-					onClick={handleToggleAreasMenu}
 				>
 					<BarChart3 size={24} strokeWidth={1.8} />
 					<span>Áreas</span>
