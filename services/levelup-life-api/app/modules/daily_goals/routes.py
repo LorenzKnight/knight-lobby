@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 from knight_core.functions import select_from, insert_into, update_table
 from app.modules.rewards.service import apply_reward
+from app.modules.audit.service import create_audit_log
 
 
 router = APIRouter(
@@ -1924,6 +1925,14 @@ def consume_anti_drop_protection(user_id: int):
 def close_previous_daily_goals_day(payload: ClosePreviousDayRequest):
     penalty_date = get_yesterday_stockholm()
 
+    create_audit_log(
+        user_id=payload.user_id,
+        event_type="day_close_started",
+        source="daily_goals_day_close",
+        event_date=penalty_date,
+        message="Previous day close started.",
+    )
+
     existing_penalty_result = select_from(
         table_name="daily_life_penalties",
         columns=[
@@ -1945,6 +1954,17 @@ def close_previous_daily_goals_day(payload: ClosePreviousDayRequest):
     existing_penalties = get_data_or_empty(existing_penalty_result)
 
     if len(existing_penalties) > 0:
+        create_audit_log(
+            user_id=payload.user_id,
+            event_type="day_close_already_closed",
+            source="daily_goals_day_close",
+            event_date=penalty_date,
+            metadata={
+                "existing_penalty": existing_penalties[0],
+            },
+            message="Previous day was already closed. No penalty applied.",
+        )
+         
         return {
             "success": True,
             "message": "Previous day was already closed.",
@@ -2007,6 +2027,20 @@ def close_previous_daily_goals_day(payload: ClosePreviousDayRequest):
             missed_goals += 1
 
     if checked_tasks == 0:
+        create_audit_log(
+            user_id=payload.user_id,
+            event_type="day_close_no_goals_to_close",
+            source="daily_goals_day_close",
+            event_date=penalty_date,
+            metadata={
+                "checked_goals": checked_goals,
+                "checked_tasks": checked_tasks,
+                "missed_tasks": missed_tasks,
+                "missed_goals": missed_goals,
+            },
+            message="There were no daily goals to close for previous day.",
+        )
+        
         return {
             "success": True,
             "message": "There were no daily goals to close for previous day.",
@@ -2039,6 +2073,22 @@ def close_previous_daily_goals_day(payload: ClosePreviousDayRequest):
                 status_code=400,
                 detail=insert_result["message"],
             )
+        
+        create_audit_log(
+            user_id=payload.user_id,
+            event_type="day_close_completed_without_penalty",
+            source="daily_goals_day_close",
+            event_date=penalty_date,
+            metadata={
+                "checked_goals": checked_goals,
+                "checked_tasks": checked_tasks,
+                "missed_tasks": 0,
+                "missed_goals": 0,
+                "life_lost": 0,
+                "level_lost": 0,
+            },
+            message="Previous day completed successfully. No penalty applied.",
+        )
 
         return {
             "success": True,
@@ -2083,14 +2133,103 @@ def close_previous_daily_goals_day(payload: ClosePreviousDayRequest):
 
     current_level = max(1, int(profile["level"] or 1))
     max_life = max(1, int(profile["max_life"] or 5))
-
     current_life = int(profile["current_life"] or 0)
     current_life = min(max(current_life, 0), max_life)
+
+    create_audit_log(
+        user_id=payload.user_id,
+        event_type="day_close_profile_loaded",
+        source="daily_goals_day_close",
+        event_date=penalty_date,
+        level_before=current_level,
+        life_before=current_life,
+        max_life_before=max_life,
+        metadata={
+            "missed_tasks": missed_tasks,
+            "missed_goals": missed_goals,
+        },
+        message="Game profile loaded before daily penalty.",
+    )
 
     level_lost = 0
     life_lost = 1
     level_drop_blocked = False
     protection_used = None
+
+    # First, reserve the daily penalty row.
+    # This prevents two simultaneous requests from reducing life twice.
+    claim_penalty_result = insert_into(
+        table_name="daily_life_penalties",
+        query_data={
+            "user_id": payload.user_id,
+            "penalty_date": penalty_date,
+            "missed_tasks": missed_tasks,
+            "missed_goals": missed_goals,
+            "life_lost": life_lost,
+            "level_lost": 0,
+        },
+    )
+
+    if not claim_penalty_result["success"]:
+        existing_after_claim_result = select_from(
+            table_name="daily_life_penalties",
+            columns=[
+                "daily_life_penalty_id",
+                "user_id",
+                "penalty_date",
+                "missed_tasks",
+                "missed_goals",
+                "life_lost",
+                "level_lost",
+                "created_at",
+            ],
+            where_clause={
+                "user_id": payload.user_id,
+                "penalty_date": penalty_date,
+            },
+            options={
+                "fetch_first": True,
+            },
+        )
+
+        if existing_after_claim_result["success"] and existing_after_claim_result["data"]:
+            create_audit_log(
+                user_id=payload.user_id,
+                event_type="day_close_claim_already_exists",
+                source="daily_goals_day_close",
+                event_date=penalty_date,
+                metadata={
+                    "existing_penalty": existing_after_claim_result["data"],
+                },
+                message="Penalty row already existed during claim. No life was removed.",
+            )
+
+            return {
+                "success": True,
+                "message": "Previous day was already closed.",
+                "data": {
+                    "penalty_date": penalty_date,
+                    "penalty_applied": False,
+                    "already_closed": True,
+                    "penalty": existing_after_claim_result["data"],
+                },
+            }
+
+        create_audit_log(
+            user_id=payload.user_id,
+            event_type="day_close_claim_failed",
+            source="daily_goals_day_close",
+            event_date=penalty_date,
+            metadata={
+                "claim_error": claim_penalty_result.get("message"),
+            },
+            message="Could not claim daily penalty row.",
+        )
+
+        raise HTTPException(
+            status_code=400,
+            detail=claim_penalty_result["message"],
+        )
 
     if current_life > 1:
         new_life = current_life - 1
@@ -2131,24 +2270,24 @@ def close_previous_daily_goals_day(payload: ClosePreviousDayRequest):
             status_code=400,
             detail=update_profile_result["message"],
         )
-
-    insert_penalty_result = insert_into(
-        table_name="daily_life_penalties",
-        query_data={
-            "user_id": payload.user_id,
-            "penalty_date": penalty_date,
-            "missed_tasks": missed_tasks,
-            "missed_goals": missed_goals,
-            "life_lost": life_lost,
-            "level_lost": level_lost,
-        },
-    )
-
-    if not insert_penalty_result["success"]:
-        raise HTTPException(
-            status_code=400,
-            detail=insert_penalty_result["message"],
+    
+    if level_lost > 0:
+        update_penalty_result = update_table(
+            table_name="daily_life_penalties",
+            query_data={
+                "level_lost": level_lost,
+            },
+            where_clause={
+                "user_id": payload.user_id,
+                "penalty_date": penalty_date,
+            },
         )
+
+        if not update_penalty_result["success"]:
+            raise HTTPException(
+                status_code=400,
+                detail=update_penalty_result["message"],
+            )
 
     if level_drop_blocked:
         message = "Anti-Drop Charm evitó que perdieras un nivel. Recuperaste tus corazones."
@@ -2156,6 +2295,27 @@ def close_previous_daily_goals_day(payload: ClosePreviousDayRequest):
         message = "No completaste tus tareas diarias. Perdiste un nivel y recuperaste tus corazones."
     else:
         message = "No completaste tus tareas diarias. Perdiste un corazón."
+
+    create_audit_log(
+        user_id=payload.user_id,
+        event_type="day_close_finished",
+        source="daily_goals_day_close",
+        event_date=penalty_date,
+        level_before=current_level,
+        life_before=current_life,
+        max_life_before=max_life,
+        level_after=new_level,
+        life_after=new_life,
+        metadata={
+            "missed_tasks": missed_tasks,
+            "missed_goals": missed_goals,
+            "life_lost": life_lost,
+            "level_lost": level_lost,
+            "level_drop_blocked": level_drop_blocked,
+            "protection_used": protection_used,
+        },
+        message=message,
+    )
 
     return {
         "success": True,

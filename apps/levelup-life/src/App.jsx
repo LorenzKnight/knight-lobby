@@ -152,6 +152,8 @@ function App() {
 	const [currentView, setCurrentView] = useState("dashboard");
 	const [selectedLifeArea, setSelectedLifeArea] = useState(null);
 
+	const closingPreviousDayRef = useRef(false);
+
 	const isLoggedIn = Boolean(authToken && authUser);
 
 	useEffect(() => {
@@ -202,6 +204,9 @@ function App() {
 	useEffect(() => {
 		async function closePreviousDay() {
 			if (!authUser?.user_id) return;
+			if (closingPreviousDayRef.current) return;
+
+			closingPreviousDayRef.current = true;
 
 			try {
 				const result = await closePreviousDailyGoalsDay(authUser.user_id);
@@ -228,6 +233,8 @@ function App() {
 				);
 			} catch (error) {
 				console.error("Could not close previous day:", error);
+			} finally {
+				closingPreviousDayRef.current = false;
 			}
 		}
 
