@@ -2556,11 +2556,11 @@ function App() {
 
 				<button
 					type="button"
-					className={showInventoryView ? "active" : ""}
-					onClick={handleOpenInventoryView}
+					className={showShopView ? "active" : ""}
+					onClick={handleOpenShopView}
 				>
-					<Backpack size={24} strokeWidth={1.8} />
-					<span>Inventario</span>
+					<Store size={24} strokeWidth={1.8} />
+					<span>Shop</span>
 				</button>
 
 				<button
@@ -2573,11 +2573,11 @@ function App() {
 
 				<button
 					type="button"
-					className={showShopView ? "active" : ""}
-					onClick={handleOpenShopView}
+					className={showInventoryView ? "active" : ""}
+					onClick={handleOpenInventoryView}
 				>
-					<Store size={24} strokeWidth={1.8} />
-					<span>Shop</span>
+					<Backpack size={24} strokeWidth={1.8} />
+					<span>Inventory</span>
 				</button>
 
 				<button type="button" onClick={handleLogout}>

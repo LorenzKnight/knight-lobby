@@ -1,11 +1,17 @@
 function PlayerAvatar({ 
 	avatarImages,
-	expression = "neutral",
+
+	mood = "neutral",
+	eyeExpression,
+	mouthExpression,
+	
 	eyeColor = "#9b4e12",
 	lookX = 0,
 	lookY = 0,
 	blinking = true,
 }) {
+	const currentEyeExpression = eyeExpression ?? mood;
+	const currentMouthExpression = mouthExpression ?? mood;
 
 	const eyesStyle = {
 		"--eye-color": eyeColor,
@@ -14,7 +20,14 @@ function PlayerAvatar({
 	};
 
 	return (
-		<div className="player-avatar">
+		<div
+			className={[
+				"player-avatar",
+				`mood-${mood}`,
+				`eyes-${currentEyeExpression}`,
+				`mouth-${currentMouthExpression}`,
+			].join(" ")}
+		>
 			{/* {avatarImages?.cap && (
 				<img
 					src={avatarImages.cap}
@@ -26,7 +39,7 @@ function PlayerAvatar({
 			<div
 				className={[
 					"avatar-eyes",
-					`expression-${expression}`,
+					`expression-${currentEyeExpression}`,
 					blinking ? "is-blinking" : "",
 				].join(" ")}
 				style={eyesStyle}
@@ -34,6 +47,8 @@ function PlayerAvatar({
 				<AvatarEye side="left" />
 				<AvatarEye side="right" />
 			</div>
+
+			<AvatarMouth expression={currentMouthExpression} />
 
 			{avatarImages?.cap && (
 				<img
@@ -96,6 +111,14 @@ function AvatarEye({ side }) {
 
 			
 			<div className="eyebrow" />
+		</div>
+	);
+}
+
+function AvatarMouth({ expression = "neutral" }) {
+	return (
+		<div className={`avatar-mouth mouth-${expression}`}>
+			<div className="mouth-line" />
 		</div>
 	);
 }

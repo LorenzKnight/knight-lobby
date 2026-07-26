@@ -953,6 +953,56 @@ button {
 		}
 	}
 
+
+
+	/* ==============================
+		AVATAR MOUTH
+	============================== */
+	.avatar-mouth {
+		--mouth-width: 5.1cqw;
+		--mouth-height: 0.9cqw;
+
+		--mouth-color: #6f321d;
+		--mouth-shadow: rgba(82, 34, 19, 0.22);
+
+		position: absolute;
+
+		top: 26.86%;
+		left: 48%;
+
+		z-index: 6;
+
+		width: var(--mouth-width);
+		height: var(--mouth-height);
+
+		transform: translateX(-50%);
+
+		pointer-events: none;
+	}
+
+	.mouth-line {
+		position: absolute;
+		inset: 0;
+
+		border-bottom: 0.6cqw solid var(--mouth-color);
+		border-radius: 0 0 50% 50% / 0 0 100% 100%;
+
+		filter: drop-shadow(
+			0 0.25cqw 0 var(--mouth-shadow)
+		);
+
+		transition:
+			transform 180ms ease,
+			border-radius 180ms ease,
+			border-width 180ms ease,
+			width 180ms ease,
+			height 180ms ease,
+			top 180ms ease,
+			left 180ms ease;
+	}
+
+
+
 	/* avatar parts */
 	/* .avatar-hair {
 		width: 110px;
@@ -3531,7 +3581,7 @@ button {
 
 	.life-areas-card-list {
 		display: grid;
-		gap: 10px;
+		gap: 9px;
 		width: 100%;
 		max-height: 178px;
 		overflow-y: auto;
@@ -3559,8 +3609,8 @@ button {
 
 	.life-area-card-item {
 		width: 100%;
-		min-height: 48px;
-		padding: 10px 12px;
+		min-height: 45px;
+		padding: 5px 7px;
 		border: 1px solid color-mix(
 			in srgb,
 			var(--life-area-color, #7a58b4) 24%,
@@ -3570,7 +3620,7 @@ button {
 		display: grid;
 		grid-template-columns: 32px 1fr 20px;
 		align-items: center;
-		gap: 10px;
+		gap: 8px;
 		background: linear-gradient(
 			135deg,
 			color-mix(in srgb, var(--life-area-color, #7a58b4) 15%, #ffffff),
@@ -6963,6 +7013,54 @@ button {
 		98% {
 			bottom: -65%;
 		}
+	}
+
+
+
+	/* ==============================
+		AVATAR MOUTH
+	============================== */
+	.avatar-mouth {
+		--mouth-width: 5.1cqw;
+		--mouth-height: 0.9cqw;
+
+		--mouth-color: #6f321d;
+		--mouth-shadow: rgba(82, 34, 19, 0.22);
+
+		position: absolute;
+
+		top: 26.86%;
+		left: 48%;
+
+		z-index: 6;
+
+		width: var(--mouth-width);
+		height: var(--mouth-height);
+
+		transform: translateX(-50%);
+
+		pointer-events: none;
+	}
+
+	.mouth-line {
+		position: absolute;
+		inset: 0;
+
+		border-bottom: 0.6cqw solid var(--mouth-color);
+		border-radius: 0 0 50% 50% / 0 0 100% 100%;
+
+		filter: drop-shadow(
+			0 0.25cqw 0 var(--mouth-shadow)
+		);
+
+		transition:
+			transform 180ms ease,
+			border-radius 180ms ease,
+			border-width 180ms ease,
+			width 180ms ease,
+			height 180ms ease,
+			top 180ms ease,
+			left 180ms ease;
 	}
 
 
@@ -14570,11 +14668,11 @@ button {
 		width: min(calc(100% - 42px), 1080px);
 		min-height: 76px;
 		border-radius: 24px;
-		padding: 9px 28px;
+		padding: 9px 0px;
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
 		align-items: center;
-		gap: 10px;
+		gap: 0px;
 		background: rgba(255, 255, 255, 0.92);
 		backdrop-filter: blur(18px);
 	}
@@ -16070,6 +16168,54 @@ button {
 		98% {
 			bottom: -65%;
 		}
+	}
+
+
+
+	/* ==============================
+		AVATAR MOUTH
+	============================== */
+	.avatar-mouth {
+		--mouth-width: 5.1cqw;
+		--mouth-height: 0.9cqw;
+
+		--mouth-color: #6f321d;
+		--mouth-shadow: rgba(82, 34, 19, 0.22);
+
+		position: absolute;
+
+		top: 26.86%;
+		left: 48%;
+
+		z-index: 6;
+
+		width: var(--mouth-width);
+		height: var(--mouth-height);
+
+		transform: translateX(-50%);
+
+		pointer-events: none;
+	}
+
+	.mouth-line {
+		position: absolute;
+		inset: 0;
+
+		border-bottom: 0.6cqw solid var(--mouth-color);
+		border-radius: 0 0 50% 50% / 0 0 100% 100%;
+
+		filter: drop-shadow(
+			0 0.25cqw 0 var(--mouth-shadow)
+		);
+
+		transition:
+			transform 180ms ease,
+			border-radius 180ms ease,
+			border-width 180ms ease,
+			width 180ms ease,
+			height 180ms ease,
+			top 180ms ease,
+			left 180ms ease;
 	}
 
 
