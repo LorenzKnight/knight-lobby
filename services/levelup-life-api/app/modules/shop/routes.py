@@ -277,62 +277,6 @@ def add_or_update_inventory_item(user_id: int, item: dict):
             status_code=400,
             detail=insert_result.get("message", "Could not add item to inventory."),
         )
-
-
-# def create_active_boost(user_id: int, item: dict):
-#     duration_minutes = item["duration_minutes"] or 30
-
-#     insert_result = insert_into(
-#         table_name="user_active_boosts",
-#         query_data={
-#             "user_id": user_id,
-#             "shop_item_id": item["shop_item_id"],
-#             "item_key": item["item_key"],
-#             "item_name": item["name"],
-#             "boost_type": item["effect_type"],
-#             "boost_value": item["effect_value"] or 1,
-#             "starts_at": datetime.now(timezone.utc),
-#             "expires_at": datetime.now(timezone.utc) + timedelta(minutes=duration_minutes),
-#             "is_active": True,
-#         },
-#     )
-
-#     if not insert_result["success"]:
-#         raise HTTPException(
-#             status_code=400,
-#             detail=insert_result.get("message", "Could not activate boost."),
-#         )
-
-
-# def create_active_protection(user_id: int, item: dict):
-#     duration_minutes = item["duration_minutes"]
-
-#     expires_at = None
-
-#     if duration_minutes:
-#         expires_at = datetime.now(timezone.utc) + timedelta(minutes=duration_minutes)
-
-#     insert_result = insert_into(
-#         table_name="user_active_protections",
-#         query_data={
-#             "user_id": user_id,
-#             "shop_item_id": item["shop_item_id"],
-#             "item_key": item["item_key"],
-#             "item_name": item["name"],
-#             "protection_type": item["effect_type"],
-#             "protection_value": item["effect_value"] or 1,
-#             "starts_at": datetime.now(timezone.utc),
-#             "expires_at": expires_at,
-#             "is_active": True,
-#             "is_used": False,
-#         },
-#     )
-
-#     if not insert_result["success"]:
-#         raise HTTPException(
-#             status_code=400,
-#             detail=insert_result.get("message", "Could not activate protection."),
-#         )
     
 
 def get_now():

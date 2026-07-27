@@ -956,6 +956,214 @@ button {
 
 
 	/* ==============================
+		AVATAR EYE EXPRESSIONS
+	============================== */
+
+	/* Neutral */
+	.avatar-eyes.expression-neutral {
+		--eye-width: 5.85cqw;
+		--eye-height: 4.52cqw;
+		--eye-gap: 3.10cqw;
+
+		--left-eye-rotate: 3deg;
+		--right-eye-rotate: -4deg;
+
+		--left-brow-rotate: 2deg;
+		--right-brow-rotate: -2deg;
+
+		--upper-lid-position: -110%;
+		--lower-lid-position: -110%;
+	}
+
+	/* Calm / gentle */
+	.avatar-eyes.expression-calm {
+		--eye-width: 5.65cqw;
+		--eye-height: 4.05cqw;
+		--eye-gap: 3.18cqw;
+
+		--left-eye-rotate: 2deg;
+		--right-eye-rotate: -2deg;
+
+		--left-brow-rotate: -2deg;
+		--right-brow-rotate: 2deg;
+
+		--upper-lid-position: -78%;
+		--lower-lid-position: -100%;
+	}
+
+	/* Confident */
+	.avatar-eyes.expression-confident {
+		--eye-width: 5.9cqw;
+		--eye-height: 4.2cqw;
+		--eye-gap: 3.05cqw;
+
+		--left-eye-rotate: 2deg;
+		--right-eye-rotate: -2deg;
+
+		--left-brow-rotate: -8deg;
+		--right-brow-rotate: 8deg;
+
+		--upper-lid-position: -88%;
+		--lower-lid-position: -105%;
+	}
+
+	/* Happy */
+	.avatar-eyes.expression-happy {
+		--eye-width: 5.6cqw;
+		--eye-height: 3.35cqw;
+		--eye-gap: 3.35cqw;
+
+		--left-eye-rotate: 5deg;
+		--right-eye-rotate: -5deg;
+
+		--left-brow-rotate: -5deg;
+		--right-brow-rotate: 5deg;
+
+		--upper-lid-position: -62%;
+		--lower-lid-position: -92%;
+	}
+
+	/* Worried */
+	.avatar-eyes.expression-worried {
+		--eye-width: 5.75cqw;
+		--eye-height: 4.75cqw;
+		--eye-gap: 3.05cqw;
+
+		--left-eye-rotate: -2deg;
+		--right-eye-rotate: 2deg;
+
+		--left-brow-rotate: -10deg;
+		--right-brow-rotate: 10deg;
+
+		--upper-lid-position: -103%;
+		--lower-lid-position: -100%;
+	}
+
+	/* Sad */
+	.avatar-eyes.expression-sad {
+		--eye-width: 5.65cqw;
+		--eye-height: 4.3cqw;
+		--eye-gap: 3.2cqw;
+
+		--left-eye-rotate: -4deg;
+		--right-eye-rotate: 4deg;
+
+		--left-brow-rotate: 13deg;
+		--right-brow-rotate: -13deg;
+
+		--upper-lid-position: -72%;
+		--lower-lid-position: -92%;
+	}
+
+	/* Stressed / critical */
+	.avatar-eyes.expression-stressed {
+		--eye-width: 5.95cqw;
+		--eye-height: 4.95cqw;
+		--eye-gap: 2.9cqw;
+
+		--left-eye-rotate: -5deg;
+		--right-eye-rotate: 5deg;
+
+		--left-brow-rotate: 18deg;
+		--right-brow-rotate: -18deg;
+
+		--upper-lid-position: -90%;
+		--lower-lid-position: -98%;
+	}
+
+	/* Sleeping */
+	.avatar-eyes.expression-sleeping {
+		--eye-width: 5.8cqw;
+		--eye-height: 1.25cqw;
+		--eye-gap: 3.4cqw;
+
+		--left-eye-rotate: 3deg;
+		--right-eye-rotate: -3deg;
+
+		--left-brow-rotate: -3deg;
+		--right-brow-rotate: 3deg;
+
+		--upper-lid-position: -4%;
+		--lower-lid-position: -38%;
+	}
+
+
+
+	/* Happy eyes: más cerrados y expresivos */
+	.avatar-eyes.expression-happy .iris,
+	.avatar-eyes.expression-sleeping .iris {
+		opacity: 0;
+	}
+
+	.avatar-eyes.expression-happy .eye-highlight,
+	.avatar-eyes.expression-sleeping .eye-highlight {
+		opacity: 0;
+	}
+
+	.avatar-eyes.expression-happy .eye-white {
+		border-radius: 60% 60% 45% 45% / 65% 65% 40% 40%;
+	}
+
+	/* Sleeping eyes: ojos casi cerrados */
+	.avatar-eyes.expression-sleeping .eye-white {
+		background: transparent;
+		border-color: transparent;
+		box-shadow: none;
+	}
+
+	.avatar-eyes.expression-sleeping .upper-eyelid {
+		top: 0;
+		height: 100%;
+		background: transparent;
+		border-bottom: 0.55cqw solid #3a2118;
+		border-radius: 50%;
+	}
+
+	.avatar-eyes.expression-sleeping .lower-eyelid {
+		display: none;
+	}
+
+	/* Stressed: iris un poco más pequeño */
+	.avatar-eyes.expression-stressed .iris {
+		width: 3.45cqw;
+		height: 3.8cqw;
+	}
+
+	/* Worried/Sad: mirada un poco baja */
+	.avatar-eyes.expression-worried .iris,
+	.avatar-eyes.expression-sad .iris {
+		top: 53%;
+	}
+
+	/* Cejas por emoción */
+	.avatar-eyes.expression-happy .eyebrow {
+		top: -2.05cqw;
+		width: 5.1cqw;
+	}
+
+	.avatar-eyes.expression-worried .eyebrow,
+	.avatar-eyes.expression-sad .eyebrow {
+		top: -1.55cqw;
+	}
+
+	.avatar-eyes.expression-stressed .eyebrow {
+		top: -1.35cqw;
+		width: 5.7cqw;
+	}
+
+	.avatar-eyes.expression-sleeping.is-blinking .upper-eyelid,
+	.avatar-eyes.expression-sleeping.is-blinking .lower-eyelid {
+		animation: none;
+	}
+
+	.avatar-eyes.expression-happy .upper-eyelid,
+	.avatar-eyes.expression-happy .lower-eyelid {
+		animation: none;
+	}
+
+
+
+	/* ==============================
 		AVATAR MOUTH
 	============================== */
 	.avatar-mouth {
@@ -999,6 +1207,119 @@ button {
 			height 180ms ease,
 			top 180ms ease,
 			left 180ms ease;
+	}
+
+
+
+	/* ==============================
+		AVATAR MOUTH EXPRESSIONS
+	============================== */
+
+	/* Neutral */
+	.avatar-mouth.mouth-neutral {
+		--mouth-width: 5.1cqw;
+		--mouth-height: 0.9cqw;
+	}
+
+	.avatar-mouth.mouth-neutral .mouth-line {
+		border-bottom-width: 0.45cqw;
+		border-radius: 0 0 42% 42% / 0 0 80% 80%;
+		transform: scaleY(0.65);
+	}
+
+	/* Relaxed */
+	.avatar-mouth.mouth-relaxed {
+		--mouth-width: 4.5cqw;
+		--mouth-height: 0.75cqw;
+	}
+
+	.avatar-mouth.mouth-relaxed .mouth-line {
+		border-bottom-width: 0.38cqw;
+		border-radius: 0 0 50% 50% / 0 0 100% 100%;
+		opacity: 0.72;
+		transform: scaleY(0.55);
+	}
+
+	/* Soft smile */
+	.avatar-mouth.mouth-soft-smile {
+		--mouth-width: 5.5cqw;
+		--mouth-height: 1.05cqw;
+	}
+
+	.avatar-mouth.mouth-soft-smile .mouth-line {
+		border-bottom-width: 0.48cqw;
+		border-radius: 0 0 55% 55% / 0 0 120% 120%;
+		transform: scaleY(0.9);
+	}
+
+	/* Smile */
+	.avatar-mouth.mouth-smile {
+		--mouth-width: 6.2cqw;
+		--mouth-height: 1.35cqw;
+	}
+
+	.avatar-mouth.mouth-smile .mouth-line {
+		border-bottom-width: 0.58cqw;
+		border-radius: 0 0 65% 65% / 0 0 130% 130%;
+		transform: scaleY(1.05);
+	}
+
+	/* Big smile */
+	.avatar-mouth.mouth-big-smile {
+		--mouth-width: 6.9cqw;
+		--mouth-height: 2.1cqw;
+	}
+
+	.avatar-mouth.mouth-big-smile .mouth-line {
+		border-bottom-width: 0.72cqw;
+		border-radius: 0 0 75% 75% / 0 0 150% 150%;
+		transform: scaleY(1.25);
+	}
+
+	/* Uneasy / worried */
+	.avatar-mouth.mouth-uneasy {
+		--mouth-width: 4.7cqw;
+		--mouth-height: 0.9cqw;
+	}
+
+	.avatar-mouth.mouth-uneasy .mouth-line {
+		border-bottom-width: 0;
+		border-top: 0.45cqw solid var(--mouth-color);
+		border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+		transform: translateY(0.5cqw) scaleY(0.75);
+	}
+
+	/* Sad */
+	.avatar-mouth.mouth-sad {
+		--mouth-width: 5.4cqw;
+		--mouth-height: 1.15cqw;
+	}
+
+	.avatar-mouth.mouth-sad .mouth-line {
+		border-bottom-width: 0;
+		border-top: 0.55cqw solid var(--mouth-color);
+		border-radius: 50% 50% 0 0 / 120% 120% 0 0;
+		transform: translateY(0.75cqw) scaleY(0.95);
+	}
+
+	/* Open worried */
+	.avatar-mouth.mouth-open-worried {
+		--mouth-width: 3.1cqw;
+		--mouth-height: 2.6cqw;
+	}
+
+	.avatar-mouth.mouth-open-worried .mouth-line {
+		border: 0.45cqw solid var(--mouth-color);
+		border-radius: 50%;
+		background:
+			radial-gradient(
+				circle at 50% 62%,
+				#3a160e 0%,
+				#5b2416 70%,
+				#2a0e08 100%
+			);
+		filter: drop-shadow(0 0.25cqw 0 var(--mouth-shadow));
+		transform: none;
 	}
 
 

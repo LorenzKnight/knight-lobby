@@ -1,17 +1,65 @@
+const MOOD_FACE_CONFIG = {
+	neutral: {
+		eyes: "neutral",
+		mouth: "neutral",
+	},
+
+	good: {
+		eyes: "calm",
+		mouth: "soft-smile",
+	},
+
+	ahead: {
+		eyes: "confident",
+		mouth: "smile",
+	},
+
+	completed: {
+		eyes: "happy",
+		mouth: "big-smile",
+	},
+
+	behind: {
+		eyes: "worried",
+		mouth: "uneasy",
+	},
+
+	danger: {
+		eyes: "sad",
+		mouth: "sad",
+	},
+
+	critical: {
+		eyes: "stressed",
+		mouth: "open-worried",
+	},
+
+	sleeping: {
+		eyes: "sleeping",
+		mouth: "relaxed",
+	},
+};
+
+function getMoodFaceConfig(mood) {
+	return MOOD_FACE_CONFIG[mood] ?? MOOD_FACE_CONFIG.neutral;
+}
+
 function PlayerAvatar({ 
 	avatarImages,
 
 	mood = "neutral",
 	eyeExpression,
 	mouthExpression,
-	
+
 	eyeColor = "#9b4e12",
 	lookX = 0,
 	lookY = 0,
 	blinking = true,
 }) {
-	const currentEyeExpression = eyeExpression ?? mood;
-	const currentMouthExpression = mouthExpression ?? mood;
+	const moodFaceConfig = getMoodFaceConfig(mood);
+
+	const currentEyeExpression = eyeExpression ?? moodFaceConfig.eyes;
+	const currentMouthExpression = mouthExpression ?? moodFaceConfig.mouth;
 
 	const eyesStyle = {
 		"--eye-color": eyeColor,

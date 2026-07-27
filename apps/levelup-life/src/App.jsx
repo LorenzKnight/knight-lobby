@@ -1340,11 +1340,81 @@ function App() {
 		return getProgressPercent(startOfDay, startOfNextDay, currentDate);
 	}
 
-	function getAvatarMood(dayProgress, dailyProgress) {
-		const safeDailyProgress = Math.min(100, Math.max(0, dailyProgress));
-		const safeDayProgress = Math.min(100, Math.max(0, dayProgress));
+	// Variable de dia Productivo
+	const PRODUCTIVE_DAY_START_HOUR = 8;
+	const PRODUCTIVE_DAY_END_HOUR = 23;
 
-		const difference = safeDailyProgress - safeDayProgress;
+	function getProductiveDayWindow(currentDate) {
+		const productiveStart = new Date(currentDate);
+		productiveStart.setHours(PRODUCTIVE_DAY_START_HOUR, 0, 0, 0);
+
+		const productiveEnd = new Date(currentDate);
+		productiveEnd.setHours(PRODUCTIVE_DAY_END_HOUR, 0, 0, 0);
+
+		return {
+			productiveStart,
+			productiveEnd,
+		};
+	}
+
+	function getProductiveDayState(currentDate) {
+		const { productiveStart, productiveEnd } =
+			getProductiveDayWindow(currentDate);
+
+		if (currentDate < productiveStart) {
+			return {
+				state: "before_start",
+				isInsideProductiveHours: false,
+				productiveMinutesSinceStart: 0,
+			};
+		}
+
+		if (currentDate > productiveEnd) {
+			return {
+				state: "after_end",
+				isInsideProductiveHours: false,
+				productiveMinutesSinceStart: Math.round(
+					(productiveEnd - productiveStart) / 60000
+				),
+			};
+		}
+
+		return {
+			state: "active",
+			isInsideProductiveHours: true,
+			productiveMinutesSinceStart: Math.round(
+				(currentDate - productiveStart) / 60000
+			),
+		};
+	}
+
+	function getProductiveDayProgress(currentDate) {
+		const { productiveStart, productiveEnd } =
+			getProductiveDayWindow(currentDate);
+
+		if (currentDate < productiveStart) {
+			return 0;
+		}
+
+		if (currentDate > productiveEnd) {
+			return 100;
+		}
+
+		return getProgressPercent(
+			productiveStart,
+			productiveEnd,
+			currentDate
+		);
+	}
+
+	function getAvatarMood(productiveDayProgress, dailyProgress, productiveDayState) {
+		const safeDailyProgress = Math.min(100, Math.max(0, dailyProgress));
+		const safeProductiveDayProgress = Math.min(
+			100,
+			Math.max(0, productiveDayProgress)
+		);
+
+		const difference = safeDailyProgress - safeProductiveDayProgress;
 
 		if (safeDailyProgress >= 100) {
 			return {
@@ -1352,6 +1422,28 @@ function App() {
 				label: "Día completado",
 				message: "Todas las misiones listas",
 				status: "completed",
+			};
+		}
+
+		if (productiveDayState?.state === "before_start") {
+			return {
+				emoji: "😴",
+				label: "Descansando",
+				message: "Tu jornada productiva todavía no empieza",
+				status: "sleeping",
+			};
+		}
+
+		if (
+			productiveDayState?.state === "active" &&
+			productiveDayState.productiveMinutesSinceStart < 60 &&
+			safeDailyProgress < 100
+		) {
+			return {
+				emoji: "🌤️",
+				label: "Buenos días",
+				message: "La jornada acaba de empezar",
+				status: "good",
 			};
 		}
 
@@ -1373,7 +1465,7 @@ function App() {
 			};
 		}
 
-		if (safeDayProgress >= 85 && safeDailyProgress < 60) {
+		if (safeProductiveDayProgress >= 85 && safeDailyProgress < 60) {
 			return {
 				emoji: "😰",
 				label: "Modo peligro",
@@ -1382,7 +1474,7 @@ function App() {
 			};
 		}
 
-		if (safeDayProgress >= 70 && safeDailyProgress < 50) {
+		if (safeProductiveDayProgress >= 70 && safeDailyProgress < 50) {
 			return {
 				emoji: "🥺",
 				label: "Necesita atención",
@@ -1519,10 +1611,13 @@ function App() {
 	const monthProgress = getMonthProgress(currentDateTime);
 	const weekProgress = getWeekProgress(currentDateTime);
 	const dayTimeProgress = getDayProgress(currentDateTime);
+	const productiveDayProgress = getProductiveDayProgress(currentDateTime);
+	const productiveDayState = getProductiveDayState(currentDateTime);
 
 	const avatarMood = getAvatarMood(
-		dayTimeProgress,
-		dailyProgressPercent
+		productiveDayProgress,
+		dailyProgressPercent,
+		productiveDayState
 	);
 
 	avatarMoodRef.current = avatarMood;
@@ -1979,7 +2074,10 @@ function App() {
 							</div>
 
 							<div className="avatar-display">
-								<PlayerAvatar avatarImages={getSelectedAvatarImages()} />
+								<PlayerAvatar
+									avatarImages={getSelectedAvatarImages()}
+									mood={avatarMood.status}
+								/>
 							</div>
 
 							<h2>{displayName}</h2>
