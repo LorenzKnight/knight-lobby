@@ -166,7 +166,13 @@ function AvatarEye({ side }) {
 function AvatarMouth({ expression = "neutral" }) {
 	return (
 		<div className={`avatar-mouth mouth-${expression}`}>
-			<div className="mouth-line" />
+			<div className="mouth-lip mouth-lip-top" />
+			<div className="mouth-lip mouth-lip-bottom" />
+
+			<div className="mouth-inner">
+				<div className="mouth-teeth" />
+				<div className="mouth-tongue-shadow" />
+			</div>
 		</div>
 	);
 }

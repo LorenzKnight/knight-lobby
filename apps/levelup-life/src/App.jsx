@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import {
 	Backpack,
 	BarChart3,
@@ -19,10 +25,7 @@ import {
 	WalletCards,
 } from "lucide-react";
 import { getMe, loginUser } from "./api/authApi";
-import {
-	player,
-	// priorities,
-} from "./data/mockLevelupData";
+import { player } from "./data/mockLevelupData";
 import Toast from "./components/Toast";
 import TamagotchiReminder from "./components/TamagotchiReminder";
 import LifeAreaDetailView from "./components/LifeAreaDetailView";
@@ -199,7 +202,7 @@ function App() {
 		}
 
 		loadGameProfile();
-	}, [authUser]);
+	}, [authUser?.user_id]);
 
 	useEffect(() => {
 		async function closePreviousDay() {
@@ -262,7 +265,7 @@ function App() {
 		}
 
 		loadDailyGoals();
-	}, [authUser]);
+	}, [authUser?.user_id]);
 
 	const loadActiveEffects = useCallback(async () => {
 		if (!authUser?.user_id) return;
@@ -338,7 +341,7 @@ function App() {
 		}
 
 		loadLifeAreas();
-	}, [authUser]);
+	}, [authUser?.user_id]);
 
 	useEffect(() => {
 		function updateClock() {
@@ -391,12 +394,12 @@ function App() {
 		}
 
 		loadAvatarItems();
-	}, [authUser]);
+	}, [authUser?.user_id]);
 
 	useEffect(() => {
 		function handleEscapeKey(event) {
 			if (event.key === "Escape") {
-				closeFloatingMenus();
+				closeAllOverlays();
 			}
 		}
 
@@ -420,7 +423,7 @@ function App() {
 		return () => clearTimeout(timeout);
 	}, [activeReminder, reminderQueue]);
 
-	function closeFloatingMenus() {
+	function closeAllOverlays() {
 		setSelectedDailyGoalId(null);
 		setShowQuickAddMenu(false);
 		setShowAvatarMenu(false);
@@ -490,40 +493,28 @@ function App() {
 		setShowQuickAddMenu((currentValue) => !currentValue);
 	}
 
+	function resetAreaForm() {
+		setAreaError("");
+		setAreaName("");
+		setAreaIcon("✨");
+		setAreaColor("#7a58b4");
+		setAreaDescription("");
+	}
+
 	function handleQuickAddAction(action) {
 		setSelectedDailyGoalId(null);
 		setShowQuickAddMenu(false);
 		setShowAvatarMenu(false);
 
 		if (action === "area") {
-			setAreaError("");
-			setAreaName("");
-			setAreaIcon("✨");
-			setAreaColor("#7a58b4");
-			setAreaDescription("");
-
+			resetAreaForm();
 			setShowDailyGoalForm(false);
 			setShowAreaForm(true);
 			return;
 		}
 
 		if (action === "daily_goal") {
-			setDailyGoalError("");
-
-			setDailyGoalTitle("");
-			setDailyGoalDescription("");
-			setDailyGoalLifeAreaId("");
-
-			setDailyGoalProgressType("checkbox");
-			setDailyGoalTargetValue(1);
-			setDailyGoalStepValue(1);
-			setDailyGoalUnit("task");
-
-			setDailyGoalReminderEnabled(true);
-			setDailyGoalReminderIntervalMinutes(120);
-			setDailyGoalReminderStartTime("08:00");
-			setDailyGoalReminderEndTime("22:00");
-
+			resetDailyGoalForm();
 			setShowAreaForm(false);
 			setShowDailyGoalForm(true);
 			return;
@@ -538,6 +529,23 @@ function App() {
 		setCurrentView("life-area-detail");
 		setShowQuickAddMenu(false);
 		setShowAvatarMenu(false);
+	}
+
+	function resetDailyGoalForm() {
+		setDailyGoalError("");
+		setDailyGoalTitle("");
+		setDailyGoalDescription("");
+		setDailyGoalLifeAreaId("");
+
+		setDailyGoalProgressType("checkbox");
+		setDailyGoalTargetValue(1);
+		setDailyGoalStepValue(1);
+		setDailyGoalUnit("task");
+
+		setDailyGoalReminderEnabled(true);
+		setDailyGoalReminderIntervalMinutes(120);
+		setDailyGoalReminderStartTime("08:00");
+		setDailyGoalReminderEndTime("22:00");
 	}
 
 	async function handleCreateDailyGoalSubmit(event) {
@@ -621,17 +629,7 @@ function App() {
 				}
 
 				setShowDailyGoalForm(false);
-				setDailyGoalTitle("");
-				setDailyGoalDescription("");
-				setDailyGoalLifeAreaId("");
-				setDailyGoalProgressType("checkbox");
-				setDailyGoalTargetValue(1);
-				setDailyGoalStepValue(1);
-				setDailyGoalUnit("task");
-				setDailyGoalReminderEnabled(true);
-				setDailyGoalReminderIntervalMinutes(120);
-				setDailyGoalReminderStartTime("08:00");
-				setDailyGoalReminderEndTime("22:00");
+				resetDailyGoalForm();
 
 				showToast(
 					"Hábito diario creado",
@@ -827,23 +825,12 @@ function App() {
 	}
 
 	function handleOpenShopView() {
-		setSelectedDailyGoalId(null);
-		setShowQuickAddMenu(false);
-		setShowAvatarMenu(false);
-		setShowAreaForm(false);
-		setShowDailyGoalForm(false);
-
+		closeAllOverlays();
 		setShowShopView(true);
 	}
 
 	function handleOpenInventoryView() {
-		setSelectedDailyGoalId(null);
-		setShowQuickAddMenu(false);
-		setShowAvatarMenu(false);
-		setShowAreaForm(false);
-		setShowDailyGoalForm(false);
-		setShowShopView(false);
-
+		closeAllOverlays();
 		setShowInventoryView(true);
 	}
 
@@ -1187,22 +1174,7 @@ function App() {
 					...currentProfile,
 					...result.data.game_profile,
 				}));
-
-				// const rewardEvents = result.data.reward_events || [];
-				// const mainRewardEvent = rewardEvents[rewardEvents.length - 1];
-
-				// showToast(
-				// 	result.data.game_profile.leveled_up
-				// 	? "¡Subiste de nivel!"
-				// 	: mainRewardEvent?.title || "Recompensa recibida",
-				// 	mainRewardEvent?.message || "Tu progreso fue recompensado.",
-				// 	"success"
-				// );
-
-				return;
 			}
-
-			return;
 		} catch (error) {
 			console.error("Could not update daily goal:", error);
 
@@ -1243,12 +1215,10 @@ function App() {
 	function handleBackToDashboard() {
 		setCurrentView("dashboard");
 		setSelectedLifeArea(null);
-		setSelectedDailyGoalId(null);
-		setShowQuickAddMenu(false);
-		setShowAvatarMenu(false);
+		closeAllOverlays();
 	}
 
-	function getSelectedAvatarImages() {
+	const selectedAvatarImages = useMemo(() => {
 		const selectedCap = avatarItems.caps.find(
 			(item) => item.item_key === avatarConfig.cap
 		);
@@ -1276,7 +1246,7 @@ function App() {
 			feets: selectedFeets?.image_url,
 			bag: selectedBag?.image_url,
 		};
-	}
+	}, [avatarItems, avatarConfig]);
 
 	function handleCloseReminder() {
 		setActiveReminder(null);
@@ -1688,7 +1658,7 @@ function App() {
 					<button
 						type="button"
 						className="topbar-menu-button"
-						onClick={closeFloatingMenus}
+						onClick={closeAllOverlays}
 						aria-label="Abrir menú"
 					>
 						<Menu size={27} strokeWidth={1.8} />
@@ -1758,13 +1728,13 @@ function App() {
 							<div className="day-progress-widget">
 								<div className="day-progress-left">
 									<small className="daily-progress-count">
-										Progreso: {completedDailyGoals}/{totalDailyGoals}
+										Progress: {completedDailyGoals}/{totalDailyGoals}
 									</small>
 
 									<p className="progress-note">
 										{dailyProgressPercent === 100
-											? "¡Día completado!"
-											: "¡Sigue así!"}
+											? "Day completed!"
+											: "Keep it up!"}
 									</p>
 
 									<div className="low-poly-mountains" aria-hidden="true">
@@ -1777,7 +1747,7 @@ function App() {
 								</div>
 
 								<div className="day-progress-right">
-									<p className="day-progress-title">☀ Progreso del día</p>
+									<p className="day-progress-title">☀ Progress of the day</p>
 
 									<div
 										className="progress-circle"
@@ -1796,18 +1766,18 @@ function App() {
 
 							<div className="daily-goals-preview" ref={dailyGoalsPreviewRef}>
 								<div className="daily-goals-preview-header">
-									<strong>Habitos u objetivos diarios</strong>
+									<strong>Daily habits or goals</strong>
 									<span>{completedDailyGoals}/{totalDailyGoals}</span>
 								</div>
 
 								<div className="daily-goals-scroll-area">
 									{dailyGoalsLoading && (
-										<p className="daily-goals-message">Cargando objetivos...</p>
+										<p className="daily-goals-message">Loading goals...</p>
 									)}
 
 									{!dailyGoalsLoading && dailyGoals.length === 0 && (
 										<p className="daily-goals-message">
-											Todavía no tienes objetivos diarios.
+											You don't have daily goals yet.
 										</p>
 									)}
 
@@ -2075,7 +2045,7 @@ function App() {
 
 							<div className="avatar-display">
 								<PlayerAvatar
-									avatarImages={getSelectedAvatarImages()}
+									avatarImages={selectedAvatarImages}
 									mood={avatarMood.status}
 								/>
 							</div>
@@ -2095,7 +2065,7 @@ function App() {
 							<article className="life-areas-card">
 								<div className="card-title">
 									<span>🌍</span>
-									<h2>Áreas de Vida</h2>
+									<h2>Areas of Life</h2>
 								</div>
 
 								<div className="life-areas-card-list">
@@ -2133,7 +2103,7 @@ function App() {
 								<div className="card-title spaced">
 									<div>
 										<span>🤖</span>
-										<h2>Asistente IA</h2>
+										<h2>AI Assistant</h2>
 									</div>
 									<strong>BETA</strong>
 								</div>
@@ -2143,15 +2113,15 @@ function App() {
 								<div className="assistant-actions">
 									<button type="button">
 										<CalendarCheck size={22} />
-										Crear rutina
+										Create a routine
 									</button>
 									<button type="button">
 										<BarChart3 size={22} />
-										Plan financiero
+										Financial plan
 									</button>
 									<button type="button">
 										<WalletCards size={22} />
-										Presupuesto
+										Budget
 									</button>
 									<button type="button">
 										<BriefcaseBusiness size={22} />
@@ -2160,7 +2130,7 @@ function App() {
 								</div>
 
 								<button type="button" className="text-link">
-									Chatear con IA <ChevronRight size={17} />
+									Chat with AI <ChevronRight size={17} />
 								</button>
 							</div>
 						</div>
@@ -2170,8 +2140,8 @@ function App() {
 						<button type="button" className="battle-card">
 							<Swords size={38} strokeWidth={1.8} />
 							<span>
-								<strong>Modo batalla</strong>
-								<small>Enfrenta desafíos y mejora tu vida</small>
+								<strong>Battle Mode</strong>
+								<small>Face challenges and improve your life</small>
 							</span>
 							<ChevronRight />
 						</button>
@@ -2184,7 +2154,7 @@ function App() {
 							<Backpack size={38} strokeWidth={1.8} />
 							<span>
 								<strong>Inventory</strong>
-								<small>Revisa objetos, boosts y recompensas</small>
+								<small>Check items, boosts, and rewards</small>
 							</span>
 							<ChevronRight />
 						</button>
@@ -2588,7 +2558,7 @@ function App() {
 					player={displayPlayer}
 					avatarConfig={avatarConfig}
 					avatarItems={avatarItems}
-					avatarImages={getSelectedAvatarImages()}
+					avatarImages={selectedAvatarImages}
 					avatarCategory={avatarCategory}
 					setAvatarCategory={setAvatarCategory}
 					handleChangeAvatarPart={handleChangeAvatarPart}
@@ -2655,7 +2625,7 @@ function App() {
 					className={currentView === "dashboard" ? "active" : ""}
 					onClick={handleBackToDashboard}
 				>
-					<HomeIcon />
+					<Home size={24} strokeWidth={1.8} />
 					<span>Inicio</span>
 				</button>
 
@@ -2692,10 +2662,6 @@ function App() {
 			</nav>
 		</main>
 	);
-}
-
-function HomeIcon() {
-	return <Home size={24} strokeWidth={1.8} />;
 }
 
 export default App;
