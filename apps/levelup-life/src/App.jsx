@@ -1159,9 +1159,9 @@ function App() {
 				daily_goal_id: goal.daily_goal_id,
 			});
 
-			showRewardEvents(result.data?.reward_events || []);
-
 			if (!result.success) return;
+
+			showRewardEvents(result.data?.reward_events || []);
 
 			const goalsResult = await getDailyGoals(authUser.user_id);
 
@@ -2122,27 +2122,13 @@ function App() {
 								))}
 							</div>
 
-							<div className={`avatar-mood-card ${avatarMood.status}`}>{/*  estado del emijo */}
-								<span className="avatar-mood-emoji">{avatarMood.emoji}</span>
-
-								<div>
-									<strong>{avatarMood.label}</strong>
-
-									<small className="avatar-mood-message">
-										{avatarMood.message}
-									</small>
-
-									<small className="avatar-mood-stats">
-										Hábitos: {dailyProgressPercent}%<br />
-										Día: {dayTimeProgress}%
-									</small>
-								</div>
-							</div>
-
 							<div className="avatar-display">
 								<PlayerAvatar
 									avatarImages={selectedAvatarImages}
 									mood={avatarMood.status}
+									avatarMood={avatarMood}
+									dailyProgressPercent={dailyProgressPercent}
+									dayTimeProgress={dayTimeProgress}
 								/>
 							</div>
 

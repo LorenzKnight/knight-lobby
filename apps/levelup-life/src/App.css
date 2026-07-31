@@ -625,20 +625,6 @@ button {
 		}
 	}
 
-	
-
-	/* Ajustes base para piezas del avatar */
-	.avatar-legs,
-	.avatar-body,
-	.avatar-head {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		/* background: rgba(255, 0, 0, 0.233) !important; */
-		clip-path: none !important;
-		box-shadow: none !important;
-	}
-
 
 
 	/* ==============================
@@ -1778,13 +1764,13 @@ button {
 
 
 
-	/* ===========================
-	Avatar Mood - Speech Bubble 
-	=========================== */
-	.avatar-mood-card {
+	/* ===============================
+		Avatar Mood - Speech Bubble 
+	================================ */
+	.avatar-mood-card-attached {
 		position: absolute;
-		top: 55px;
-		right: 0px;
+		top: 15cqw;
+		left: 68%;
 		z-index: 12;
 
 		display: flex;
@@ -1799,17 +1785,16 @@ button {
 		padding: 2px 5px 8px;
 
 		border-radius: 18px;
+		border: 1px solid rgba(122, 88, 180, 0.16);
 
 		text-align: center;
 
 		background:
 			linear-gradient(
 				135deg,
-				rgba(255, 255, 255, 0.98),
-				rgba(248, 243, 255, 0.95)
+				rgb(255, 255, 255),
+				rgb(248, 243, 255)
 			);
-
-		border: 1px solid rgba(122, 88, 180, 0.16);
 
 		box-shadow:
 			0 16px 38px rgba(48, 40, 64, 0.14),
@@ -1820,8 +1805,14 @@ button {
 		animation: avatarMoodBubbleIn 0.28s ease;
 	}
 
+	.avatar-mood-card {
+		--mood-card-background: rgba(255, 255, 255, 0.92);
+
+		background: var(--mood-card-background);
+	}
+
 	/* Cola de la burbuja */
-	.avatar-mood-card::before {
+	.avatar-mood-card-attached::after {
 		content: "";
 
 		position: absolute;
@@ -1945,7 +1936,7 @@ button {
 
 
 	/* ======================
-	REWARD ANIMATIONS
+		REWARD ANIMATIONS
 	====================== */
 	.reward-pop::before {
 		content: "";
@@ -7418,20 +7409,6 @@ button {
 
 
 
-	/* Ajustes base para piezas del avatar */
-	.avatar-legs,
-	.avatar-body,
-	.avatar-head {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		/* background: rgba(255, 0, 0, 0.233) !important; */
-		clip-path: none !important;
-		box-shadow: none !important;
-	}
-
-
-
 	/* ==============================
 		AVATAR EYES
 	============================== */
@@ -8567,13 +8544,13 @@ button {
 
 
 
-	/* ===========================
-	Avatar Mood - Speech Bubble 
-	=========================== */
-	.avatar-mood-card {
+	/* ===============================
+		Avatar Mood - Speech Bubble 
+	================================ */
+	.avatar-mood-card-attached {
 		position: absolute;
-		top: 55px;
-		right: 12px;
+		top: 15cqw;
+		left: 68%;
 		z-index: 12;
 
 		display: flex;
@@ -8588,17 +8565,16 @@ button {
 		padding: 2px 5px 8px;
 
 		border-radius: 18px;
+		border: 1px solid rgba(122, 88, 180, 0.16);
 
 		text-align: center;
 
 		background:
 			linear-gradient(
 				135deg,
-				rgba(255, 255, 255, 0.98),
-				rgba(248, 243, 255, 0.95)
+				rgb(255, 255, 255),
+				rgb(248, 243, 255)
 			);
-
-		border: 1px solid rgba(122, 88, 180, 0.16);
 
 		box-shadow:
 			0 16px 38px rgba(48, 40, 64, 0.14),
@@ -8609,8 +8585,14 @@ button {
 		animation: avatarMoodBubbleIn 0.28s ease;
 	}
 
+	.avatar-mood-card {
+		--mood-card-background: rgba(255, 255, 255, 0.92);
+
+		background: var(--mood-card-background);
+	}
+
 	/* Cola de la burbuja */
-	.avatar-mood-card::before {
+	.avatar-mood-card-attached::after {
 		content: "";
 
 		position: absolute;
@@ -15292,7 +15274,7 @@ button {
 			transparent
 		);
 	}
-	
+
 	.daily-goal-card {
 		display: grid;
 		gap: 10px;
@@ -17346,20 +17328,6 @@ button {
 	}
 
 
-	
-	/* Ajustes base para piezas del avatar */
-	.avatar-legs,
-	.avatar-body,
-	.avatar-head {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		background: transparent !important;
-		clip-path: none !important;
-		box-shadow: none !important;
-	}
-
-
 
 	/* ==============================
 		AVATAR EYES
@@ -18498,12 +18466,12 @@ button {
 
 
 	/* ===============================
-		Avatar Mood - Speech Bubble
-	=============================== */
-	.avatar-mood-card {
+		Avatar Mood - Speech Bubble 
+	================================ */
+	.avatar-mood-card-attached {
 		position: absolute;
-		top: 150px;
-		right: 17px;
+		top: 18cqw;
+		left: 68%;
 		z-index: 12;
 
 		display: flex;
@@ -18518,17 +18486,16 @@ button {
 		padding: 2px 5px 8px;
 
 		border-radius: 18px;
+		border: 1px solid rgba(122, 88, 180, 0.16);
 
 		text-align: center;
 
 		background:
 			linear-gradient(
 				135deg,
-				rgba(255, 255, 255, 0.98),
-				rgba(248, 243, 255, 0.95)
+				rgb(255, 255, 255),
+				rgb(248, 243, 255)
 			);
-
-		border: 1px solid rgba(122, 88, 180, 0.16);
 
 		box-shadow:
 			0 16px 38px rgba(48, 40, 64, 0.14),
@@ -18539,8 +18506,14 @@ button {
 		animation: avatarMoodBubbleIn 0.28s ease;
 	}
 
+	.avatar-mood-card {
+		--mood-card-background: rgba(255, 255, 255, 0.92);
+
+		background: var(--mood-card-background);
+	}
+
 	/* Cola de la burbuja */
-	.avatar-mood-card::before {
+	.avatar-mood-card-attached::after {
 		content: "";
 
 		position: absolute;

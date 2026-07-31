@@ -48,6 +48,10 @@ function PlayerAvatar({
 	avatarImages,
 
 	mood = "neutral",
+	avatarMood = null,
+	dailyProgressPercent = 0,
+	dayTimeProgress = 0,
+
 	eyeExpression,
 	mouthExpression,
 
@@ -113,6 +117,30 @@ function PlayerAvatar({
 				alt="Cuerpo fijo del personaje"
 				className="avatar-body"
 			/>
+
+			{avatarMood && (
+				<div
+					className={`avatar-mood-card avatar-mood-card-attached ${avatarMood.status}`}
+				>
+					<span className="avatar-mood-emoji">
+						{avatarMood.emoji}
+					</span>
+
+					<div>
+						<strong>{avatarMood.label}</strong>
+
+						<small className="avatar-mood-message">
+							{avatarMood.message}
+						</small>
+
+						<small className="avatar-mood-stats">
+							Hábitos: {dailyProgressPercent}%
+							<br />
+							Día: {dayTimeProgress}%
+						</small>
+					</div>
+				</div>
+			)}
 
 			{avatarImages?.shirt && (
 				<img
