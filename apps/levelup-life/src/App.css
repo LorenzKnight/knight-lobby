@@ -1454,7 +1454,7 @@ button {
 	.avatar-mouth.mouth-soft-smile {
 		--mouth-width: 5.8cqw;
 		--mouth-height: 2.65cqw;
-		--mouth-open: 0.6cqw;
+		--mouth-open: 1.6cqw;
 
 		--mouth-scale-x: 1;
 		--mouth-scale-y: 1;
@@ -1484,8 +1484,8 @@ button {
 	}
 
 	.avatar-mouth.mouth-soft-smile .mouth-teeth {
-		opacity: 0.2;
-		height: 22%;
+		opacity: 0.6;
+		height: 54.3%;
 	}
 
 	.avatar-mouth.mouth-soft-smile .mouth-tongue-shadow {
@@ -1534,23 +1534,27 @@ button {
 
 	/* Big smile: victoria/completed */
 	.avatar-mouth.mouth-big-smile {
-		--mouth-width: 6.2cqw;
+		--mouth-width: 6.7cqw;
 		--mouth-height: 3.15cqw;
-		--mouth-open: 1.18cqw;
+		--mouth-open: 2.5cqw;
 
 		--mouth-scale-x: 1.08;
 		--mouth-scale-y: 1.05;
 	}
 
 	.avatar-mouth.mouth-big-smile .mouth-inner {
-		--corner-y: 34%;
-		--top-outer-y: 22%;
-		--top-inner-y: 15%;
-		--top-center-y: 14%;
+		/* Esquinas elevadas */
+		--corner-y: 24%;
 
-		--bottom-outer-y: 70%;
-		--bottom-inner-y: 90%;
-		--bottom-center-y: 98%;
+		/* Curva superior suave */
+		--top-outer-y: 43%;
+		--top-inner-y: 44%;
+		--top-center-y: 48%;
+
+		/* Curva inferior pronunciada */
+		--bottom-outer-y: 38%;
+		--bottom-inner-y: 78%;
+		--bottom-center-y: 95%;
 	}
 
 	.avatar-mouth.mouth-big-smile .mouth-lip-top {
@@ -1563,7 +1567,7 @@ button {
 
 	.avatar-mouth.mouth-big-smile .mouth-teeth {
 		opacity: 0.78;
-		height: 34%;
+		height: 53.5%;
 	}
 
 	.avatar-mouth.mouth-big-smile .mouth-tongue-shadow {
@@ -3755,6 +3759,7 @@ button {
 	}
 
 	.daily-goals-preview-header {
+		padding-left: 5px;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -3815,11 +3820,51 @@ button {
 
 
 	/* ================================
-	Daily Goal Summary Card
+		Daily Goal Summary Card
 	================================ */
+	.daily-goal-area-group-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+
+		padding: 0 0.2rem;
+	}
+
+	.daily-goal-area-group-header > div {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+	}
+
+	.daily-goal-area-group-header strong {
+		font-size: 0.82rem;
+		color: var(--goal-area-color);
+	}
+
+	.daily-goal-area-group-header small {
+		font-size: 0.72rem;
+		opacity: 0.68;
+	}
+
+	.daily-goal-area-group-icon {
+		display: grid;
+		place-items: center;
+
+		width: 1.7rem;
+		height: 1.7rem;
+
+		border-radius: 0.55rem;
+		background: color-mix(
+			in srgb,
+			var(--goal-area-color) 18%,
+			transparent
+		);
+	}
+
 	.daily-goal-card {
 		display: grid;
 		gap: 10px;
+		margin: 8px 0;
 		padding: 6px 12px;
 		border-radius: 16px;
 		background:
@@ -3835,6 +3880,7 @@ button {
 			border-color 0.18s ease,
 			box-shadow 0.18s ease,
 			transform 0.18s ease;
+
 	}
 
 	.daily-goal-card:hover {
@@ -8199,7 +8245,7 @@ button {
 	.avatar-mouth.mouth-soft-smile {
 		--mouth-width: 5.8cqw;
 		--mouth-height: 2.65cqw;
-		--mouth-open: 0.6cqw;
+		--mouth-open: 1.6cqw;
 
 		--mouth-scale-x: 1;
 		--mouth-scale-y: 1;
@@ -8229,8 +8275,8 @@ button {
 	}
 
 	.avatar-mouth.mouth-soft-smile .mouth-teeth {
-		opacity: 0.2;
-		height: 22%;
+		opacity: 0.6;
+		height: 54.3%;
 	}
 
 	.avatar-mouth.mouth-soft-smile .mouth-tongue-shadow {
@@ -8279,23 +8325,27 @@ button {
 
 	/* Big smile: victoria/completed */
 	.avatar-mouth.mouth-big-smile {
-		--mouth-width: 6.2cqw;
+		--mouth-width: 6.7cqw;
 		--mouth-height: 3.15cqw;
-		--mouth-open: 1.18cqw;
+		--mouth-open: 2.5cqw;
 
 		--mouth-scale-x: 1.08;
 		--mouth-scale-y: 1.05;
 	}
 
 	.avatar-mouth.mouth-big-smile .mouth-inner {
-		--corner-y: 34%;
-		--top-outer-y: 22%;
-		--top-inner-y: 15%;
-		--top-center-y: 14%;
+		/* Esquinas elevadas */
+		--corner-y: 24%;
 
-		--bottom-outer-y: 70%;
-		--bottom-inner-y: 90%;
-		--bottom-center-y: 98%;
+		/* Curva superior suave */
+		--top-outer-y: 43%;
+		--top-inner-y: 44%;
+		--top-center-y: 48%;
+
+		/* Curva inferior pronunciada */
+		--bottom-outer-y: 38%;
+		--bottom-inner-y: 78%;
+		--bottom-center-y: 95%;
 	}
 
 	.avatar-mouth.mouth-big-smile .mouth-lip-top {
@@ -8308,7 +8358,7 @@ button {
 
 	.avatar-mouth.mouth-big-smile .mouth-teeth {
 		opacity: 0.78;
-		height: 34%;
+		height: 53.5%;
 	}
 
 	.avatar-mouth.mouth-big-smile .mouth-tongue-shadow {
@@ -10528,6 +10578,7 @@ button {
 	}
 
 	.daily-goals-preview-header {
+		padding-left: 5px;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -10590,13 +10641,57 @@ button {
 	/* ================================
 		Daily Goal Summary Card
 	================================ */
+	.daily-goal-area-group-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+
+		padding: 0 0.2rem;
+	}
+
+	.daily-goal-area-group-header > div {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+	}
+
+	.daily-goal-area-group-header strong {
+		font-size: 0.82rem;
+		color: var(--goal-area-color);
+	}
+
+	.daily-goal-area-group-header small {
+		font-size: 0.72rem;
+		opacity: 0.68;
+	}
+
+	.daily-goal-area-group-icon {
+		display: grid;
+		place-items: center;
+
+		width: 1.7rem;
+		height: 1.7rem;
+
+		border-radius: 0.55rem;
+		background: color-mix(
+			in srgb,
+			var(--goal-area-color) 18%,
+			transparent
+		);
+	}
+
 	.daily-goal-card {
 		display: grid;
 		gap: 10px;
+		margin: 8px 0;
 		padding: 6px 12px;
 		border-radius: 16px;
-
-		background: rgba(255, 255, 255, 0.82);
+		background:
+			linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--goal-area-color, #7a58b4) 18%, #ffffff) 0%,
+				#ffffff 68%
+			);
 		border: 1px solid rgba(225, 218, 208, 0.9);
 
 		transition:
@@ -15081,7 +15176,7 @@ button {
 		grid-template-rows: auto minmax(0, 1fr);
 		gap: 12px;
 		margin-top: 12px;
-		padding: 12px;
+		padding: 20px 12px;
 		border-radius: 20px;
 
 		background: rgba(255, 255, 255, 0.88);
@@ -15095,6 +15190,7 @@ button {
 	}
 
 	.daily-goals-preview-header {
+		padding-left: 10px;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
@@ -15158,13 +15254,57 @@ button {
 	/* ================================
 		Daily Goal Summary Card
 	================================ */
+	.daily-goal-area-group-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+
+		padding: 0 0.2rem;
+	}
+
+	.daily-goal-area-group-header > div {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+	}
+
+	.daily-goal-area-group-header strong {
+		font-size: 0.82rem;
+		color: var(--goal-area-color);
+	}
+
+	.daily-goal-area-group-header small {
+		font-size: 0.72rem;
+		opacity: 0.68;
+	}
+
+	.daily-goal-area-group-icon {
+		display: grid;
+		place-items: center;
+
+		width: 1.7rem;
+		height: 1.7rem;
+
+		border-radius: 0.55rem;
+		background: color-mix(
+			in srgb,
+			var(--goal-area-color) 18%,
+			transparent
+		);
+	}
+	
 	.daily-goal-card {
 		display: grid;
 		gap: 10px;
+		margin: 8px 0;
 		padding: 6px 12px;
 		border-radius: 16px;
-
-		background: rgba(255, 255, 255, 0.82);
+		background:
+			linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--goal-area-color, #7a58b4) 18%, #ffffff) 0%,
+				#ffffff 68%
+			);
 		border: 1px solid rgba(225, 218, 208, 0.9);
 
 		transition:
@@ -18034,7 +18174,7 @@ button {
 	.avatar-mouth.mouth-soft-smile {
 		--mouth-width: 5.8cqw;
 		--mouth-height: 2.65cqw;
-		--mouth-open: 0.6cqw;
+		--mouth-open: 1.6cqw;
 
 		--mouth-scale-x: 1;
 		--mouth-scale-y: 1;
@@ -18064,8 +18204,8 @@ button {
 	}
 
 	.avatar-mouth.mouth-soft-smile .mouth-teeth {
-		opacity: 0.2;
-		height: 22%;
+		opacity: 0.6;
+		height: 54.3%;
 	}
 
 	.avatar-mouth.mouth-soft-smile .mouth-tongue-shadow {
@@ -18114,23 +18254,27 @@ button {
 
 	/* Big smile: victoria/completed */
 	.avatar-mouth.mouth-big-smile {
-		--mouth-width: 6.2cqw;
+		--mouth-width: 6.7cqw;
 		--mouth-height: 3.15cqw;
-		--mouth-open: 1.18cqw;
+		--mouth-open: 2.5cqw;
 
 		--mouth-scale-x: 1.08;
 		--mouth-scale-y: 1.05;
 	}
 
 	.avatar-mouth.mouth-big-smile .mouth-inner {
-		--corner-y: 34%;
-		--top-outer-y: 22%;
-		--top-inner-y: 15%;
-		--top-center-y: 14%;
+		/* Esquinas elevadas */
+		--corner-y: 24%;
 
-		--bottom-outer-y: 70%;
-		--bottom-inner-y: 90%;
-		--bottom-center-y: 98%;
+		/* Curva superior suave */
+		--top-outer-y: 43%;
+		--top-inner-y: 44%;
+		--top-center-y: 48%;
+
+		/* Curva inferior pronunciada */
+		--bottom-outer-y: 38%;
+		--bottom-inner-y: 78%;
+		--bottom-center-y: 95%;
 	}
 
 	.avatar-mouth.mouth-big-smile .mouth-lip-top {
@@ -18143,7 +18287,7 @@ button {
 
 	.avatar-mouth.mouth-big-smile .mouth-teeth {
 		opacity: 0.78;
-		height: 34%;
+		height: 53.5%;
 	}
 
 	.avatar-mouth.mouth-big-smile .mouth-tongue-shadow {

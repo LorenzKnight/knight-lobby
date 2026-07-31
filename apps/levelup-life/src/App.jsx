@@ -1207,9 +1207,22 @@ function App() {
 			setDailyGoalMenuArrowTop(arrowTop);
 		}
 
-		setSelectedDailyGoalId((currentId) =>
-			currentId === goalId ? null : goalId
+		const isOpeningMenu = selectedDailyGoalId !== goalId;
+
+		setSelectedDailyGoalId(
+			isOpeningMenu ? goalId : null
 		);
+
+		const isMobile = window.matchMedia("(max-width: 680px)").matches;
+
+		if (isOpeningMenu && isMobile) {
+			requestAnimationFrame(() => {
+				window.scrollTo({
+					top: 0,
+					behavior: "smooth",
+				});
+			});
+		}
 	}
 
 	function handleBackToDashboard() {
@@ -1649,6 +1662,52 @@ function App() {
 		return area?.name || "Sin área";
 	}
 
+	const dailyGoalGroups = lifeAreas
+		.map((area) => {
+			const areaGoals = dailyGoals.filter((goal) => {
+				return (
+					Number(goal.life_area_id) ===
+					Number(area.life_area_id)
+				);
+			});
+
+			return {
+				key: `area-${area.life_area_id}`,
+				areaId: area.life_area_id,
+				name: area.name,
+				icon: area.icon || "🌍",
+				color: area.color || "#7a58b4",
+				goals: areaGoals,
+			};
+		})
+		.filter((group) => group.goals.length > 0);
+
+	const dailyGoalsWithoutArea = dailyGoals.filter((goal) => {
+		if (!goal.life_area_id) {
+			return true;
+		}
+
+		const areaExists = lifeAreas.some((area) => {
+			return (
+				Number(area.life_area_id) ===
+				Number(goal.life_area_id)
+			);
+		});
+
+		return !areaExists;
+	});
+
+	if (dailyGoalsWithoutArea.length > 0) {
+		dailyGoalGroups.push({
+			key: "without-area",
+			areaId: null,
+			name: "Sin área",
+			icon: "🔥",
+			color: "#7a58b4",
+			goals: dailyGoalsWithoutArea,
+		});
+	}
+
 
 
 	return (
@@ -1782,54 +1841,91 @@ function App() {
 									)}
 
 									{!dailyGoalsLoading &&
-										dailyGoals.map((goal) => {
-											const goalAreaColor = getGoalAreaColor(goal);
-											const goalAreaIcon = getGoalAreaIcon(goal);
-											const goalAreaName = getGoalAreaName(goal);
+										dailyGoalGroups.map((group) => (
+											<section
+												className="daily-goal-area-group"
+												key={group.key}
+												style={{
+													"--goal-area-color": group.color,
+												}}
+											>
+												<div className="daily-goal-area-group-header">
+													<div>
+														<span className="daily-goal-area-group-icon">
+															{group.icon}
+														</span>
 
-											return (
-												<article
-													className={`daily-goal-card ${
-														selectedDailyGoalId === goal.daily_goal_id ? "selected" : ""
-													}`}
-													style={{
-														"--goal-area-color": goalAreaColor,
-													}}
-													key={goal.daily_goal_id}
-												>
-													<button
-														type="button"
-														className="daily-goal-summary-button"
-														onClick={(event) =>
-															handleOpenDailyGoalMenu(goal.daily_goal_id, event)
-														}
-													>
-														<div className="daily-goal-card-header">
-															<div className="daily-goal-title-with-area">
-																<span className="daily-goal-area-icon">
-																	{goalAreaIcon}
-																</span>
+														<strong>{group.name}</strong>
+													</div>
 
-																<div>
-																	<strong>{goal.title}</strong>
-																	<small>{goalAreaName}</small>
-																</div>
-															</div>
+													<small>
+														{group.goals.filter(
+															(goal) =>
+																Number(goal.progress_percent || 0) >= 100
+														).length}
+														/{group.goals.length}
+													</small>
+												</div>
 
-															<span>{goal.progress_percent}%</span>
-														</div>
+												<div className="daily-goal-area-group-list">
+													{group.goals.map((goal) => {
+														const goalAreaColor = getGoalAreaColor(goal);
+														const goalAreaIcon = getGoalAreaIcon(goal);
+														const goalAreaName = getGoalAreaName(goal);
 
-														<div className="daily-goal-mini-bar">
-															<div
+														return (
+															<article
+																className={`daily-goal-card ${
+																	selectedDailyGoalId === goal.daily_goal_id
+																		? "selected"
+																		: ""
+																}`}
 																style={{
-																	width: `${goal.progress_percent}%`,
+																	"--goal-area-color": goalAreaColor,
 																}}
-															/>
-														</div>
-													</button>
-												</article>
-											);
-										})
+																key={goal.daily_goal_id}
+															>
+																<button
+																	type="button"
+																	className="daily-goal-summary-button"
+																	onClick={(event) =>
+																		handleOpenDailyGoalMenu(
+																			goal.daily_goal_id,
+																			event
+																		)
+																	}
+																>
+																	<div className="daily-goal-card-header">
+																		<div className="daily-goal-title-with-area">
+																			<span className="daily-goal-area-icon">
+																				{goalAreaIcon}
+																			</span>
+
+																			<div>
+																				<strong>{goal.title}</strong>
+																				<small>{goalAreaName}</small>
+																			</div>
+																		</div>
+
+																		<span>
+																			{goal.progress_percent}%
+																		</span>
+																	</div>
+
+																	<div className="daily-goal-mini-bar">
+																		<div
+																			style={{
+																				width: `${goal.progress_percent}%`,
+																			}}
+																		/>
+																	</div>
+																</button>
+															</article>
+														);
+													})}
+												</div>
+											</section>
+										))
 									}
 								</div>
 
