@@ -1323,6 +1323,20 @@ function App() {
 		return getProgressPercent(startOfDay, startOfNextDay, currentDate);
 	}
 
+	function getSkyState(currentDate) {
+		const hour = currentDate.getHours();
+
+		if (hour >= 6 && hour < 17) {
+			return "day";
+		}
+
+		if (hour >= 17 && hour < 20) {
+			return "sunset";
+		}
+
+		return "night";
+	}
+
 	// Variable de dia Productivo
 	const PRODUCTIVE_DAY_START_HOUR = 8;
 	const PRODUCTIVE_DAY_END_HOUR = 23;
@@ -1594,6 +1608,10 @@ function App() {
 	const monthProgress = getMonthProgress(currentDateTime);
 	const weekProgress = getWeekProgress(currentDateTime);
 	const dayTimeProgress = getDayProgress(currentDateTime);
+	const skyState = getSkyState(currentDateTime);
+	// const skyState = "day";
+	// const skyState = "sunset";
+	// const skyState = "night";
 	const productiveDayProgress = getProductiveDayProgress(currentDateTime);
 	const productiveDayState = getProductiveDayState(currentDateTime);
 
@@ -2038,7 +2056,6 @@ function App() {
 										</small>
 									</div>
 
-									{/* <strong>Vida:</strong> */}
 									<div className="heart-row">
 										{Array.from({ length: displayPlayer.maxLife }).map((_, index) => (
 											<Heart
@@ -2123,6 +2140,45 @@ function App() {
 							</div>
 
 							<div className="avatar-display">
+								<div
+									className={`sky-state sky-${skyState}`}
+									aria-hidden="true"
+								>
+									<div className="sky-sun" />
+									<div className="sky-moon" />
+
+									<div className="sky-clouds">
+										<div className="sky-cloud sky-cloud-1">
+											<span className="cloud-piece cloud-piece-left" />
+											<span className="cloud-piece cloud-piece-center" />
+											<span className="cloud-piece cloud-piece-right" />
+										</div>
+
+										<div className="sky-cloud sky-cloud-2">
+											<span className="cloud-piece cloud-piece-left" />
+											<span className="cloud-piece cloud-piece-center" />
+											<span className="cloud-piece cloud-piece-right" />
+										</div>
+
+										<div className="sky-cloud sky-cloud-3">
+											<span className="cloud-piece cloud-piece-left" />
+											<span className="cloud-piece cloud-piece-center" />
+											<span className="cloud-piece cloud-piece-right" />
+										</div>
+									</div>
+
+									<div className="sky-stars">
+										<span className="sky-star star-1" />
+										<span className="sky-star star-2" />
+										<span className="sky-star star-3" />
+										<span className="sky-star star-4" />
+										<span className="sky-star star-5" />
+										<span className="sky-star star-6" />
+										<span className="sky-star star-7" />
+										<span className="sky-star star-8" />
+									</div>
+								</div>
+
 								<PlayerAvatar
 									avatarImages={selectedAvatarImages}
 									mood={avatarMood.status}
