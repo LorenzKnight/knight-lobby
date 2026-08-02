@@ -446,14 +446,13 @@ button {
 	/* ===================
 		Shared cards
 	=================== */
-	.player-card,
-	.priorities-card,
-	.ai-card,
-	.battle-card,
-	.inventory-card,
-	.levelup-bottom-nav {
+	.time-summary-card,
+	.day-progress-widget,
+	.daily-goals-preview,
+	.life-areas-card,
+	.ai-card {
 		background:
-			linear-gradient(180deg, rgba(255, 255, 255, 0.41), rgba(154, 167, 176, 0.19));
+			linear-gradient(180deg, rgba(255, 255, 255, 0.667), rgba(248, 252, 255, 0.461));
 
 		/* background:
 			linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.78));
@@ -470,6 +469,8 @@ button {
 		border-radius: 26px;
 		padding: 15px;
 		display: grid;
+		background:
+			linear-gradient(180deg, rgba(255, 255, 255, 0.41), rgba(154, 167, 176, 0.19));
 		grid-template-columns: minmax(220px, 300px) minmax(0, 1fr) minmax(220px, 300px);
 		align-items: center;
 		gap: 14px;
@@ -4167,7 +4168,8 @@ button {
 	/* Day progress */
 	.day-progress-card {
 		padding-right: 15px;
-		border-right: 1px solid rgba(216, 210, 202, 0.9);
+		border-right: 1px solid rgba(255, 255, 255, 0.936);
+		z-index: 2;
 	}
 
 	.day-progress-card h2 {
@@ -4189,8 +4191,8 @@ button {
 		align-items: stretch;
 		padding: 10px 5px;
 		border-radius: 18px;
-		background: rgba(255, 255, 255, 0.9);
-		border: 1px solid rgba(225, 218, 208, 0.9);
+		background:
+			linear-gradient(180deg, rgba(255, 255, 255, 0.455), rgba(254, 255, 255, 0.139));
 		box-shadow:
 			0 12px 28px rgba(58, 50, 72, 0.06),
 			inset 0 1px 0 rgba(255, 255, 255, 0.95);
@@ -4363,7 +4365,6 @@ button {
 		margin-bottom: 18px;
 		border-radius: 20px;
 
-		background: rgba(255, 255, 255, 0.88);
 		border: 1px solid rgba(225, 218, 208, 0.9);
 
 		box-shadow:
@@ -4421,7 +4422,6 @@ button {
 		margin-bottom: 18px;
 		border: 1px solid rgba(227, 220, 214, 0.8);
 		border-radius: 20px;
-		background: rgba(255, 255, 255, 0.94);
 		box-shadow:
 			0 14px 36px rgba(73, 58, 48, 0.08),
 			inset 0 1px 0 rgba(255, 255, 255, 0.95);
@@ -4510,7 +4510,6 @@ button {
 		padding: 12px;
 		border-radius: 20px;
 
-		background: rgba(255, 255, 255, 0.88);
 		border: 1px solid rgba(225, 218, 208, 0.9);
 
 		box-shadow:
@@ -5012,7 +5011,7 @@ button {
 		max-width: 100%;
 		margin: 0 auto;
 		padding-left: 15px;
-		border-left: 1px solid rgba(216, 210, 202, 0.9);
+		border-left: 1px solid rgba(255, 255, 255, 0.936);
 		text-align: center;
 		box-sizing: border-box;
 	}
@@ -5044,7 +5043,6 @@ button {
 		max-width: 100%;
 		min-height: 238px;
 		padding: 20px 10px 10px;
-		background: rgba(255, 255, 255, 0.88);
 		border-radius: 22px;
 		border: 1px solid rgba(225, 218, 208, 0.9);
 		box-sizing: border-box;
@@ -5189,7 +5187,6 @@ button {
 		min-height: auto;
 		padding: 18px 10px 16px;
 		border-radius: 20px;
-		background: rgba(255, 255, 255, 0.86);
 		border: 1px solid rgba(225, 218, 208, 0.85);
 		box-sizing: border-box;
 		overflow: hidden;
@@ -5330,15 +5327,23 @@ button {
 	}
 
 	.battle-card {
+		color: #4f3d7f;
 		background:
 			linear-gradient(135deg, rgba(124, 86, 170, 0.13), rgba(255, 255, 255, 0.9));
-		color: #4f3d7f;
+		
+		box-shadow:
+			var(--shadow),
+			inset 0 1px 0 rgba(255, 255, 255, 0.95);
 	}
 
 	.inventory-card {
+		color: #775222;
 		background:
 			linear-gradient(135deg, rgba(238, 190, 83, 0.22), rgba(255, 255, 255, 0.92));
-		color: #775222;
+		
+		box-shadow:
+			var(--shadow),
+			inset 0 1px 0 rgba(255, 255, 255, 0.95);
 	}
 
 	.battle-card strong,
@@ -5370,7 +5375,7 @@ button {
 		width: min(calc(100% - 42px), 1080px);
 		min-height: 76px;
 		border-radius: 24px;
-		padding: 9px 28px;
+		padding: 12px 28px 3px;
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
 		align-items: center;
@@ -5398,14 +5403,14 @@ button {
 		color: var(--purple);
 	}
 
-	.levelup-bottom-nav button.active::after {
+	/* .levelup-bottom-nav button.active::after {
 		content: "";
 		width: 6px;
 		height: 6px;
 		border-radius: 999px;
 		background: var(--purple);
 		margin-top: 1px;
-	}
+	} */
 
 	.levelup-bottom-nav .nav-plus {
 		width: 72px;
@@ -7994,15 +7999,16 @@ button {
 	
 
 
-	/* Shared cards */
-	.player-card,
-	.priorities-card,
-	.ai-card,
-	.battle-card,
-	.inventory-card,
-	.levelup-bottom-nav {
+	/* ===================
+		Shared cards
+	==================== */
+	.time-summary-card,
+	.day-progress-widget,
+	.daily-goals-preview,
+	.life-areas-card,
+	.ai-card {
 		background:
-			linear-gradient(180deg, rgba(255, 255, 255, 0.41), rgba(154, 167, 176, 0.19));
+			linear-gradient(180deg, rgba(255, 255, 255, 0.667), rgba(248, 252, 255, 0.461));
 
 		/* background:
 			linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.78));
@@ -8020,6 +8026,8 @@ button {
 		border-radius: 26px;
 		padding: 15px;
 		display: grid;
+		background:
+			linear-gradient(180deg, rgba(255, 255, 255, 0.41), rgba(154, 167, 176, 0.19));
 		grid-template-columns: 350px 1fr;
 		align-items: center;
 		gap: 30px;
@@ -11764,8 +11772,8 @@ button {
 		align-items: stretch;
 		padding: 10px 5px;
 		border-radius: 18px;
-		background: rgba(255, 255, 255, 0.9);
-		border: 1px solid rgba(225, 218, 208, 0.9);
+		background:
+			linear-gradient(180deg, rgba(255, 255, 255, 0.455), rgba(254, 255, 255, 0.139));
 		box-shadow:
 			0 12px 28px rgba(58, 50, 72, 0.06),
 			inset 0 1px 0 rgba(255, 255, 255, 0.95);
@@ -11942,7 +11950,6 @@ button {
 		margin-bottom: 18px;
 		border-radius: 20px;
 
-		background: rgba(255, 255, 255, 0.88);
 		border: 1px solid rgba(225, 218, 208, 0.9);
 
 		box-shadow:
@@ -11999,7 +12006,6 @@ button {
 		margin-bottom: 18px;
 		border: 1px solid rgba(227, 220, 214, 0.8);
 		border-radius: 20px;
-		background: rgba(255, 255, 255, 0.94);
 		box-shadow:
 			0 14px 36px rgba(73, 58, 48, 0.08),
 			inset 0 1px 0 rgba(255, 255, 255, 0.95);
@@ -12089,7 +12095,6 @@ button {
 		padding: 12px;
 		border-radius: 20px;
 
-		background: rgba(255, 255, 255, 0.88);
 		border: 1px solid rgba(225, 218, 208, 0.9);
 
 		box-shadow:
@@ -12613,7 +12618,6 @@ button {
 		min-height: 238px;
 		margin-bottom: 20px;
 		padding: 20px 10px 10px;
-		background: rgba(255, 255, 255, 0.88);
 		border-radius: 22px;
 		border: 1px solid rgba(225, 218, 208, 0.9);
 		box-sizing: border-box;
@@ -12757,7 +12761,6 @@ button {
 		min-height: auto;
 		padding: 18px 10px 16px;
 		border-radius: 20px;
-		background: rgba(255, 255, 255, 0.86);
 		border: 1px solid rgba(225, 218, 208, 0.85);
 		box-shadow:
 			0 14px 34px rgba(58, 50, 72, 0.07),
@@ -12897,15 +12900,23 @@ button {
 	}
 
 	.battle-card {
+		color: #4f3d7f;
 		background:
 			linear-gradient(135deg, rgba(124, 86, 170, 0.13), rgba(255, 255, 255, 0.9));
-		color: #4f3d7f;
+		
+		box-shadow:
+			var(--shadow),
+			inset 0 1px 0 rgba(255, 255, 255, 0.95);
 	}
 
 	.inventory-card {
+		color: #775222;
 		background:
 			linear-gradient(135deg, rgba(238, 190, 83, 0.22), rgba(255, 255, 255, 0.92));
-		color: #775222;
+		
+		box-shadow:
+			var(--shadow),
+			inset 0 1px 0 rgba(255, 255, 255, 0.95);
 	}
 
 	.battle-card strong,
@@ -12938,7 +12949,7 @@ button {
 		width: min(calc(100% - 42px), 1080px);
 		min-height: 76px;
 		border-radius: 24px;
-		padding: 9px 28px;
+		padding: 12px 28px 3px;
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
 		align-items: center;
@@ -12966,14 +12977,14 @@ button {
 		color: var(--purple);
 	}
 
-	.levelup-bottom-nav button.active::after {
+	/* .levelup-bottom-nav button.active::after {
 		content: "";
 		width: 6px;
 		height: 6px;
 		border-radius: 999px;
 		background: var(--purple);
 		margin-top: 1px;
-	}
+	} */
 
 	.levelup-bottom-nav .nav-plus {
 		width: 72px;
@@ -15566,14 +15577,13 @@ button {
 	/* ===================
 		Shared cards
 	=================== */
-	.player-card,
-	.priorities-card,
-	.ai-card,
-	.battle-card,
-	.inventory-card,
-	.levelup-bottom-nav {
+	.time-summary-card,
+	.day-progress-widget,
+	.daily-goals-preview,
+	.life-areas-card,
+	.ai-card {
 		background:
-			linear-gradient(180deg, rgba(255, 255, 255, 0.41), rgba(154, 167, 176, 0.19));
+			linear-gradient(180deg, rgba(255, 255, 255, 0.667), rgba(248, 252, 255, 0.461));
 
 		/* background:
 			linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.78));
@@ -16612,7 +16622,6 @@ button {
 		margin: 0 auto 18px;
 		border: 1px solid rgba(227, 220, 214, 0.8);
 		border-radius: 20px;
-		background: rgba(255, 255, 255, 0.94);
 		box-shadow:
 			0 14px 36px rgba(73, 58, 48, 0.08),
 			inset 0 1px 0 rgba(255, 255, 255, 0.95);
@@ -16702,7 +16711,6 @@ button {
 		padding: 20px 12px;
 		border-radius: 20px;
 
-		background: rgba(255, 255, 255, 0.88);
 		border: 1px solid rgba(225, 218, 208, 0.9);
 
 		box-shadow:
@@ -17228,7 +17236,6 @@ button {
 		padding: 30px;
 		border-radius: 20px;
 
-		background: rgba(255, 255, 255, 0.88);
 		border: 1px solid rgba(225, 218, 208, 0.9);
 
 		box-shadow:
@@ -17362,7 +17369,6 @@ button {
 		max-width: 100%;
 		min-height: 238px;
 		padding: 20px 15px 15px;
-		background: rgba(255, 255, 255, 0.88);
 		border-radius: 22px;
 		border: 1px solid rgba(225, 218, 208, 0.9);
 		box-sizing: border-box;
@@ -17506,7 +17512,6 @@ button {
 		min-height: auto;
 		padding: 18px 10px 16px;
 		border-radius: 20px;
-		background: rgba(255, 255, 255, 0.86);
 		border: 1px solid rgba(225, 218, 208, 0.85);
 		box-shadow:
 			0 14px 34px rgba(58, 50, 72, 0.07),
@@ -17627,15 +17632,23 @@ button {
 	}
 
 	.battle-card {
+		color: #4f3d7f;
 		background:
 			linear-gradient(135deg, rgba(124, 86, 170, 0.13), rgba(255, 255, 255, 0.9));
-		color: #4f3d7f;
+
+		box-shadow:
+			var(--shadow),
+			inset 0 1px 0 rgba(255, 255, 255, 0.95);
 	}
 
 	.inventory-card {
+		color: #775222;
 		background:
 			linear-gradient(135deg, rgba(238, 190, 83, 0.22), rgba(255, 255, 255, 0.92));
-		color: #775222;
+		
+		box-shadow:
+			var(--shadow),
+			inset 0 1px 0 rgba(255, 255, 255, 0.95);
 	}
 
 	.battle-card > span,
@@ -17700,7 +17713,7 @@ button {
 		width: min(calc(100% - 42px), 1080px);
 		min-height: 76px;
 		border-radius: 24px;
-		padding: 9px 0px;
+		padding: 12px 0px 3px;
 		display: grid;
 		grid-template-columns: repeat(5, 1fr);
 		align-items: center;
@@ -17728,14 +17741,14 @@ button {
 		color: var(--purple);
 	}
 
-	.levelup-bottom-nav button.active::after {
+	/* .levelup-bottom-nav button.active::after {
 		content: "";
 		width: 6px;
 		height: 6px;
 		border-radius: 999px;
 		background: var(--purple);
 		margin-top: 1px;
-	}
+	} */
 
 	.levelup-bottom-nav .nav-plus {
 		width: 72px;
@@ -17892,6 +17905,8 @@ button {
 		border-radius: 28px;
 		/* padding: 18px 10px; */
 		display: grid;
+		background:
+			linear-gradient(180deg, rgba(255, 255, 255, 0.41), rgba(154, 167, 176, 0.19));
 		grid-template-columns: 1fr;
 		grid-template-areas:
 			"center"
